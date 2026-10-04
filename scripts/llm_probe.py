@@ -68,6 +68,19 @@ for model in [m.strip() for m in MODEL.split(",") if m.strip()]:  # GEMINI_MODEL
     print(f"\n######## {model} ########")
     print("== 2) ข้อความสั้นมาก ==")
     timed("ตอบคำเดียว", "ตอบสั้นที่สุด", "พิมพ์คำว่า OK", 55)
+    print("== 4) เรียบเรียงผลตรวจจริง (explain) ขิง+กระเทียม+warfarin ==")
+    from check import check
+    drugs_map = json.loads((Path(__file__).resolve().parent.parent / "data" / "drug_class_map.json").read_text(encoding="utf-8"))
+    cfg = json.loads((Path(__file__).resolve().parent.parent / "data" / "config.json").read_text(encoding="utf-8"))
+    tags = json.loads((Path(__file__).resolve().parent.parent / "data" / "mechanism_tags.json").read_text(encoding="utf-8"))["tags"]
+    inp = {"herbs": [{"id": "khing"}, {"id": "garlic"}], "drugs": ["warfarin"], "profile": {"age": 60}}
+    t = time.time()
+    os.environ["LLM_TIMEOUT_SEC"] = "55"
+    x = llm.explain(inp, check(inp, herbs, drugs_map, cfg, tags), herbs, drugs_map)
+    print(f"  explain: {time.time() - t:.1f}s source={x['source']} (llm=AI ผ่านตัวตรวจ, template=ตกตัวตรวจหรือเรียกไม่ได้) เหตุผลที่ตก: {x['rejected_reason']}")
+    print(f"  สรุป: {x['summary_th']}")
+    for i in x["items"][:3]:
+        print(f"   - {i['flag_id']}: {i['text_th'][:110]}")
     print("== 3) พรอมต์จริงของแอป (parse ข้อความอิสระ) ==")
     t = time.time()
     os.environ["LLM_TIMEOUT_SEC"] = "55"

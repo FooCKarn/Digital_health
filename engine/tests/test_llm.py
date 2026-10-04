@@ -106,7 +106,7 @@ def test_gemini_request_shape_and_thought_filtering(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "secret-key-123")
     monkeypatch.delenv("GEMINI_MODEL", raising=False)
     assert llm.gemini_complete("SYS", "USER") == '{"ok": 1}'
-    assert seen["url"].endswith("models/gemma-4-31b-it:generateContent") and "secret-key-123" not in seen["url"]  # key ไม่อยู่ใน URL
+    assert seen["url"].endswith("models/gemini-flash-lite-latest:generateContent") and "secret-key-123" not in seen["url"]  # key ไม่อยู่ใน URL
     assert seen["headers"]["x-goog-api-key"] == "secret-key-123"
     text = seen["body"]["contents"][0]["parts"][0]["text"]
     assert "SYS" in text and "USER" in text and "system_instruction" not in seen["body"]  # รวม system ไว้ในข้อความผู้ใช้

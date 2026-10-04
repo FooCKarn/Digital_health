@@ -88,7 +88,10 @@ def gemini_complete(system: str, user: str, max_tokens: int = 800) -> str:
     key = os.environ.get("GEMINI_API_KEY")
     if not key:
         raise LLMUnavailable("ยังไม่ได้ตั้งค่า GEMINI_API_KEY")
-    model = os.environ.get("GEMINI_MODEL", "gemma-4-31b-it")
+    # ค่าเริ่มต้นจากการวัดจริงบนบัญชีทีม (2026-10-05, ตัวอย่างเดียว): gemini-flash-lite-latest ~0.8 วินาที ถูกต้อง;
+    # gemma-4-31b-it 15-44 วินาทีและเจอ HTTP 500; gemini-2.5-flash-lite ถูกปิดสำหรับผู้ใช้ใหม่ (404)
+    # หมายเหตุ: ชื่อ -latest เป็น alias ที่ Google เปลี่ยนรุ่นเบื้องหลังได้ ถ้าต้องการผลที่ทำซ้ำได้ให้ตั้ง GEMINI_MODEL เป็นรุ่นที่ระบุเลข
+    model = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")
     body = json.dumps({"contents": [{"role": "user", "parts": [{"text": f"{system}\n\n---\n{user}"}]}],
                        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0}}).encode()
     req = urllib.request.Request(GEMINI_URL.format(model=model), data=body,
