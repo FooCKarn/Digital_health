@@ -5,6 +5,7 @@ meta() -> ข้อมูลให้หน้าเว็บสร้างฟ�
 import json
 from pathlib import Path
 
+import llm
 from check import check
 from summary import pharmacist_summary
 
@@ -12,6 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 _load = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E731
 HERBS, DRUGS, CONFIG = _load("data/herbs.json"), _load("data/drug_class_map.json"), _load("data/config.json")
 CONDS = _load("data/conditions.json")["conditions"]
+TAGS = _load("data/mechanism_tags.json")["tags"]
 HERB_IDS = {h["id"] for h in HERBS["herbs"]}
 
 
@@ -74,5 +76,29 @@ def validate(payload) -> dict:
 
 def run(payload) -> dict:
     inp = validate(payload)
-    result = check(inp, HERBS, DRUGS, CONFIG)
+    result = check(inp, HERBS, DRUGS, CONFIG, TAGS)
     return {"result": result, "summary": pharmacist_summary(inp, result, HERBS, CONFIG)}
+
+
+class ServiceUnavailable(Exception):
+    """ฟีเจอร์ LLM ใช้ไม่ได้ (ไม่มี API key / เรียกไม่สำเร็จ) -> HTTP 503"""
+
+
+def parse(payload) -> dict:
+    """LLM จุดที่ 1: ข้อความอิสระ -> รายการเสนอให้ผู้ใช้ยืนยัน (ยังไม่ใช่ผลตรวจ)"""
+    text = payload.get("text") if isinstance(payload, dict) else None
+    if not isinstance(text, str) or not 1 <= len(text.strip()) <= 1000:
+        raise ValueError("text ต้องยาว 1-1000 ตัวอักษร")
+    try:
+        return llm.parse_text(text.strip(), HERBS)
+    except llm.LLMUnavailable as e:
+        raise ServiceUnavailable(str(e)) from e
+    except (ValueError, KeyError, TypeError) as e:  # LLM ตอบรูปแบบไม่ถูก = ขอให้ผู้ใช้กรอกเอง ไม่ใช่ความผิดของผู้ใช้
+        raise ServiceUnavailable("AI แปลงข้อความไม่สำเร็จ กรุณากรอกเอง") from e
+
+
+def explain(payload) -> dict:
+    """LLM จุดที่ 2: คำนวณผลตรวจใหม่ฝั่งเซิร์ฟเวอร์ (ไม่เชื่อผลจากไคลเอนต์) แล้วเรียบเรียง; ไม่ผ่านตัวตรวจ = template"""
+    inp = validate(payload)
+    result = check(inp, HERBS, DRUGS, CONFIG, TAGS)
+    return {"explanation": llm.explain(inp, result, HERBS, DRUGS)}

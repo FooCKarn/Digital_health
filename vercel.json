@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/*.py": { "includeFiles": "**" }
+    "api/*.py": { "includeFiles": "**", "maxDuration": 30 }
   },
   "headers": [
     {

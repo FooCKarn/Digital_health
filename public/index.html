@@ -23,7 +23,8 @@
   .herb .extra { display: none; gap: 8px; margin: 4px 0 8px 28px; flex-wrap: wrap; }
   .herb.on .extra { display: flex; }
   input[type=number], input[type=text], select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); }
-  input[type=text] { width: 100%; }
+  input[type=text], textarea { width: 100%; }
+  textarea { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); margin: 6px 0; }
   button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--brand); padding: 8px 18px; background: var(--card); color: var(--brand); }
   button.primary { background: var(--brand); color: #fff; }
   button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--info); outline-offset: 2px; }
@@ -51,6 +52,11 @@
 
   <form id="form" class="card" autocomplete="off">
     <h2>1) กรอกข้อมูล (สมมติ)</h2>
+    <div class="note">
+      <label for="freeText"><strong>หรือพิมพ์เป็นข้อความ</strong> เช่น "กินขิงมา 3 วัน กับยา warfarin" แล้วให้ AI ช่วยแปลงเป็นรายการด้านล่าง (AI แค่ช่วยกรอก คุณต้องตรวจและแก้เองก่อนกด "ตรวจ")</label>
+      <textarea id="freeText" maxlength="1000" rows="2"></textarea>
+      <button type="button" id="parseBtn">ให้ AI ช่วยกรอก</button> <span id="parseMsg" class="meta" role="status"></span>
+    </div>
     <div class="grid">
       <div><strong>สมุนไพรที่ใช้</strong><div id="herbs"></div></div>
       <div>
@@ -110,9 +116,15 @@ function renderResult(data) {
   p.replaceChildren(el("h2", { text: s.headline_th }));
   if (s.draft_notice_th) p.append(box("meta", "⚠️ " + s.draft_notice_th));
   if (r.pharmacist_review_required) p.append(box("err", "แนะนำให้ปรึกษาเภสัชกรก่อนใช้ (มียากลุ่มที่ทีมกำหนดให้เภสัชกรทบทวน) · ดูแท็บใบสรุปเภสัชกร"));
+  r.aggregates.forEach((a) => { const c = el("div", { class: "flag " + a.severity }); c.append(el("div", {}, [el("span", { class: "tag", text: `ภาระความเสี่ยงรวม (${a.label_th}) · ${SEV[a.severity]} · ` }), document.createTextNode(a.message_th)])); p.append(c); });
   r.flags.forEach((f) => p.append(flagCard(f)));
   if (cov.unknown_inputs.length) p.append(box("warn", "ยังไม่ได้ตรวจ (ไม่มีในฐานข้อมูล): " + cov.unknown_inputs.join(", ") + " · ระบบไม่เดา โปรดปรึกษาเภสัชกร"));
   if (cov.not_checked.length) p.append(box("warn", "ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก): " + cov.not_checked.map((c) => NOT_CHECKED[c] || c).join(", ")));
+  if (r.flags.length) {
+    const exBox = el("div", { id: "explainBox" }), exBtn = el("button", { type: "button", text: "ให้ AI เรียบเรียงภาษาง่าย" });
+    exBtn.onclick = () => explainNow(exBtn, exBox);
+    p.append(el("p", { class: "noprint" }, [exBtn]), exBox);
+  }
   p.append(coverageBox(cov), el("p", { class: "meta", text: r.disclaimer_th }));
 
   const q = $("p2"), herbs = s.herbs.map((h) => `${h.name_th || h.id}${h.part ? " (" + h.part + ")" : ""}${h.days_in_use ? " " + h.days_in_use + " วัน" : ""}`);
@@ -123,6 +135,7 @@ function renderResult(data) {
     el("strong", { text: "ธงเรียงตามความรุนแรง" }));
   if (!s.flags.length) q.append(el("p", { text: s.headline_th }));
   const ul = el("ul"); s.flags.forEach((f) => ul.append(el("li", { text: `[${f.severity}] ${f.message_th} (ชั้น ${f.evidence_tier}, หน้า ${f.source_page}, ${f.verified ? "verified" : "ยังไม่ verified"})` }))); q.append(ul);
+  if (s.aggregates.length) { q.append(el("strong", { text: "ภาระความเสี่ยงรวม (สรุปโดยระบบ)" })); const al = el("ul"); s.aggregates.forEach((a) => al.append(el("li", { text: a.message_th }))); q.append(al); }
   q.append(el("strong", { text: "คำถามที่ควรถามต่อ (ร่าง ผู้เชี่ยวชาญต้องตรวจ)" }));
   const ql = el("ul"); s.follow_up_questions_th.forEach((t) => ql.append(el("li", { text: t }))); q.append(ql);
   q.append(el("p", { text: "ยังไม่ได้ตรวจ: " + (s.unknown_inputs.concat(s.not_checked).join(", ") || "-") }), coverageBox(cov), el("p", { class: "meta", text: s.disclaimer_th }));
@@ -132,6 +145,48 @@ function renderResult(data) {
   q.append(el("p", { class: "noprint" }, [dl, document.createTextNode(" "), pr]));
   $("out").hidden = false;
 }
+
+async function post(url, body) {
+  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || data.error || "เกิดข้อผิดพลาด");
+  return data;
+}
+
+async function explainNow(btn, holder) {
+  btn.disabled = true; holder.replaceChildren(el("p", { class: "meta", text: "กำลังเรียบเรียง..." }));
+  try {
+    const { explanation: x } = await post("/api/explain", LAST);
+    holder.replaceChildren(el("div", { class: "note" }, [
+      el("strong", { text: x.source === "llm" ? "คำอธิบายภาษาง่าย (เรียบเรียงโดย AI จากผลตรวจด้านบน ระบบตรวจชื่อ/ตัวเลขอัตโนมัติแล้ว)" : "คำอธิบายภาษาง่าย (ใช้ข้อความจากธงโดยตรง ไม่ได้ผ่าน AI)" }),
+      el("p", { text: x.summary_th }),
+      el("ul", {}, x.items.map((i) => el("li", { text: i.text_th }))),
+      el("p", { class: "meta", text: x.disclaimer_th })]));
+  } catch (err) { holder.replaceChildren(box("warn", "เรียบเรียงไม่สำเร็จ: " + err.message + " (ยังดูผลตรวจด้านบนได้ตามปกติ)")); }
+  finally { btn.disabled = false; }
+}
+
+function applyParsed(p) {
+  document.querySelectorAll(".herb").forEach((d) => { d.classList.remove("on"); d.querySelector("input[type=checkbox]").checked = false; d.querySelector(".days").value = ""; });
+  p.herbs.forEach((h) => { const d = document.querySelector(`.herb[data-id="${h.id}"]`); if (!d) return; d.querySelector("input[type=checkbox]").checked = true; d.classList.add("on"); if (h.days_in_use) d.querySelector(".days").value = h.days_in_use; });
+  const boxes = [...document.querySelectorAll("#drugs input")]; boxes.forEach((b) => (b.checked = false));
+  const others = [];
+  p.drugs.forEach((n) => { const b = boxes.find((x) => x.value.toLowerCase() === n.toLowerCase()); if (b) b.checked = true; else others.push(n); });
+  $("otherDrugs").value = others.join(", ");
+  $("out").hidden = true;
+}
+
+$("parseBtn").onclick = async () => {
+  const text = $("freeText").value.trim(), msg = $("parseMsg");
+  if (!text) { msg.textContent = "พิมพ์ข้อความก่อน"; return; }
+  $("parseBtn").disabled = true; msg.textContent = "กำลังแปลง...";
+  try {
+    const p = await post("/api/parse", { text });
+    applyParsed(p);
+    msg.textContent = `AI ใส่ให้แล้ว: สมุนไพร ${p.herbs.length} ยา ${p.drugs.length} · โปรดตรวจและแก้ในฟอร์มก่อนกด "ตรวจ"` + (p.unmatched.length ? ` · ไม่พบในฐานข้อมูล/ไม่แน่ใจ: ${p.unmatched.join(", ")}` : "");
+  } catch (err) { msg.textContent = "ใช้ AI ไม่ได้: " + err.message + " · กรอกในฟอร์มเองได้ตามปกติ"; }
+  finally { $("parseBtn").disabled = false; }
+};
 
 function setTab(n) {
   $("p1").hidden = n !== 1; $("p2").hidden = n !== 2;

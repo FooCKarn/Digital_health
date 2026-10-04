@@ -1,7 +1,7 @@
 """Rule engine แกน (R1, R2 ชั้น A, R4) ตาม docs/rules-spec.md
 
 ฟังก์ชันล้วน: check(inp, herbs, drug_map, config) -> result ไม่เรียก LLM ไม่มี side effect
-ยังไม่ทำ: R2 ชั้น C (ยังไม่มี effect_groups.json), R3, R5, R6, ใบสรุปเภสัชกร (เฟสถัดไป)
+ทำแล้ว: R1, R2 ชั้น A, R3, R4 (ใบสรุปอยู่ที่ summary.py) ยังไม่ทำ: R2 ชั้น C (ยังไม่มี effect_groups.json), R5, R6
 """
 
 # profile key -> รหัส condition ในข้อมูลสมุนไพร (ที่เหลือใช้รหัสจาก profile.conditions ตรง ๆ)
@@ -33,7 +33,35 @@ def _flag(rule_id, item, herb, evidence_tier="A", **extra):
     }
 
 
-def check(inp: dict, herbs: dict, drug_map: dict, config: dict) -> dict:
+def _aggregates(flags: list, config: dict, tags: dict) -> list:
+    """R3: นับ 'แหล่งไม่ซ้ำ' (สมุนไพรแต่ละตัว + กลุ่มยาแต่ละกลุ่ม) ต่อ mechanism_tag จากธง R1/R2/R4 ที่ระดับนับได้
+    ไม่มีคะแนนตัวเลข: ผลคือจำนวนแหล่ง + ข้อความว่าเป็นการสรุปรวมโดยระบบ"""
+    counted = config["aggregate_counts_severities"]["value"]
+    order = config["severity_order"]
+    groups: dict[str, dict] = {}
+    for f in flags:
+        if not f.get("mechanism_tag") or f["severity"] not in counted:
+            continue
+        g = groups.setdefault(f["mechanism_tag"], {"sources": set(), "flag_ids": [], "sev": f["severity"]})
+        g["sources"].update(s for s in (f["herb_id"], f.get("drug_class")) if s)
+        g["flag_ids"].append(f["flag_id"])
+        if order.index(f["severity"]) < order.index(g["sev"]):
+            g["sev"] = f["severity"]
+    out = []
+    for tag, g in groups.items():
+        if len(g["sources"]) >= config["aggregate_threshold"]["value"]:
+            label = tags.get(tag, tag)
+            out.append({
+                "mechanism_tag": tag, "label_th": label, "sources": sorted(g["sources"]), "count": len(g["sources"]),
+                "severity": g["sev"], "flag_ids": g["flag_ids"],
+                "message_th": f"สรุปรวมโดยระบบ จากธงที่มีแหล่งอ้างอิงแต่ละใบ: มี {len(g['sources'])} แหล่งที่เกี่ยวกับ \"{label}\" ({', '.join(sorted(g['sources']))}) ดูรายละเอียดที่ธงแต่ละใบ",
+            })
+    out.sort(key=lambda a: (order.index(a["severity"]), -a["count"], a["mechanism_tag"]))
+    return out
+
+
+def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | None = None) -> dict:
+    """tags: {mechanism_tag: ชื่อไทย} จาก data/mechanism_tags.json (ไม่ส่ง = ใช้รหัสแท็กเป็นชื่อ)"""
     profile = inp.get("profile", {})
     by_id = {h["id"]: h for h in herbs["herbs"]}
     flags, unknown, not_checked = [], [], set()
@@ -111,7 +139,7 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict) -> dict:
 
     return {
         "flags": flags,
-        "aggregates": [],  # R3 ยังไม่ทำ
+        "aggregates": _aggregates(flags, config, tags or {}),
         "swaps": [],  # R6 ยังไม่ทำ
         "pharmacist_review_required": bool(drug_classes & set(config["pharmacist_review_classes"]["value"])),
         "coverage": {

@@ -37,4 +37,7 @@ def call(handler, fn) -> None:
     except ValueError as e:  # รวม json.JSONDecodeError
         send(handler, 400, {"error": str(e)})
     except Exception as e:  # noqa: BLE001
+        if type(e).__name__ == "ServiceUnavailable":  # ฟีเจอร์ LLM ใช้ไม่ได้ ไม่ใช่บั๊ก
+            send(handler, 503, {"error": "llm_unavailable", "message": str(e)})
+            return
         send(handler, 500, {"error": "server_error", "detail": f"{type(e).__name__}: {e}"})

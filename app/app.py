@@ -69,7 +69,7 @@ if not inp["herbs"]:
     st.warning("เลือกสมุนไพรอย่างน้อย 1 ชนิด")
     st.stop()
 
-result = check(inp, HERBS, DRUGS, CONFIG)
+result = check(inp, HERBS, DRUGS, CONFIG, load("data/mechanism_tags.json")["tags"])
 summary = pharmacist_summary(inp, result, HERBS, CONFIG)
 cov = result["coverage"]
 
@@ -82,6 +82,9 @@ with tab_result:
         st.caption("⚠️ " + summary["draft_notice_th"])
     if result["pharmacist_review_required"]:
         st.error("แนะนำให้ปรึกษาเภสัชกรก่อนใช้ (มียากลุ่มที่ทีมกำหนดให้เภสัชกรทบทวน) · ดูแท็บใบสรุปเภสัชกร")
+    for a in result["aggregates"]:
+        label, box = SEV[a["severity"]]
+        box(f"**ภาระความเสี่ยงรวม ({a['label_th']}) · {label}**\n\n{a['message_th']}")
     for f in result["flags"]:
         label, box = SEV[f["severity"]]
         box(f"**{label}** · {f['message_th']}\n\n"

@@ -76,6 +76,25 @@ def test_http_bad_input_gets_400_not_500(base):
     assert call(base + "/api/analyze", b"{not json")[0] == 400
 
 
+def test_http_parse_without_api_key_is_503_with_clear_message(base, monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    s, body = call(base + "/api/parse", {"text": "กินขิง"})
+    assert s == 503 and body["error"] == "llm_unavailable" and "ANTHROPIC_API_KEY" in body["message"]
+
+
+def test_http_parse_validates_text(base):
+    assert call(base + "/api/parse", {"text": ""})[0] == 400
+    assert call(base + "/api/parse", {"text": "x" * 1001})[0] == 400
+    assert call(base + "/api/parse", {})[0] == 400
+
+
+def test_http_explain_without_api_key_falls_back_to_template(base, monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    s, body = call(base + "/api/explain", {"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}})
+    x = body["explanation"]
+    assert s == 200 and x["source"] == "template" and x["items"] and x["disclaimer_th"]
+
+
 def test_http_internal_error_returns_json_500_with_cause(base, monkeypatch):
     def boom():
         raise FileNotFoundError("data/herbs.json")

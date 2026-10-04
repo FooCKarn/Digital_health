@@ -13,6 +13,7 @@ from check import check  # noqa: E402
 
 load = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E731
 HERBS, DRUGS, CONFIG = load("data/herbs.json"), load("data/drug_class_map.json"), load("data/config.json")
+TAGS = load("data/mechanism_tags.json")["tags"]
 CASES = {c["id"]: c for c in load("docs/golden_cases.json")["cases"]}
 ORDER = CONFIG["severity_order"]
 
@@ -28,14 +29,17 @@ def matches(flag, want):
 def evaluate(case):
     """คืน (สถานะ, เหตุผล)"""
     exp, inp = case["expected"], case.get("input") or CASES[case["input_ref"]]["input"]
-    if "must_have_aggregates" in exp or "swaps_must_not_include" in exp:
-        return "SKIP", "ต้องใช้ R3/R6 (ยังไม่ทำ)"
+    if "swaps_must_not_include" in exp:
+        return "SKIP", "ต้องใช้ R6 (ยังไม่ทำ)"
     known = {h["id"] for h in HERBS["herbs"]}
     missing = [h["id"] for h in inp["herbs"] if h["id"] not in known]
     if missing and "must_have_unknown_inputs" not in exp:
         return "SKIP", f"สมุนไพรยังไม่ได้ดึง: {missing}"
-    r = check(inp, HERBS, DRUGS, CONFIG)
+    r = check(inp, HERBS, DRUGS, CONFIG, TAGS)
     errs = []
+    for w in exp.get("must_have_aggregates", []):
+        if not any(a["mechanism_tag"] == w["mechanism_tag"] and a["count"] >= w.get("min_count", 0) for a in r["aggregates"]):
+            errs.append(f"ไม่พบ aggregate {w}")
     for w in exp.get("must_have_flags", []):
         hit = [f for f in r["flags"] if matches(f, w)]
         if not hit:
@@ -56,7 +60,7 @@ def evaluate(case):
         errs.append("ไม่มี coverage")
     if (exp.get("must_show_disclaimer") or exp.get("must_not_state_safe")) and not r["disclaimer_th"]:
         errs.append("ไม่มี disclaimer")
-    if exp.get("deterministic") and check(inp, HERBS, DRUGS, CONFIG) != r:
+    if exp.get("deterministic") and check(inp, HERBS, DRUGS, CONFIG, TAGS) != r:
         errs.append("ผลไม่เหมือนกันเมื่อเรียกซ้ำ")
     return ("FAIL", "; ".join(errs)) if errs else ("PASS", "")
 

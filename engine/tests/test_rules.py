@@ -103,6 +103,38 @@ def test_r4_group_limit_shared():
     assert run(herbs=[{"id": "h_senna1", "days_in_use": 7}]) ["flags"] == []
 
 
+# --- R3 ---
+def _tagged(hid, level="caution", tag="bleeding_risk", **kw):
+    return _herb(hid, drug_cautions=[_item(drug_class="anticoagulant", level=level, mechanism_tag=tag, evidence_tier="A")], **kw)
+
+
+def r3(herbs, **inp):
+    return check({"herbs": [{"id": h["id"]} for h in herbs], **inp}, {"herbs": herbs}, DRUGS, CONFIG, {"bleeding_risk": "เสี่ยงเลือดออก"})
+
+
+def test_r3_aggregates_distinct_sources_herbs_plus_drug_class():
+    r = r3([_tagged("a"), _tagged("b")], drugs=["warfarin"])
+    [agg] = r["aggregates"]
+    assert agg["mechanism_tag"] == "bleeding_risk" and agg["count"] == 3 and agg["sources"] == ["a", "anticoagulant", "b"]
+    assert agg["label_th"] == "เสี่ยงเลือดออก" and "สรุปรวมโดยระบบ" in agg["message_th"]
+    assert "%" not in agg["message_th"] and "คะแนน" not in agg["message_th"]  # ไม่มีคะแนน/ความน่าจะเป็น
+
+
+def test_r3_single_herb_one_drug_below_threshold_no_aggregate():
+    # 1 สมุนไพร + 1 กลุ่มยา = 2 แหล่ง => ถึงเกณฑ์ 2 ต้องออก; สมุนไพรเดียวไม่มียา = 0 ธง => ไม่ออก
+    assert len(r3([_tagged("a")], drugs=["warfarin"])["aggregates"]) == 1
+    assert r3([_tagged("a")])["aggregates"] == []
+
+
+def test_r3_info_level_not_counted():
+    assert r3([_tagged("a", level="info"), _tagged("b", level="info")], drugs=["warfarin"])["aggregates"] == []
+
+
+def test_r3_different_tags_do_not_merge():
+    r = r3([_tagged("a", tag="bleeding_risk"), _tagged("b", tag="hypoglycemia")], drugs=["warfarin"])
+    assert all(a["count"] == 2 for a in r["aggregates"]) and len(r["aggregates"]) == 2
+
+
 # --- ทั่วไป ---
 def test_flags_have_required_fields_and_deterministic():
     inp = dict(herbs=[{"id": "h_drug"}, {"id": "h_drug"}, {"id": "h_preg"}], drugs=["warfarin"],

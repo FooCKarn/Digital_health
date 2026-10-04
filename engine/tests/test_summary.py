@@ -9,10 +9,11 @@ from summary import pharmacist_summary  # noqa: E402
 
 L = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E731
 HERBS, DRUGS, CONFIG = L("data/herbs.json"), L("data/drug_class_map.json"), L("data/config.json")
+TAGS = L("data/mechanism_tags.json")["tags"]
 
 
 def summarize(inp):
-    return pharmacist_summary(inp, check(inp, HERBS, DRUGS, CONFIG), HERBS, CONFIG)
+    return pharmacist_summary(inp, check(inp, HERBS, DRUGS, CONFIG, TAGS), HERBS, CONFIG)
 
 
 def test_summary_with_flags_lists_them_and_marks_draft():
