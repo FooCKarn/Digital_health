@@ -1,0 +1,463 @@
+{
+  "herbs": [
+    {
+      "id": "garlic",
+      "no": 3,
+      "name_th": "กระเทียม",
+      "parts": [
+        "หัว"
+      ],
+      "contraindications": [
+        {
+          "condition": "allergy_to_herb",
+          "level": "avoid",
+          "mechanism_tag": "allergy",
+          "text": "ห้ามใช้ในผู้ที่มีประวัติแพ้กระเทียม",
+          "evidence_quote": "ห้ามใช้ในผู้ที่มีประวัติแพ้กระเทียม",
+          "pdf_page": 49,
+          "source_page": 41,
+          "verified": false
+        },
+        {
+          "condition": "eye_inflammation",
+          "level": "avoid",
+          "text": "ห้ามใช้ในผู้มีปัญหาโรคทางตา ได้แก่ตาบวมหรือตาอักเสบ",
+          "evidence_quote": "ปัญหาโรคทางตา ได้แก่ อาการตาบวมหรือตาอักเสบ",
+          "pdf_page": 49,
+          "source_page": 41,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [
+        {
+          "drug_class": "anticoagulant",
+          "level": "caution",
+          "mechanism_tag": "bleeding_risk",
+          "evidence_tier": "A",
+          "text": "ควรระมัดระวังในผู้ที่ใช้ยาที่ทำให้เลือดใส เช่น ยากันเลือดเป็นลิ่ม",
+          "evidence_quote": "ยากันเลือดเป็นลิ่ม (anticoagulant)",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        },
+        {
+          "drug_class": "antiplatelet",
+          "level": "caution",
+          "mechanism_tag": "bleeding_risk",
+          "evidence_tier": "A",
+          "text": "ควรระมัดระวังในผู้ที่ใช้ยาต้านเกล็ดเลือด",
+          "evidence_quote": "ยาต้านเกล็ดเลือดอื่น (anti-platelet agent)",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        },
+        {
+          "drug_class": "nsaid",
+          "level": "caution",
+          "mechanism_tag": "bleeding_risk",
+          "evidence_tier": "A",
+          "text": "ควรระมัดระวังในผู้ที่ใช้ยาต้านอักเสบกลุ่มที่ไม่ใช่สเตียรอยด์",
+          "evidence_quote": "ยาต้านอักเสบกลุ่มที่ไม่ใช่สเตียรอยด์",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        },
+        {
+          "drug_class": "cyclosporin",
+          "level": "avoid",
+          "mechanism_tag": null,
+          "evidence_tier": "A",
+          "text": "ผู้ที่กินไซโคลสปอริน ไม่ควรกินกระเทียมร่วมด้วย (เล่มระบุเหตุผลว่าระดับยาลดลง)",
+          "evidence_quote": "หากผู้ป่วยกินยาไซโคลสปอริน (cyclosporin) หรือยาซาควินาเวียร์ (saquinavir) อยู่ ไม่ควรกิน",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        },
+        {
+          "drug_class": "saquinavir",
+          "level": "avoid",
+          "mechanism_tag": null,
+          "evidence_tier": "A",
+          "text": "ผู้ที่กินซาควินาเวียร์ ไม่ควรกินกระเทียมร่วมด้วย (เล่มระบุเหตุผลว่าระดับยาลดลง)",
+          "evidence_quote": "หากผู้ป่วยกินยาไซโคลสปอริน (cyclosporin) หรือยาซาควินาเวียร์ (saquinavir) อยู่ ไม่ควรกิน",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [
+        {
+          "condition": "bleeding_disorder",
+          "level": "caution",
+          "mechanism_tag": "bleeding_risk",
+          "text": "ควรระมัดระวังในผู้ที่มีความผิดปรกติเกี่ยวกับการแข็งตัวของเลือด",
+          "evidence_quote": "ความผิดปรกติเกี่ยวกับการแข็งตัวของเลือด",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        },
+        {
+          "condition": "peptic_ulcer",
+          "level": "caution",
+          "mechanism_tag": "gi_irritation",
+          "text": "ควรระมัดระวังในผู้ป่วยโรคแผลทางเดินอาหาร เพราะอาจระคายเคืองเยื่อบุทางเดินอาหาร",
+          "evidence_quote": "ผู้ป่วยที่เป็นโรคแผลทางเดินทางอาหาร",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        },
+        {
+          "condition": "surgery_planned",
+          "level": "caution",
+          "mechanism_tag": "bleeding_risk",
+          "text": "การกินในปริมาณมากเพิ่มความเสี่ยงเลือดออกหลังผ่าตัด",
+          "evidence_quote": "การรับประทานกระเทียมในปริมาณมาก ๆ จะเพิ่มความเสี่ยงต่อการมีเลือดออกหลังผ่าตัดได้ง่าย",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        },
+        {
+          "condition": "surgery_planned",
+          "level": "caution",
+          "mechanism_tag": "bleeding_risk",
+          "text": "ผู้ใช้ขนาดยาติดต่อกันนาน หากจะผ่าตัดหรือทำฟัน ควรหยุดล่วงหน้าอย่างน้อย 7 วัน",
+          "evidence_quote": "ควรหยุดใช้กระเทียมล่วงหน้าอย่างน้อย 7 วัน",
+          "pdf_page": 50,
+          "source_page": 42,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          49,
+          52
+        ],
+        "printed_pages": [
+          41,
+          44
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "khing",
+      "no": 14,
+      "name_th": "ขิง",
+      "parts": [
+        "เหง้า"
+      ],
+      "contraindications": [
+        {
+          "condition": "pregnancy",
+          "context": "บรรเทาอาการคลื่นไส้อาเจียน",
+          "level": "avoid",
+          "text": "ไม่แนะนำให้ใช้ขิงบรรเทาคลื่นไส้อาเจียนในสตรีมีครรภ์ (เฉพาะการใช้เพื่อบรรเทาคลื่นไส้อาเจียน)",
+          "evidence_quote": "ไม่แนะนำให้ใช้ขิงในการบรรเทาอาการคลื่นไส้อาเจียนในสตรีมีครรภ์",
+          "pdf_page": 88,
+          "source_page": 80,
+          "verified": false
+        }
+      ],
+      "age_limits": [
+        {
+          "min_age_years": 6,
+          "level": "avoid",
+          "text": "ไม่ควรใช้ในเด็กอายุต่ำกว่า 6 ขวบ",
+          "evidence_quote": "ไม่ควรใช้ขิงในเด็กที่อายุต่ำกว่า 6 ขวบ",
+          "pdf_page": 88,
+          "source_page": 80,
+          "verified": false
+        }
+      ],
+      "drug_cautions": [
+        {
+          "drug_class": "anticoagulant",
+          "level": "avoid",
+          "mechanism_tag": "bleeding_risk",
+          "evidence_tier": "A",
+          "text": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือดไม่ควรรับประทาน",
+          "evidence_quote": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือด ไม่ควรรับประทาน",
+          "pdf_page": 88,
+          "source_page": 80,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [
+        {
+          "condition": "bleeding_disorder",
+          "level": "caution",
+          "mechanism_tag": "bleeding_risk",
+          "text": "ผู้ที่มีปัญหาการแข็งตัวของเลือดควรปรึกษาแพทย์ก่อนใช้",
+          "evidence_quote": "ผู้ป่วยที่มีปัญหาการแข็งตัวของเลือด",
+          "pdf_page": 88,
+          "source_page": 80,
+          "verified": false
+        },
+        {
+          "condition": "gallstones",
+          "level": "caution",
+          "text": "ผู้ป่วยนิ่วในถุงน้ำดีควรปรึกษาแพทย์ก่อนใช้",
+          "evidence_quote": "ผู้ป่วยโรคนิ่วในถุงน้ำดี ควรปรึกษาแพทย์ก่อนใช้ขิง",
+          "pdf_page": 88,
+          "source_page": 80,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          87,
+          91
+        ],
+        "printed_pages": [
+          79,
+          83
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "khilek",
+      "no": 15,
+      "name_th": "ขี้เหล็ก",
+      "parts": [
+        "ใบ",
+        "เรือนช่อดอก"
+      ],
+      "contraindications": [
+        {
+          "condition": "pregnancy",
+          "level": "avoid",
+          "mechanism_tag": "pregnancy_risk",
+          "text": "ห้ามใช้ในสตรีมีครรภ์",
+          "evidence_quote": "ห้ามใช้ในสตรีมีครรภ์ หญิงให้นมบุตรและเด็ก",
+          "pdf_page": 92,
+          "source_page": 84,
+          "verified": false
+        },
+        {
+          "condition": "breastfeeding",
+          "level": "avoid",
+          "text": "ห้ามใช้ในหญิงให้นมบุตร",
+          "evidence_quote": "ห้ามใช้ในสตรีมีครรภ์ หญิงให้นมบุตรและเด็ก",
+          "pdf_page": 92,
+          "source_page": 84,
+          "verified": false
+        },
+        {
+          "condition": "liver_disease",
+          "level": "avoid",
+          "mechanism_tag": "hepatotoxicity",
+          "text": "ห้ามใช้ในผู้ที่เป็นโรคตับ",
+          "evidence_quote": "ห้ามใช้ในผู้ที่เป็นโรคตับ",
+          "pdf_page": 92,
+          "source_page": 84,
+          "verified": false
+        }
+      ],
+      "age_limits": [
+        {
+          "min_age_years": null,
+          "applies_to": "เด็ก",
+          "level": "avoid",
+          "text": "ห้ามใช้ในเด็ก (เล่มไม่ระบุอายุเป็นตัวเลข; engine ใช้เกณฑ์อายุที่ทีมตั้งใน data/config.json)",
+          "evidence_quote": "ห้ามใช้ในสตรีมีครรภ์ หญิงให้นมบุตรและเด็ก",
+          "pdf_page": 92,
+          "source_page": 84,
+          "verified": false
+        }
+      ],
+      "drug_cautions": [
+        {
+          "drug_class": "liver_affecting",
+          "level": "avoid",
+          "mechanism_tag": "hepatotoxicity",
+          "evidence_tier": "A",
+          "text": "ห้ามใช้ในผู้ที่อยู่ระหว่างได้รับยาที่มีผลต่อการทำงานของตับ",
+          "evidence_quote": "อยู่ระหว่างได้รับยาที่มีผลต่อการทำงานของตับ",
+          "pdf_page": 92,
+          "source_page": 84,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [],
+      "duration_limits": [
+        {
+          "max_days": 7,
+          "group": "senna_laxatives",
+          "group_members_per_book": [
+            "ขี้เหล็ก",
+            "ชุมเห็ดเทศ"
+          ],
+          "level": "caution",
+          "mechanism_tag": "laxative_effect",
+          "text": "ยาระบายสมุนไพรสกุล Senna ไม่ควรใช้ติดต่อกันนานเกิน 7 วัน เพราะอาจติดยาระบาย",
+          "evidence_quote": "ไม่ควรใช้ยาระบายสมุนไพรในสกุล Senna เช่น ขี้เหล็ก ชุมเห็ดเทศ ติดต่อกันนานเกิน 7 วัน",
+          "pdf_page": 93,
+          "source_page": 85,
+          "verified": false
+        }
+      ],
+      "notes": [
+        {
+          "text": "การใช้ผงใบแห้งติดต่อกันอาจทำให้ตับอักเสบได้ในบางคน",
+          "evidence_quote": "การใช้ผงใบแห้งติดต่อกันอาจทำให้เกิดอาการตับอักเสบได้ในบางคน",
+          "pdf_page": 93,
+          "source_page": 85,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          92,
+          94
+        ],
+        "printed_pages": [
+          84,
+          86
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "makham",
+      "no": 38,
+      "name_th": "มะขาม",
+      "parts": [
+        "เนื้อในฝักแก่"
+      ],
+      "contraindications": [
+        {
+          "condition": "peptic_ulcer",
+          "level": "avoid",
+          "mechanism_tag": "gi_irritation",
+          "text": "ข้อห้ามใช้: ผู้ป่วยโรคแผลเปบติก",
+          "evidence_quote": "ผู้ป่วยโรคแผลเปื่อยเปบติก",
+          "pdf_page": 162,
+          "source_page": 154,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [
+        {
+          "drug_class": "nsaid",
+          "level": "caution",
+          "mechanism_tag": "bleeding_risk",
+          "evidence_tier": "A",
+          "text": "มะขามเพิ่มการดูดซึมยา NSAID โดยเฉพาะแอสไพรินและไอบูโพรเฟน จึงเพิ่มความเสี่ยงเลือดออกในทางเดินอาหาร",
+          "evidence_quote": "มะขามเพิ่มการดูดซึมของยาต้านอักเสบที่ไม่ใช่สเตียรอยด์ โดยเฉพาะแอสไพริน (aspirin) และ ไอบูโพรเฟน (ibuprofen) จึงเพิ่มความเสี่ยงต่อภาวะเลือดออกในทางเดินอาหาร",
+          "pdf_page": 162,
+          "source_page": 154,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [],
+      "duration_limits": [],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          162,
+          164
+        ],
+        "printed_pages": [
+          154,
+          156
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "rangchuet",
+      "no": 48,
+      "name_th": "รางจืด",
+      "parts": [
+        "ใบ (เพสลาด)"
+      ],
+      "contraindications": [
+        {
+          "condition": "suspected_dengue",
+          "level": "avoid",
+          "text": "ไม่แนะนำในผู้ที่สงสัยว่าเป็นไข้เลือดออก เพราะอาจบดบังอาการ",
+          "evidence_quote": "ไม่แนะนำให้ใช้ในผู้ที่สงสัยว่าเป็นไข้เลือดออก",
+          "pdf_page": 191,
+          "source_page": 183,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [
+        {
+          "drug_class": "antidiabetic",
+          "level": "caution",
+          "mechanism_tag": "hypoglycemia",
+          "evidence_tier": "A",
+          "text": "ควรระวังการใช้ร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยเบาหวาน",
+          "evidence_quote": "ควรระวังการใช้ใบรางจืดร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
+          "pdf_page": 192,
+          "source_page": 184,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [
+        {
+          "condition": "diabetes",
+          "level": "caution",
+          "mechanism_tag": "hypoglycemia",
+          "text": "ใบมีฤทธิ์ลดระดับน้ำตาลในเลือด ควรระวังในผู้ป่วยเบาหวาน",
+          "evidence_quote": "ใบรางจืดมีฤทธิ์ลดระดับน้ำตาลในเลือด จึงควรระวังการใช้ในผู้ป่วยโรคเบาหวาน",
+          "pdf_page": 191,
+          "source_page": 183,
+          "verified": false
+        },
+        {
+          "condition": "long_term_medication",
+          "level": "caution",
+          "text": "ผู้ที่ต้องใช้ยารักษาโรคต่อเนื่อง ควรระวัง เพราะอาจเร่งการขับยาออก ทำให้ประสิทธิผลของยาลดลง",
+          "evidence_quote": "ควรระวังการใช้ใบรางจืดกับผู้ป่วยที่ต้องใช้ยารักษาโรคอย่างต่อเนื่อง",
+          "pdf_page": 192,
+          "source_page": 184,
+          "verified": false
+        }
+      ],
+      "duration_limits": [
+        {
+          "max_days": null,
+          "range_days": [
+            3,
+            5
+          ],
+          "group": null,
+          "level": "caution",
+          "text": "ไม่ควรใช้ติดต่อกันเกิน 3-5 วัน (เล่มระบุเป็นช่วง ทีมต้องเลือกจุดตัดใน config)",
+          "evidence_quote": "ไม่ควรใช้ติดต่อกันเกิน 3-5 วัน",
+          "pdf_page": 192,
+          "source_page": 184,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          191,
+          193
+        ],
+        "printed_pages": [
+          183,
+          185
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    }
+  ]
+}

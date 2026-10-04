@@ -1,0 +1,174 @@
+{
+  "_meta": {
+    "status": "DRAFT: เลขหน้าของ G02,G04,G05,G06,G07,G10 แก้ตามที่ scripts/verify_extraction.py พบในต้นฉบับ (2026-10-04) ส่วนที่เหลือยังไม่ตรวจ ไม่มีผู้เชี่ยวชาญตรวจ ทุกเคส verified:false",
+    "source": "TTM first 2568 (หน้าเป็นค่าประมาณ ต้องตรวจ)",
+    "how_to_use": "ทุกเคสต้องตรวจกับต้นฉบับก่อนตั้ง verified:true ถ้าต้นฉบับไม่ตรงกับ expected ให้แก้เคส ไม่ใช่แก้ข้อมูลให้ตรงเคส",
+    "levels": "avoid > caution > info; expected_min_level คือระดับต่ำสุดที่ยอมรับ (ถ้าระบบให้สูงกว่าให้ตรวจข้อความต้นฉบับว่าใช่หรือไม่)",
+    "drugs_note": "ชื่อยา→กลุ่มยาอยู่ใน data/drug_class_map.json ซึ่งต้องให้เภสัชกรตรวจ"
+  },
+  "cases": [
+    {
+      "id": "G01",
+      "title": "ขิง + ยากันเลือดเป็นลิ่ม",
+      "input": {"herbs": [{"id": "khing", "part": "เหง้า"}], "drugs": ["warfarin"], "profile": {"age": 60, "pregnant": false}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R2", "herb_id": "khing", "drug_class": "anticoagulant", "evidence_tier": "A", "expected_min_level": "avoid", "source_page": 80}],
+        "pharmacist_review_required": true
+      },
+      "verified": false
+    },
+    {
+      "id": "G02",
+      "title": "กระเทียม + ยากันเลือดเป็นลิ่ม",
+      "input": {"herbs": [{"id": "garlic", "part": "หัว"}], "drugs": ["warfarin"], "profile": {"age": 65}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R2", "herb_id": "garlic", "drug_class": "anticoagulant", "evidence_tier": "A", "expected_min_level": "caution", "source_page": 42}],
+        "pharmacist_review_required": true
+      },
+      "verified": false
+    },
+    {
+      "id": "G03",
+      "title": "ขิง + กระเทียม + ยากันเลือดเป็นลิ่ม: ต้องรวมเป็นภาระความเสี่ยงเลือดออก",
+      "input": {"herbs": [{"id": "khing", "part": "เหง้า"}, {"id": "garlic", "part": "หัว"}], "drugs": ["warfarin"], "profile": {"age": 60}},
+      "expected": {
+        "must_have_aggregates": [{"mechanism_tag": "bleeding_risk", "min_count": 3}]
+      },
+      "note": "ค่า threshold ของ R3 เป็นค่าที่ทีมตั้งเอง (data/config.json) ถ้าเปลี่ยนค่า ต้องปรับเคสนี้และบันทึกเหตุผล",
+      "verified": false
+    },
+    {
+      "id": "G04",
+      "title": "มะขาม + ไอบูโพรเฟน",
+      "input": {"herbs": [{"id": "makham", "part": "เนื้อในฝัก"}], "drugs": ["ibuprofen"], "profile": {"age": 45}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R2", "herb_id": "makham", "drug_class": "nsaid", "evidence_tier": "A", "expected_min_level": "caution", "source_page": 154}]
+      },
+      "verified": false
+    },
+    {
+      "id": "G05",
+      "title": "มะขาม + ผู้ป่วยแผลเปบติก",
+      "input": {"herbs": [{"id": "makham", "part": "เนื้อในฝัก"}], "drugs": [], "profile": {"age": 50, "conditions": ["peptic_ulcer"]}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R1", "herb_id": "makham", "condition": "peptic_ulcer", "expected_min_level": "avoid", "source_page": 154}]
+      },
+      "verified": false
+    },
+    {
+      "id": "G06",
+      "title": "รางจืด + ยาเบาหวาน",
+      "input": {"herbs": [{"id": "rangchuet", "part": "ใบ"}], "drugs": ["metformin"], "profile": {"age": 58, "conditions": ["diabetes"]}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R2", "herb_id": "rangchuet", "drug_class": "antidiabetic", "evidence_tier": "A", "expected_min_level": "caution", "source_page": 184}]
+      },
+      "verified": false
+    },
+    {
+      "id": "G07",
+      "title": "รางจืด ใช้ 6 วัน เกินช่วงที่เล่มระบุ (3-5 วัน)",
+      "input": {"herbs": [{"id": "rangchuet", "part": "ใบ", "days_in_use": 6}], "drugs": [], "profile": {"age": 30}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R4", "herb_id": "rangchuet", "expected_min_level": "caution", "source_page": 184}]
+      },
+      "note": "ถ้าเล่มระบุช่วง 3-5 วัน ให้ตรวจว่าจะเตือนที่ >5 วัน (เคสนี้ 6 วัน) ส่วน 4-5 วันไม่ควรเตือน (ดู G08)",
+      "verified": false
+    },
+    {
+      "id": "G08",
+      "title": "รางจืด ใช้ 4 วัน ไม่ควรเตือนเรื่องระยะเวลา",
+      "input": {"herbs": [{"id": "rangchuet", "part": "ใบ", "days_in_use": 4}], "drugs": [], "profile": {"age": 30}},
+      "expected": {
+        "must_not_have_flags": [{"rule_id": "R4", "herb_id": "rangchuet"}]
+      },
+      "verified": false
+    },
+    {
+      "id": "G09",
+      "title": "ขี้เหล็ก + ผู้ป่วยโรคตับ",
+      "input": {"herbs": [{"id": "khilek", "part": "ใบ"}], "drugs": [], "profile": {"age": 55, "conditions": ["liver_disease"]}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R1", "herb_id": "khilek", "condition": "liver_disease", "expected_min_level": "avoid", "source_page": 84}]
+      },
+      "verified": false
+    },
+    {
+      "id": "G10",
+      "title": "ขี้เหล็ก + ชุมเห็ดเทศ ใช้ 10 วัน (กลุ่ม Senna เกิน 7 วัน)",
+      "input": {"herbs": [{"id": "khilek", "part": "ใบ", "days_in_use": 10}, {"id": "chumhet_thet", "part": "ใบ", "days_in_use": 10}], "drugs": [], "profile": {"age": 40}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R4", "group": "senna_laxatives", "expected_min_level": "caution", "source_page": 85}]
+      },
+      "note": "ต้องตรวจในเล่มว่าชุมเห็ดเทศมีข้อความเรื่อง Senna ด้วยหรือไม่ (ที่เห็นคือหน้าขี้เหล็กอ้างถึงทั้งสองชนิด)",
+      "verified": false
+    },
+    {
+      "id": "G11",
+      "title": "ขิง + เด็กอายุ 4 ปี",
+      "input": {"herbs": [{"id": "khing", "part": "เหง้า"}], "drugs": [], "profile": {"age": 4}},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R1", "herb_id": "khing", "expected_min_level": "avoid", "source_page": 80}]
+      },
+      "verified": false
+    },
+    {
+      "id": "G12",
+      "title": "ขิง + สตรีมีครรภ์ ใช้บรรเทาคลื่นไส้ ต้องแสดงบริบทของข้อห้าม",
+      "input": {"herbs": [{"id": "khing", "part": "เหง้า"}], "drugs": [], "profile": {"age": 28, "pregnant": true}, "symptoms": ["nausea"]},
+      "expected": {
+        "must_have_flags": [{"rule_id": "R1", "herb_id": "khing", "expected_min_level": "avoid", "message_must_mention": "คลื่นไส้"}]
+      },
+      "verified": false
+    },
+    {
+      "id": "G13",
+      "title": "ยาที่ไม่อยู่ในตาราง: ต้องไม่เดา",
+      "input": {"herbs": [{"id": "khing", "part": "เหง้า"}], "drugs": ["ยาชื่อที่ไม่มีในตาราง"], "profile": {"age": 50}},
+      "expected": {
+        "must_have_unknown_inputs": ["ยาชื่อที่ไม่มีในตาราง"],
+        "must_not_state_safe": true
+      },
+      "verified": false
+    },
+    {
+      "id": "G14",
+      "title": "สมุนไพรที่ไม่อยู่ในฐาน: ต้องไม่เดา",
+      "input": {"herbs": [{"id": "unknown_herb_x"}], "drugs": [], "profile": {"age": 30}},
+      "expected": {
+        "must_have_unknown_inputs": ["unknown_herb_x"],
+        "must_not_state_safe": true
+      },
+      "verified": false
+    },
+    {
+      "id": "G15",
+      "title": "ไม่มีธง: ต้องไม่ใช้คำว่าปลอดภัย และต้องแสดงขอบเขตความครอบคลุม",
+      "input": {"herbs": [{"id": "krachai", "part": "เหง้า"}], "drugs": [], "profile": {"age": 30}},
+      "expected": {
+        "must_not_state_safe": true,
+        "must_show_coverage": true,
+        "must_show_disclaimer": true
+      },
+      "note": "ก่อนใช้เคสนี้ ต้องตรวจในเล่มว่ากระชายมีข้อห้าม/คำเตือนหรือไม่ ถ้ามี ให้เปลี่ยนเป็นสมุนไพรที่ข้อห้ามเป็น '-' จริง (เช่น ที่พบว่าฟักทอง/มะแว้งเครือ ช่องข้อห้ามใช้เป็น '-')",
+      "verified": false
+    },
+    {
+      "id": "G16",
+      "title": "ความสม่ำเสมอ: input เดิมเรียก 2 ครั้ง ต้องได้ผลเหมือนกัน",
+      "input_ref": "G03",
+      "expected": {"deterministic": true},
+      "verified": false
+    },
+    {
+      "id": "G17",
+      "title": "Safe-swap: ท้องอืดท้องเฟ้อ + ยากันเลือดเป็นลิ่ม ต้องไม่เสนอตัวที่ติดธง",
+      "input": {"herbs": [{"id": "khing", "part": "เหง้า"}], "drugs": ["warfarin"], "profile": {"age": 60}, "symptoms": ["dyspepsia"]},
+      "expected": {
+        "swaps_must_not_include": ["khing", "garlic"],
+        "swaps_must_have_source_page": true
+      },
+      "note": "ยังรอข้อมูลอาการ→สมุนไพร (symptom_id) ที่ตรวจแล้ว จึงยังกำหนดรายชื่อตัวเลือกที่ควรได้ไม่ได้ ห้ามเดาจากความรู้ภายนอก",
+      "verified": false
+    }
+  ]
+}

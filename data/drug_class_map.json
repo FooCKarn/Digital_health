@@ -1,0 +1,12 @@
+{
+  "_status": "DRAFT ตามตัวอย่างใน docs/data-schema.md ข้อ 2 ยังไม่ผ่านเภสัชกรตรวจ (verified:false ทุกแถว) ห้ามเพิ่มแถวจากความจำโดยไม่มีแหล่งอ้างอิง",
+  "entries": [
+    {"names": ["warfarin", "วาร์ฟาริน", "คูมาดิน"], "class": ["anticoagulant"], "verified": false},
+    {"names": ["aspirin", "แอสไพริน"], "class": ["antiplatelet", "nsaid"], "verified": false},
+    {"names": ["ibuprofen", "ไอบูโพรเฟน"], "class": ["nsaid"], "verified": false},
+    {"names": ["metformin", "เมทฟอร์มิน"], "class": ["antidiabetic"], "verified": false},
+    {"names": ["cyclosporin", "ไซโคลสปอริน"], "class": ["cyclosporin"], "note": "ทีมเพิ่ม: เล่มกระเทียม หน้า 42 ระบุชื่อยานี้ตรง ๆ จึงตั้งกลุ่มเป็นชื่อยาเอง ไม่จัดกลุ่มเภสัชวิทยา", "verified": false},
+    {"names": ["saquinavir", "ซาควินาเวียร์"], "class": ["saquinavir"], "note": "ทีมเพิ่ม: เล่มกระเทียม หน้า 42 ระบุชื่อยานี้ตรง ๆ จึงตั้งกลุ่มเป็นชื่อยาเอง ไม่จัดกลุ่มเภสัชวิทยา", "verified": false}
+  ],
+  "unknown_policy": "ถ้าไม่พบชื่อ ให้ตอบ 'ไม่มีข้อมูลยานี้' ห้ามเดา และแนะนำปรึกษาเภสัชกร"
+}

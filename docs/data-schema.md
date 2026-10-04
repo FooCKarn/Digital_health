@@ -1,0 +1,144 @@
+# docs/data-schema.md: โครงสร้างข้อมูล
+
+หลักการ: ทุกแถวที่เกี่ยวกับความปลอดภัยต้องมี `source_page`, `verified`, `verified_by` ข้อมูลที่ทีมตีความเองต้องติดป้ายและระบุเหตุผล
+
+## 1. herbs.json (สมุนไพร 1 รายการ)
+
+```json
+{
+  "id": "khing",
+  "names": ["ขิง", "ขิงแกลง", "ขิงแดง", "ขิงเผือก", "สะเอ"],
+  "scientific": "Zingiber officinale Roscoe",
+  "parts": [
+    {
+      "part": "เหง้า",
+      "taste_raw": "หวานเผ็ดร้อน",
+      "uses": [
+        {"symptom_id": "nausea_motion", "text": "แก้คลื่นไส้อาเจียนจากการเมารถ เมาเรือ",
+         "dose": {"amount": "1-2", "unit": "g", "form": "ผงขิงแห้ง", "timing": "ก่อนเดินทาง 30-60 นาที"},
+         "source_page": 79},
+        {"symptom_id": "dyspepsia", "text": "แก้ท้องอืดท้องเฟ้อ แน่นจุกเสียด", "source_page": 79}
+      ]
+    }
+  ],
+  "contraindications": [
+    {"condition": "pregnancy", "context": "บรรเทาคลื่นไส้อาเจียน", "level": "avoid",
+     "text": "ไม่แนะนำให้ใช้", "source_page": 80, "verified": false}
+  ],
+  "age_limits": [
+    {"min_age_years": 6, "level": "avoid", "text": "ไม่ควรใช้ในเด็กอายุต่ำกว่า 6 ขวบ",
+     "source_page": 80, "verified": false}
+  ],
+  "drug_cautions": [
+    {"drug_class": "anticoagulant", "level": "avoid", "mechanism_tag": "bleeding_risk",
+     "evidence_tier": "A", "text": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือดไม่ควรรับประทาน",
+     "source_page": 80, "verified": false}
+  ],
+  "condition_cautions": [
+    {"condition": "gallstones", "level": "caution", "text": "ควรปรึกษาแพทย์ก่อนใช้",
+     "source_page": 80, "verified": false}
+  ],
+  "duration_limits": [],
+  "mechanism_tags": ["bleeding_risk"],
+  "source": {"doc": "TTM first 2568", "pages": [79, 80]},
+  "verified": false,
+  "verified_by": null
+}
+```
+
+**หมายเหตุ**
+- `level`: `avoid` (ห้าม/ไม่ควร) | `caution` (ระวัง/ปรึกษาแพทย์) | `info`
+- ต้องเก็บ `text` เป็นการสรุปความที่ใกล้ต้นฉบับ เพื่อให้ตรวจเทียบได้ ห้ามเปลี่ยนความหมายเป็นเงื่อนไขที่แรงกว่าหรืออ่อนกว่าต้นฉบับ
+- `mechanism_tags` ของสมุนไพรได้จากคำเตือนที่ระบุในเล่มเท่านั้น (ชั้น A) การอนุมานเพิ่มเติม (ชั้น C) เก็บแยกใน `effect_groups.json`
+- ส่วนที่ใช้ (`part`) ต้องแยก เพราะรสและคำเตือนอาจต่างกันตามส่วนของพืช
+- `symptom_id` สำหรับ Safe-swap ใช้ชุดรหัสกลางใน `data/symptoms.json` (สร้างจากหัวข้อ "วิธีใช้" ของเล่ม; ยังไม่ได้ตรวจครบ)
+
+## 2. drug_class_map.json (ชื่อยา → กลุ่มยา) **[ต้องให้เภสัชกรตรวจ]**
+
+```json
+{
+  "entries": [
+    {"names": ["warfarin", "วาร์ฟาริน", "คูมาดิน"], "class": "anticoagulant", "verified": false},
+    {"names": ["aspirin", "แอสไพริน"], "class": ["antiplatelet", "nsaid"], "verified": false},
+    {"names": ["ibuprofen", "ไอบูโพรเฟน"], "class": "nsaid", "verified": false},
+    {"names": ["metformin", "เมทฟอร์มิน"], "class": "antidiabetic", "verified": false}
+  ],
+  "unknown_policy": "ถ้าไม่พบชื่อ ให้ตอบ 'ไม่มีข้อมูลยานี้' ห้ามเดา และแนะนำปรึกษาเภสัชกร"
+}
+```
+
+กลุ่มยาตั้งต้น (จำกัดตามที่เล่มกล่าวถึง): `anticoagulant`, `antiplatelet`, `nsaid`, `antidiabetic`, `liver_affecting` (ยาที่มีผลต่อตับ) กลุ่มอื่นเพิ่มได้เมื่อมีแหล่งรองรับ
+
+## 3. mechanism_tags.json (แนวคิดความเสี่ยงกลาง; ทีมกำหนด **[ต้องตรวจ]**)
+
+ชุดตั้งต้นที่เสนอ (ปรับตามที่พบจริงในเล่ม):
+`bleeding_risk`, `hypoglycemia`, `hepatotoxicity`, `laxative_effect`, `pregnancy_risk`, `gi_irritation`, `allergy`
+
+```json
+{
+  "tag": "bleeding_risk",
+  "label_th": "เสี่ยงเลือดออก",
+  "aggregation": "count_sources",
+  "note": "ทีมตั้งเอง ไม่ใช่มาตรฐาน: รวมจำนวนแหล่งที่ทำให้เกิดแนวคิดนี้ (สมุนไพร + ยา)"
+}
+```
+
+## 4. effect_groups.json (ชั้น C: การอนุมานของทีม)
+
+```json
+{
+  "group": "hypoglycemic_herbs",
+  "members": ["rangchuet", "mawaeng_khruea"],
+  "interacts_with_drug_class": ["antidiabetic"],
+  "mechanism_tag": "hypoglycemia",
+  "evidence_tier": "C",
+  "basis": "เล่มระบุว่ามีฤทธิ์ลดระดับน้ำตาลในเลือด (หน้า 172, 183)",
+  "note": "การจัดกลุ่มเป็นการตีความของทีม ต้องให้ผู้เชี่ยวชาญตรวจ",
+  "verified": false
+}
+```
+
+กฎ: สมาชิกกลุ่มต้องมีข้อความในเล่มรองรับ (`basis`) ห้ามเพิ่มสมาชิกจากความรู้ภายนอกในชั้น C
+
+## 5. config.json (พารามิเตอร์ที่ทีมตั้งเอง)
+
+```json
+{
+  "severity_order": ["avoid", "caution", "info"],
+  "aggregate_threshold": {"value": 2, "note": "ทีมตั้งเอง: จำนวนแหล่งขั้นต่ำที่รวมเป็นธงภาระความเสี่ยงรวม"},
+  "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าปลอดภัย"
+}
+```
+
+## 6. ผลตรวจ (output ของ /check)
+
+```json
+{
+  "input_echo": {"herbs": [{"id": "khing", "part": "เหง้า"}], "drugs": ["warfarin"], "profile": {"age": 60, "pregnant": false, "conditions": []}},
+  "flags": [
+    {
+      "flag_id": "f1",
+      "rule_id": "R2",
+      "severity": "avoid",
+      "evidence_tier": "A",
+      "mechanism_tag": "bleeding_risk",
+      "herb_id": "khing",
+      "drug_class": "anticoagulant",
+      "message_th": "เล่มแนวทางฯ ระบุว่าผู้ที่ได้รับยาต้านการแข็งตัวของเลือดไม่ควรรับประทานขิง",
+      "source_page": 80,
+      "verified": false
+    }
+  ],
+  "aggregates": [],
+  "swaps": [],
+  "coverage": {"herbs_in_db": 50, "drug_classes_in_db": 5, "unknown_inputs": []},
+  "pharmacist_questions": ["ขนาดและความถี่ที่ใช้", "ระยะเวลาที่ใช้", "มีการตรวจติดตามผลเลือดหรือไม่"],
+  "disclaimer_th": "..."
+}
+```
+
+`unknown_inputs` ต้องแสดงใน UI เสมอ ห้ามละเว้น
+
+## 7. ข้อมูลทดลอง/feedback (log)
+
+ฟิลด์ขั้นต่ำ: `session_id` (สุ่ม ไม่ผูกตัวตน), `case_id`, `flag_id`, `reviewer_role`, `agree` (true/false/unsure), `comment`, `time_spent_sec` ใช้เคสสมมติเท่านั้น
