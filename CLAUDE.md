@@ -45,11 +45,11 @@ HerbGuard TTM: ระบบ rule-based ตรวจความปลอดภ�
 ## คำสั่ง (ปรับเมื่อตั้งค่าโปรเจกต์แล้ว)
 
 ```
-# ติดตั้ง:        pip install pymupdf pytest   (Python 3.12)
+# ติดตั้ง:        pip install -r requirements.txt   (Python 3.12)
 # รัน engine test: python -m pytest engine/tests
 # รัน golden set:  python scripts/run_golden.py
 # สกัดข้อมูล:      python scripts/extract_pdf.py <pdf> && python scripts/round_a.py && python scripts/verify_extraction.py
-# รัน dev server:  [ใส่ เมื่อเลือก UI]
+# รัน dev server:  streamlit run app/app.py
 ```
 
 ## นิยามว่า "เสร็จ"

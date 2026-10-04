@@ -1,0 +1,18 @@
+{
+  "note": "ทีมตั้งเอง ไม่ใช่มาตรฐาน: รหัสเงื่อนไขกลางและชื่อไทยสำหรับแสดงใน UI (pregnancy/breastfeeding ใช้ช่องติ๊กแยกใน profile ไม่ได้อยู่ใน conditions[])",
+  "conditions": {
+    "allergy_to_herb": "มีประวัติแพ้สมุนไพรที่เลือก",
+    "eye_inflammation": "ตาบวมหรือตาอักเสบ",
+    "liver_disease": "โรคตับ",
+    "peptic_ulcer": "โรคแผลเปบติก / แผลทางเดินอาหาร",
+    "suspected_dengue": "สงสัยว่าเป็นไข้เลือดออก",
+    "gi_obstruction": "ภาวะทางเดินอาหารอุดตัน",
+    "diarrhea_or_abdominal_symptoms": "ท้องร่วง ท้องเสีย ปวดท้อง คลื่นไส้ อาเจียน",
+    "bleeding_disorder": "ความผิดปกติเกี่ยวกับการแข็งตัวของเลือด",
+    "gallstones": "นิ่วในถุงน้ำดี",
+    "surgery_planned": "กำลังจะผ่าตัดหรือทำฟัน",
+    "diabetes": "เบาหวาน",
+    "long_term_medication": "ต้องใช้ยารักษาโรคต่อเนื่อง",
+    "inflammatory_bowel_disease": "โรคลำไส้อักเสบ"
+  }
+}
