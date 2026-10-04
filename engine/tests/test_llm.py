@@ -157,6 +157,47 @@ def test_http_error_exposes_only_status_publicly_and_redacts_key_in_detail(monke
     assert "bad request" in e.value.detail and "secret-key-123" not in e.value.detail  # detail ไม่มี key
 
 
+def _http_err(req, code):
+    import io
+    import urllib.error
+    return urllib.error.HTTPError(req.full_url, code, "x", {}, io.BytesIO(json.dumps({"error": {"message": "Internal error encountered."}}).encode()))
+
+
+def test_5xx_is_retried_once_then_succeeds(monkeypatch):
+    import llm
+    calls = []
+
+    def flaky(req, timeout=0):
+        calls.append(timeout)
+        if len(calls) == 1:
+            raise _http_err(req, 500)
+        return _Resp({"candidates": [{"content": {"parts": [{"text": "ok"}]}}]})
+    monkeypatch.setattr(llm.urllib.request, "urlopen", flaky)
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    assert llm.gemini_complete("s", "u") == "ok" and len(calls) == 2
+
+
+def test_5xx_twice_fails_and_4xx_is_never_retried(monkeypatch):
+    import llm
+    calls = []
+    code = {"v": 500}
+
+    def always(req, timeout=0):
+        calls.append(1)
+        raise _http_err(req, code["v"])
+    monkeypatch.setattr(llm.urllib.request, "urlopen", always)
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    with pytest.raises(LLMUnavailable) as e:
+        llm.gemini_complete("s", "u")
+    assert len(calls) == 2 and "HTTP 500" in str(e.value) and e.value.detail == "Internal error encountered."
+    calls.clear(); code["v"] = 400
+    with pytest.raises(LLMUnavailable):
+        llm.gemini_complete("s", "u")
+    assert len(calls) == 1  # 400 = คำขอผิด ลองใหม่ไม่ช่วย
+
+
 def test_malformed_gemini_reply_is_unavailable_not_crash(monkeypatch):
     import llm
     monkeypatch.setattr(llm.urllib.request, "urlopen", lambda req, timeout=0: _Resp({"promptFeedback": {"blockReason": "SAFETY"}}))

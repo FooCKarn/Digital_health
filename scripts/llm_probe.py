@@ -3,7 +3,7 @@
 PowerShell:
   $env:GEMINI_API_KEY = "<key ของคุณ>"
   python scripts/llm_probe.py                 # ใช้ GEMINI_MODEL หรือ gemma-4-31b-it
-  $env:GEMINI_MODEL = "<ชื่อรุ่นอื่น>"; python scripts/llm_probe.py
+  $env:GEMINI_MODEL = "gemma-4-31b-it,gemini-2.5-flash-lite"; python scripts/llm_probe.py   # เทียบหลายรุ่น คั่นด้วยจุลภาค
 แล้วคัดลอกผลที่พิมพ์ออกมา (ไม่มี key ในผลลัพธ์) มาให้ผม
 """
 import json
@@ -42,11 +42,9 @@ try:
         n = m["name"].removeprefix("models/")
         if "gemma" in n or "flash" in n:
             print(f"  {n:45} {','.join(m.get('supportedGenerationMethods', []))}")
-    mine = [m for m in names if m["name"] == "models/" + MODEL]
-    print(f"  -> '{MODEL}' อยู่ในรายชื่อ: {bool(mine)}")
-    if mine:
-        print(f"     วิธีที่รองรับ: {mine[0].get('supportedGenerationMethods')} | token เข้า/ออกสูงสุด: "
-              f"{mine[0].get('inputTokenLimit')}/{mine[0].get('outputTokenLimit')} | thinking: {mine[0].get('thinking')}")
+    for model in [m.strip() for m in MODEL.split(",") if m.strip()]:
+        mine = [m for m in names if m["name"] == "models/" + model]
+        print(f"  -> '{model}' อยู่ในรายชื่อ: {bool(mine)}" + (f" | วิธีที่รองรับ: {mine[0].get('supportedGenerationMethods')} | thinking: {mine[0].get('thinking')}" if mine else ""))
 except urllib.error.HTTPError as e:
     print(f"  ดึงรายชื่อไม่ได้: HTTP {e.code} (key ผิดหรือไม่มีสิทธิ์?)")
 except Exception as e:  # noqa: BLE001
@@ -64,15 +62,17 @@ def timed(label, system, user, timeout):
         print(f"  {label}: {time.time() - t:.1f}s ล้มเหลว: {e}" + (f"\n     ข้อความจาก Google: {e.detail}" if e.detail else ""))
 
 
-print(f"\n== 2) ข้อความสั้นมาก ({MODEL}) ==")
-timed("ตอบคำเดียว", "ตอบสั้นที่สุด", "พิมพ์คำว่า OK", 55)
-
-print("\n== 3) พรอมต์จริงของแอป (parse ข้อความอิสระ) ==")
 herbs = json.loads((Path(__file__).resolve().parent.parent / "data" / "herbs.json").read_text(encoding="utf-8"))
-t = time.time()
-os.environ["LLM_TIMEOUT_SEC"] = "55"
-try:
-    r = llm.parse_text("กินขิงมา 3 วัน กับยา warfarin", herbs)
-    print(f"  parse: {time.time() - t:.1f}s OK  ผล: {r}")
-except Exception as e:  # noqa: BLE001
-    print(f"  parse: {time.time() - t:.1f}s ล้มเหลว: {type(e).__name__}: {e}" + (f"\n     ข้อความจาก Google: {e.detail}" if getattr(e, "detail", None) else ""))
+for model in [m.strip() for m in MODEL.split(",") if m.strip()]:  # GEMINI_MODEL="a,b,c" เทียบหลายรุ่นในรอบเดียว
+    os.environ["GEMINI_MODEL"] = model
+    print(f"\n######## {model} ########")
+    print("== 2) ข้อความสั้นมาก ==")
+    timed("ตอบคำเดียว", "ตอบสั้นที่สุด", "พิมพ์คำว่า OK", 55)
+    print("== 3) พรอมต์จริงของแอป (parse ข้อความอิสระ) ==")
+    t = time.time()
+    os.environ["LLM_TIMEOUT_SEC"] = "55"
+    try:
+        r = llm.parse_text("กินขิงมา 3 วัน กับยา warfarin", herbs)
+        print(f"  parse: {time.time() - t:.1f}s OK  ผล: {r}")
+    except Exception as e:  # noqa: BLE001
+        print(f"  parse: {time.time() - t:.1f}s ล้มเหลว: {type(e).__name__}: {e}" + (f"\n     ข้อความจาก Google: {e.detail}" if getattr(e, "detail", None) else ""))

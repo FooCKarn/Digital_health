@@ -7,6 +7,7 @@ complete(system, user) -> str ฉีดจากภายนอกได้ (ใ
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 
@@ -30,25 +31,38 @@ def _timeout() -> float:
 
 
 def _fetch(req) -> dict:
-    """เรียก HTTP แล้วคืน JSON; ข้อผิดพลาดทุกแบบเป็น LLMUnavailable โดยไม่เปิดเผยรายละเอียดต้นทาง (อาจมี URL/key)"""
+    """เรียก HTTP แล้วคืน JSON; ข้อผิดพลาดทุกแบบเป็น LLMUnavailable โดยไม่เปิดเผยรายละเอียดต้นทาง (อาจมี URL/key)
+    ลองใหม่ 1 ครั้งเมื่อผู้ให้บริการตอบ 5xx (ข้อผิดพลาดชั่วคราวฝั่งเขา) ภายใต้งบเวลารวม LLM_TIMEOUT_SEC"""
     t = _timeout()
-    try:
-        with urllib.request.urlopen(req, timeout=t) as r:
-            return json.load(r)
-    except Exception as e:  # noqa: BLE001
-        if isinstance(e, TimeoutError) or isinstance(getattr(e, "reason", None), TimeoutError):
-            raise LLMUnavailable(f"AI ตอบช้าเกินกำหนด (เกิน {int(t)} วินาที)") from e
-        if isinstance(e, urllib.error.HTTPError):  # ส่งออกหน้าเว็บแค่รหัสสถานะ; ข้อความของผู้ให้บริการเก็บใน .detail
-            try:
-                body = e.read(2000).decode("utf-8", "replace")
-                detail = json.loads(body).get("error", {}).get("message", body)
-            except Exception:  # noqa: BLE001
-                detail = None
-            for k in ("GEMINI_API_KEY", "ANTHROPIC_API_KEY"):  # กันกรณีผู้ให้บริการสะท้อน key กลับมา
-                if detail and os.environ.get(k):
-                    detail = detail.replace(os.environ[k], "***")
-            raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ (HTTP {e.code})", (detail or "")[:500]) from e
-        raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})") from e
+    deadline = time.monotonic() + t
+    for attempt in (1, 2):
+        try:
+            with urllib.request.urlopen(req, timeout=max(1.0, deadline - time.monotonic())) as r:
+                return json.load(r)
+        except urllib.error.HTTPError as e:
+            retryable = e.code in (500, 502, 503, 504) and attempt == 1 and deadline - time.monotonic() > 5
+            if not retryable:
+                raise _unavailable(e, t) from e
+            time.sleep(1)
+        except Exception as e:  # noqa: BLE001
+            raise _unavailable(e, t) from e
+
+
+def _unavailable(e: Exception, t: float) -> LLMUnavailable:
+    """แปลงข้อผิดพลาดเป็น LLMUnavailable: หน้าเว็บเห็นแค่ชนิด/รหัสสถานะ ข้อความของผู้ให้บริการเก็บใน .detail"""
+    if isinstance(e, TimeoutError) or isinstance(getattr(e, "reason", None), TimeoutError):
+        return LLMUnavailable(f"AI ตอบช้าเกินกำหนด (เกิน {int(t)} วินาที)")
+    if isinstance(e, urllib.error.HTTPError):
+        try:
+            body = e.read(2000).decode("utf-8", "replace")
+            detail = json.loads(body).get("error", {}).get("message", body)
+        except Exception:  # noqa: BLE001
+            detail = ""
+        for k in ("GEMINI_API_KEY", "ANTHROPIC_API_KEY"):  # กันกรณีผู้ให้บริการสะท้อน key กลับมา
+            if os.environ.get(k):
+                detail = detail.replace(os.environ[k], "***")
+        return LLMUnavailable(f"เรียก LLM ไม่สำเร็จ (HTTP {e.code})", detail[:500])
+    return LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})")
 
 
 def anthropic_complete(system: str, user: str, max_tokens: int = 800) -> str:
