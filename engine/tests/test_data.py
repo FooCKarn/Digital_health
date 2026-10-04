@@ -23,4 +23,5 @@ def test_every_condition_code_has_ui_label():
 def test_every_drug_class_in_herbs_is_in_drug_map():
     classes = {c for e in L("data/drug_class_map.json")["entries"] for c in e["class"]}
     needed = {i["drug_class"] for h in HERBS for i in h["drug_cautions"] if i.get("drug_class")}
-    assert needed - classes == {"liver_affecting"}  # กลุ่มนี้ยังไม่มีรายชื่อยา (ต้องให้เภสัชกรเพิ่ม)
+    # กลุ่มที่เล่มเอ่ยถึงเป็นประเภทยา แต่ยังไม่มีรายชื่อยาในตาราง (ต้องให้เภสัชกรเพิ่มชื่อ) => ยังจับคู่จากชื่อยาไม่ได้
+    assert needed - classes <= {"liver_affecting", "diuretic", "drowsiness_causing", "antihypertensive"}

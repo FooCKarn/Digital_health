@@ -66,7 +66,8 @@ def call(url, body=None):
 
 def test_http_meta_and_analyze(base):
     s, m = call(base + "/api/meta")
-    assert s == 200 and len(m["herbs"]) == 7 and m["coverage"]["herbs_in_book"] == 50
+    n = len(json.loads((ROOT / "data" / "herbs.json").read_text(encoding="utf-8"))["herbs"])
+    assert s == 200 and len(m["herbs"]) == n == m["coverage"]["herbs_in_db"] and m["coverage"]["herbs_in_book"] == 50
     s, out = call(base + "/api/analyze", {"herbs": [{"id": "garlic", "part": "หัว"}], "drugs": ["warfarin"], "profile": {"age": 65}})
     assert s == 200 and any(f["herb_id"] == "garlic" for f in out["result"]["flags"])
 
@@ -93,6 +94,30 @@ def test_http_explain_without_api_key_falls_back_to_template(base, monkeypatch):
     s, body = call(base + "/api/explain", {"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}})
     x = body["explanation"]
     assert s == 200 and x["source"] == "template" and x["items"] and x["disclaimer_th"]
+
+
+GOOD_FB = {"session_id": "abc-123", "case_id": "เคส A", "reviewer_role": "pharmacist", "comment": "ข้อความชัดเจน",
+           "entries": [{"flag_id": "f1", "agree": True}, {"flag_id": "f2", "agree": "unsure"}], "time_spent_sec": 42}
+
+
+def test_feedback_accepts_valid_and_logs_one_json_line(capsys):
+    assert service.feedback(GOOD_FB) == {"ok": True}
+    line = [l for l in capsys.readouterr().out.splitlines() if l.startswith("FEEDBACK ")][0]
+    assert json.loads(line[len("FEEDBACK "):])["session_id"] == "abc-123"
+
+
+@pytest.mark.parametrize("patch", [
+    {"session_id": ""}, {"reviewer_role": "admin"}, {"comment": "x" * 501}, {"time_spent_sec": -1},
+    {"entries": [{"flag_id": "f1", "agree": "yes"}]}, {"entries": "no"}, {"case_id": "x" * 51},
+])
+def test_feedback_rejects_bad_input(patch):
+    with pytest.raises(ValueError):
+        service.feedback({**GOOD_FB, **patch})
+
+
+def test_http_feedback_roundtrip(base):
+    assert call(base + "/api/feedback", GOOD_FB) == (200, {"ok": True})
+    assert call(base + "/api/feedback", {"session_id": "x"})[0] == 400
 
 
 def test_http_internal_error_returns_json_500_with_cause(base, monkeypatch):

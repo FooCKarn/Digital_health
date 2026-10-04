@@ -6,6 +6,7 @@
     {"names": ["ibuprofen", "ไอบูโพรเฟน"], "class": ["nsaid"], "verified": false},
     {"names": ["metformin", "เมทฟอร์มิน"], "class": ["antidiabetic"], "verified": false},
     {"names": ["cyclosporin", "ไซโคลสปอริน"], "class": ["cyclosporin"], "note": "ทีมเพิ่ม: เล่มกระเทียม หน้า 42 ระบุชื่อยานี้ตรง ๆ จึงตั้งกลุ่มเป็นชื่อยาเอง ไม่จัดกลุ่มเภสัชวิทยา", "verified": false},
+    {"names": ["insulin", "อินซูลิน"], "class": ["insulin"], "note": "ทีมเพิ่ม: เล่มมะระขี้นก หน้า 167 ระบุ 'การฉีดอินซูลิน' ตรง ๆ จึงตั้งกลุ่มเป็นชื่อยาเอง ไม่จัดรวมกับ antidiabetic เอง", "verified": false},
     {"names": ["saquinavir", "ซาควินาเวียร์"], "class": ["saquinavir"], "note": "ทีมเพิ่ม: เล่มกระเทียม หน้า 42 ระบุชื่อยานี้ตรง ๆ จึงตั้งกลุ่มเป็นชื่อยาเอง ไม่จัดกลุ่มเภสัชวิทยา", "verified": false}
   ],
   "unknown_policy": "ถ้าไม่พบชื่อ ให้ตอบ 'ไม่มีข้อมูลยานี้' ห้ามเดา และแนะนำปรึกษาเภสัชกร"

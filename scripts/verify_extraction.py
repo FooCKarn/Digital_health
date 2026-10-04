@@ -23,7 +23,9 @@ SECTION_HEADS = ["ข้อห้ามใช้", "คำเตือน", "ข
 def main() -> int:
     pages = json.loads((WORK / "pages.json").read_text(encoding="utf-8"))
     index = {h["no"]: h for h in json.loads((WORK / "herbs_index.json").read_text(encoding="utf-8"))}
-    herbs_b = json.loads((WORK / "round_b.json").read_text(encoding="utf-8"))["herbs"]
+    herbs_b = [h for f in sorted(WORK.glob("round_b*.json")) for h in json.loads(f.read_text(encoding="utf-8"))["herbs"]]
+    ids = [h["id"] for h in herbs_b]
+    assert len(ids) == len(set(ids)), "herb id ซ้ำข้ามไฟล์ round_b*.json"
     errors, review, out = [], [], []
     for h in herbs_b:
         ix = index[h["no"]]

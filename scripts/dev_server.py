@@ -10,10 +10,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "api"))
 import analyze  # noqa: E402
 import explain  # noqa: E402
+import feedback  # noqa: E402
 import meta  # noqa: E402
 import parse  # noqa: E402
 
 ROUTES = {("GET", "/api/meta"): meta.handler.do_GET, ("POST", "/api/analyze"): analyze.handler.do_POST,
+          ("POST", "/api/feedback"): feedback.handler.do_POST,
           ("POST", "/api/parse"): parse.handler.do_POST, ("POST", "/api/explain"): explain.handler.do_POST}
 
 

@@ -614,6 +614,1026 @@
       },
       "verified": false,
       "verified_by": null
+    },
+    {
+      "id": "kluai_namwa",
+      "no": 5,
+      "name_th": "กล้วยน้ำว้า",
+      "parts": [
+        "ผลแก่จัด (ที่ปอกเปลือกออกแล้ว)"
+      ],
+      "contraindications": [
+        {
+          "condition": "constipation",
+          "level": "avoid",
+          "text": "ไม่ควรใช้ในผู้ที่มีอาการท้องผูก",
+          "evidence_quote": "ไม่ควรใช้ในผู้ที่มีอาการท้องผูก",
+          "pdf_page": 57,
+          "source_page": 49,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "การกินติดต่อกันเป็นเวลานานอาจทำให้ท้องอืดได้ (เล่มไม่ระบุจำนวนวัน)",
+          "evidence_quote": "การกินติดต่อกันเป็นเวลานาน อาจทำให้เกิดอาการท้องอืดได้",
+          "pdf_page": 57,
+          "source_page": 49,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          56,
+          58
+        ],
+        "printed_pages": [
+          48,
+          50
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "khamin_chan",
+      "no": 10,
+      "name_th": "ขมิ้นชัน",
+      "parts": [
+        "เหง้า"
+      ],
+      "contraindications": [
+        {
+          "condition": "biliary_obstruction",
+          "level": "avoid",
+          "text": "ห้ามในผู้ป่วยที่มีการอุดตันของท่อน้ำดี",
+          "evidence_quote": "ห้ามในผู้ป่วยที่มีการอุดตันของท่อน้ำดี",
+          "pdf_page": 74,
+          "source_page": 66,
+          "verified": false
+        },
+        {
+          "condition": "allergy_to_herb",
+          "level": "avoid",
+          "mechanism_tag": "allergy",
+          "text": "ห้ามในผู้ที่แพ้ขมิ้นชัน",
+          "evidence_quote": "หรือผู้ที่แพ้ขมิ้นชัน",
+          "pdf_page": 74,
+          "source_page": 66,
+          "verified": false
+        },
+        {
+          "condition": "pregnancy",
+          "level": "caution",
+          "mechanism_tag": "pregnancy_risk",
+          "text": "ควรระวังในสตรีมีครรภ์ หากใช้ต้องอยู่ในความดูแลของแพทย์",
+          "evidence_quote": "ควรระวังในผู้ป่วยโรคนิ่วในถุงน้ำดี สตรีมีครรภ์หรือหญิงให้นมบุตร",
+          "pdf_page": 74,
+          "source_page": 66,
+          "verified": false
+        },
+        {
+          "condition": "breastfeeding",
+          "level": "caution",
+          "text": "ควรระวังในหญิงให้นมบุตร หากใช้ต้องอยู่ในความดูแลของแพทย์",
+          "evidence_quote": "ควรระวังในผู้ป่วยโรคนิ่วในถุงน้ำดี สตรีมีครรภ์หรือหญิงให้นมบุตร",
+          "pdf_page": 74,
+          "source_page": 66,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [
+        {
+          "condition": "gallstones",
+          "level": "caution",
+          "text": "ควรระวังในผู้ป่วยนิ่วในถุงน้ำดี หากใช้ต้องอยู่ในความดูแลของแพทย์",
+          "evidence_quote": "ควรระวังในผู้ป่วยโรคนิ่วในถุงน้ำดี สตรีมีครรภ์หรือหญิงให้นมบุตร",
+          "pdf_page": 74,
+          "source_page": 66,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "ขนาดสูงของขมิ้นชันหรือเคอร์คิวมินในสัตว์ทดลองมีรายงานว่าอาจทำให้เกิดแผลในกระเพาะอาหารได้",
+          "evidence_quote": "อาจทำให้เกิดแผลในกระเพาะอาหารได้เช่นกัน",
+          "pdf_page": 74,
+          "source_page": 66,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          73,
+          76
+        ],
+        "printed_pages": [
+          65,
+          68
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "khun",
+      "no": 16,
+      "name_th": "คูน",
+      "parts": [
+        "เนื้อในฝักแก่"
+      ],
+      "contraindications": [
+        {
+          "condition": "gi_obstruction",
+          "level": "avoid",
+          "mechanism_tag": "laxative_effect",
+          "text": "ห้ามใช้ในผู้ที่ท้องผูกเนื่องจากลำไส้อุดตัน",
+          "evidence_quote": "ห้ามใช้ในผู้ที่มีอาการท้องผูกเนื่องจากลำไส้อุดตัน ท้องร่วง ท้องเสีย อุจจาระเหลว ปวดท้อง คลื่นไส้ อาเจียน",
+          "pdf_page": 95,
+          "source_page": 87,
+          "verified": false
+        },
+        {
+          "condition": "diarrhea_or_abdominal_symptoms",
+          "level": "avoid",
+          "mechanism_tag": "laxative_effect",
+          "text": "ห้ามใช้ในผู้ที่มีอาการท้องร่วง ท้องเสีย อุจจาระเหลว ปวดท้อง คลื่นไส้ อาเจียน",
+          "evidence_quote": "ห้ามใช้ในผู้ที่มีอาการท้องผูกเนื่องจากลำไส้อุดตัน ท้องร่วง ท้องเสีย อุจจาระเหลว ปวดท้อง คลื่นไส้ อาเจียน",
+          "pdf_page": 95,
+          "source_page": 87,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "ไม่ควรใช้ติดต่อกันเป็นเวลานาน เพราะร่างกายอาจเคยชิน และเมื่อหยุดยาลำไส้จะไม่ทำงานตามปรกติ (เล่มไม่ระบุจำนวนวัน)",
+          "evidence_quote": "ไม่ควรใช้ติดต่อกันเป็นเวลานานเพราะอาจทำให้ร่างกายเคยชิน",
+          "pdf_page": 95,
+          "source_page": 87,
+          "verified": false
+        },
+        {
+          "text": "เปลือกฝักและเมล็ดอาจทำให้อาเจียน ควรแยกออกจากเนื้อในฝักก่อนใช้",
+          "evidence_quote": "เปลือกฝักและเมล็ดอาจทำให้อาเจียนได้",
+          "pdf_page": 95,
+          "source_page": 87,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          95,
+          97
+        ],
+        "printed_pages": [
+          87,
+          89
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "thao_wan_priang",
+      "no": 21,
+      "name_th": "เถาวัลย์เปรียง",
+      "parts": [
+        "เถา"
+      ],
+      "contraindications": [
+        {
+          "condition": "pregnancy",
+          "level": "avoid",
+          "mechanism_tag": "pregnancy_risk",
+          "text": "ห้ามใช้ในหญิงมีครรภ์",
+          "evidence_quote": "ห้ามใช้ในหญิงมีครรภ์",
+          "pdf_page": 110,
+          "source_page": 102,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [
+        {
+          "condition": "peptic_ulcer",
+          "level": "caution",
+          "mechanism_tag": "gi_irritation",
+          "text": "ควรระวังในผู้ป่วยโรคแผลเปปติก/แผลในกระเพาะอาหาร อาจระคายเคืองทางเดินอาหาร",
+          "evidence_quote": "และผู้ป่วยโรคแผลเปื่อยเพปติก",
+          "pdf_page": 110,
+          "source_page": 102,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "มีสารที่ออกฤทธิ์เดียวกับฮอร์โมนเพศหญิง ควรระวังหากกินติดต่อกันเป็นเวลานาน (เล่มไม่ระบุจำนวนวัน)",
+          "evidence_quote": "เถาวัลย์เปรียงมีสารที่มีฤทธิ์เดียวกับฮอร์โมนเพศหญิง",
+          "pdf_page": 110,
+          "source_page": 102,
+          "verified": false
+        },
+        {
+          "text": "เล่มระบุว่าออกฤทธิ์คล้ายยาแก้ปวดกลุ่ม NSAIDs (เล่มไม่ได้ระบุเป็นคำเตือนการใช้ร่วมกับยา NSAIDs)",
+          "evidence_quote": "ออกฤทธิ์คล้ายยาแก้ปวดกลุ่มยาต้านอักเสบที่ไม่ใช่สเตอรอยด์",
+          "pdf_page": 110,
+          "source_page": 102,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          110,
+          112
+        ],
+        "printed_pages": [
+          102,
+          104
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "thapthim",
+      "no": 23,
+      "name_th": "ทับทิม",
+      "parts": [
+        "เปลือกผล"
+      ],
+      "contraindications": [
+        {
+          "condition": "allergy_to_herb",
+          "level": "avoid",
+          "mechanism_tag": "allergy",
+          "text": "ห้ามใช้ในผู้ที่มีภูมิแพ้ต่อทับทิมหรือองค์ประกอบของทับทิม",
+          "evidence_quote": "ห้ามใช้ในผู้ที่มีภูมิแพ้ต่อทับทิม",
+          "pdf_page": 116,
+          "source_page": 108,
+          "verified": false
+        },
+        {
+          "condition": "peanut_hazelnut_allergy",
+          "level": "avoid",
+          "mechanism_tag": "allergy",
+          "text": "ผู้ที่แพ้ถั่วลิสงหรือถั่วเฮเซลควรหลีกเลี่ยง เพราะมีรายงานการแพ้ข้ามกลุ่ม",
+          "evidence_quote": "ผู้ที่มีภูมิแพ้ต่อถั่วลิสงหรือถั่วเฮเซล",
+          "pdf_page": 116,
+          "source_page": 108,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [
+        {
+          "condition": "diarrhea",
+          "level": "caution",
+          "text": "ใช้เปลือกผลอย่างระมัดระวังในผู้ที่มีอาการท้องเดิน",
+          "evidence_quote": "ควรใช้เปลือกผลทับทิมอย่างระมัดระวังในผู้ที่มีอาการท้องเดิน",
+          "pdf_page": 117,
+          "source_page": 109,
+          "verified": false
+        },
+        {
+          "condition": "asthma",
+          "level": "caution",
+          "text": "ใช้เปลือกผลอย่างระมัดระวังในผู้ที่เป็นโรคหืด",
+          "evidence_quote": "ในผู้ที่มีอาการท้องเดิน โรคหืด",
+          "pdf_page": 117,
+          "source_page": 109,
+          "verified": false
+        },
+        {
+          "condition": "hypertension",
+          "level": "caution",
+          "text": "ใช้เปลือกผลอย่างระมัดระวังในผู้ที่ความดันโลหิตสูง",
+          "evidence_quote": "ความดันโลหิตสูงหรือความดันโลหิตต่ำ",
+          "pdf_page": 117,
+          "source_page": 109,
+          "verified": false
+        },
+        {
+          "condition": "hypotension",
+          "level": "caution",
+          "text": "ใช้เปลือกผลอย่างระมัดระวังในผู้ที่ความดันโลหิตต่ำ",
+          "evidence_quote": "ความดันโลหิตสูงหรือความดันโลหิตต่ำ",
+          "pdf_page": 117,
+          "source_page": 109,
+          "verified": false
+        },
+        {
+          "condition": "hyperlipidemia",
+          "level": "caution",
+          "text": "ใช้เปลือกผลอย่างระมัดระวังในผู้ที่มีภาวะเลือดมีไขมันสูง",
+          "evidence_quote": "ภาวะเลือดมีไขมันสูง",
+          "pdf_page": 117,
+          "source_page": 109,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          116,
+          118
+        ],
+        "printed_pages": [
+          108,
+          110
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "bua_bok",
+      "no": 25,
+      "name_th": "บัวบก",
+      "parts": [
+        "ทั้งต้น"
+      ],
+      "contraindications": [
+        {
+          "condition": "allergy_to_apiaceae",
+          "level": "avoid",
+          "mechanism_tag": "allergy",
+          "text": "ห้ามใช้ในคนที่มีประวัติแพ้พืชในวงศ์ผักชี (Apiaceae) เช่น ผักชี ยี่หร่า",
+          "evidence_quote": "ห้ามใช้ในคนที่มีประวัติแพ้พืชในวงศ์ผักชี",
+          "pdf_page": 122,
+          "source_page": 114,
+          "verified": false
+        },
+        {
+          "condition": "suspected_dengue",
+          "level": "avoid",
+          "text": "ไม่แนะนำในผู้ที่สงสัยว่าเป็นไข้เลือดออก เพราะอาจบดบังอาการ",
+          "evidence_quote": "ไม่แนะนำให้ใช้ในผู้ที่สงสัยว่าเป็นไข้เลือดออก",
+          "pdf_page": 123,
+          "source_page": 115,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [
+        {
+          "drug_class": "liver_affecting",
+          "level": "caution",
+          "mechanism_tag": "hepatotoxicity",
+          "evidence_tier": "A",
+          "text": "ควรระวังการใช้ร่วมกับยาที่มีผลต่อตับ เพราะอาจเสริมฤทธิ์กัน",
+          "evidence_quote": "ควรระวังการใช้ร่วมกับยาที่มีผลต่อตับ ยาขับปัสสาวะ และยาที่มีผลข้างเคียงทำให้ง่วงนอน",
+          "pdf_page": 123,
+          "source_page": 115,
+          "verified": false
+        },
+        {
+          "drug_class": "diuretic",
+          "level": "caution",
+          "mechanism_tag": null,
+          "evidence_tier": "A",
+          "text": "ควรระวังการใช้ร่วมกับยาขับปัสสาวะ เพราะอาจเสริมฤทธิ์กัน",
+          "evidence_quote": "ควรระวังการใช้ร่วมกับยาที่มีผลต่อตับ ยาขับปัสสาวะ และยาที่มีผลข้างเคียงทำให้ง่วงนอน",
+          "pdf_page": 123,
+          "source_page": 115,
+          "verified": false
+        },
+        {
+          "drug_class": "drowsiness_causing",
+          "level": "caution",
+          "mechanism_tag": null,
+          "evidence_tier": "A",
+          "text": "ควรระวังการใช้ร่วมกับยาที่มีผลข้างเคียงทำให้ง่วงนอน เพราะอาจเสริมฤทธิ์กัน",
+          "evidence_quote": "ควรระวังการใช้ร่วมกับยาที่มีผลต่อตับ ยาขับปัสสาวะ และยาที่มีผลข้างเคียงทำให้ง่วงนอน",
+          "pdf_page": 123,
+          "source_page": 115,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "หากใช้เกิน 3 วันแล้วอาการไม่ดีขึ้น ควรปรึกษาแพทย์ (ไม่ใช่เพดานระยะเวลาการใช้)",
+          "evidence_quote": "หากใช้ยาเป็นเวลานานเกิน 3 วัน แล้วอาการไม่ดีขึ้นควรปรึกษาแพทย์",
+          "pdf_page": 123,
+          "source_page": 115,
+          "verified": false
+        },
+        {
+          "text": "ยาทาที่มีบัวบกอาจทำให้ไวต่อแสงผิดปรกติบริเวณที่ใช้",
+          "evidence_quote": "อาจทำให้เกิดการไวต่อแสงอย่างผิดปรกติในบริเวณที่ใช้ยา",
+          "pdf_page": 123,
+          "source_page": 115,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          122,
+          124
+        ],
+        "printed_pages": [
+          114,
+          116
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "phaya_yo",
+      "no": 28,
+      "name_th": "พญายอ",
+      "parts": [
+        "ใบ"
+      ],
+      "contraindications": [],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "หากอาการไม่ดีขึ้นหรือแพ้รุนแรง ให้รีบนำผู้ป่วยส่งโรงพยาบาล",
+          "evidence_quote": "หากอาการไม่ดีขึ้น หรือมีอาการแพ้รุนแรง ควรรีบนำผู้ป่วยส่งโรงพยาบาล",
+          "pdf_page": 132,
+          "source_page": 124,
+          "verified": false
+        },
+        {
+          "text": "กรณีผสมเหล้า ระวังการทาบริเวณแผลเปิด และห้ามทาบริเวณขอบตาหรือเนื้อเยื่ออ่อน",
+          "evidence_quote": "ห้ามทาบริเวณ ขอบตาหรือเนื้อเยื่ออ่อน",
+          "pdf_page": 132,
+          "source_page": 124,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          131,
+          133
+        ],
+        "printed_pages": [
+          123,
+          125
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "phlu_khao",
+      "no": 31,
+      "name_th": "พลูคาว",
+      "parts": [
+        "ใบ",
+        "ทั้งต้น"
+      ],
+      "contraindications": [
+        {
+          "condition": "frail_body",
+          "level": "avoid",
+          "text": "ผู้ที่มีร่างกายอ่อนแอห้ามรับประทาน",
+          "evidence_quote": "ผู้ที่มีร่างกายอ่อนแอห้ามรับประทาน",
+          "pdf_page": 140,
+          "source_page": 132,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "ใช้ภายนอกอาจแพ้เมื่อสัมผัสน้ำยางของต้น",
+          "evidence_quote": "อาจเกิดการแพ้เมื่อสัมผัสน้ำยางของต้น",
+          "pdf_page": 140,
+          "source_page": 132,
+          "verified": false
+        },
+        {
+          "text": "รับประทานมากเกินไปจะคลื่นไส้ได้",
+          "evidence_quote": "การรับประทานมากเกินไป จะทำให้เกิดอาการคลื่นไส้ได้",
+          "pdf_page": 140,
+          "source_page": 132,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          140,
+          142
+        ],
+        "printed_pages": [
+          132,
+          134
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "phlai",
+      "no": 34,
+      "name_th": "ไพล",
+      "parts": [
+        "เหง้า"
+      ],
+      "contraindications": [],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [
+        {
+          "condition": "asthma",
+          "level": "caution",
+          "text": "เล่มระบุว่ายังไม่มีความปลอดภัยที่จะนำมาใช้เป็นยารักษาโรคหืด",
+          "evidence_quote": "ยังไม่มีความปลอดภัยที่จะนำมาใช้เป็นยารักษาโรคหืด",
+          "pdf_page": 150,
+          "source_page": 142,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "ไม่ควรนำเหง้าไพลมารับประทานเป็นยาเดี่ยว (ข้อห้ามใช้ ตรวจจากข้อมูลผู้ใช้ไม่ได้ จึงเก็บเป็นข้อมูล)",
+          "evidence_quote": "ไม่ควรนำเหง้าไพลมาใช้รับประทานเป็นยาเดี่ยว",
+          "pdf_page": 149,
+          "source_page": 141,
+          "verified": false
+        },
+        {
+          "text": "ไม่ควรใช้บริเวณเนื้อเยื่ออ่อนที่ระคายเคืองง่าย เช่น นัยน์ตา เปลือกตา ริมฝีปาก แผลสด",
+          "evidence_quote": "ไม่ควรใช้ยาสมุนไพรนี้บริเวณที่เป็นเนื้อเยื่ออ่อนง่ายต่อการระคายเคือง",
+          "pdf_page": 150,
+          "source_page": 142,
+          "verified": false
+        },
+        {
+          "text": "รับประทานปริมาณสูงหรือใช้นานอาจเกิดพิษต่อตับ (เล่มไม่ระบุตัวเลข)",
+          "evidence_quote": "ทำให้เกิดพิษต่อตับ",
+          "pdf_page": 150,
+          "source_page": 142,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          149,
+          151
+        ],
+        "printed_pages": [
+          141,
+          143
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "fak_thong",
+      "no": 35,
+      "name_th": "ฟักทอง",
+      "parts": [
+        "เมล็ดแก่"
+      ],
+      "contraindications": [],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "หลังกินยานี้แล้ว 2 ชั่วโมง ให้กินน้ำมันละหุ่งหรือยาระบายอย่างอื่นตาม (ขั้นตอนการใช้ตามที่เล่มระบุ)",
+          "evidence_quote": "หลังจากกินยานี้แล้ว 2 ชั่วโมง ให้กินน้ำมันละหุ่งหรือยาระบายอย่างอื่น ตาม",
+          "pdf_page": 152,
+          "source_page": 144,
+          "verified": false
+        },
+        {
+          "text": "ใช้เมล็ดปริมาณมากเกินไปอาจมวนท้องและผะอืดผะอม",
+          "evidence_quote": "การใช้เมล็ดฟักทองในปริมาณมากเกินไป อาจทำให้เกิดอาการมวนท้องและผะอืดผะอมได้",
+          "pdf_page": 152,
+          "source_page": 144,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          152,
+          153
+        ],
+        "printed_pages": [
+          144,
+          145
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "fa_thalai_jone",
+      "no": 36,
+      "name_th": "ฟ้าทะลายโจร",
+      "parts": [
+        "ใบและทั้งต้น"
+      ],
+      "contraindications": [
+        {
+          "condition": "allergy_to_herb",
+          "level": "avoid",
+          "mechanism_tag": "allergy",
+          "text": "ห้ามใช้ในผู้ที่มีอาการแพ้ฟ้าทะลายโจร",
+          "evidence_quote": "ห้ามใช้ในผู้ที่มีอาการแพ้ฟ้าทะลายโจร",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "condition": "pregnancy",
+          "level": "avoid",
+          "mechanism_tag": "pregnancy_risk",
+          "text": "ห้ามใช้ในสตรีมีครรภ์ เนื่องจากอาจทำให้เกิดทารกวิรูปได้",
+          "evidence_quote": "ห้ามใช้ในสตรีมีครรภ์และหญิงให้นมบุตร เนื่องจากอาจทำให้เกิดทารกวิรูปได้",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "condition": "breastfeeding",
+          "level": "avoid",
+          "text": "ห้ามใช้ในหญิงให้นมบุตร",
+          "evidence_quote": "ห้ามใช้ในสตรีมีครรภ์และหญิงให้นมบุตร เนื่องจากอาจทำให้เกิดทารกวิรูปได้",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "condition": "strep_group_a_sore_throat",
+          "context": "ใช้แก้เจ็บคอ",
+          "level": "avoid",
+          "text": "ห้ามใช้แก้เจ็บคอในผู้ที่เจ็บคอเนื่องจากติดเชื้อ Streptococcus group A",
+          "evidence_quote": "ในผู้ป่วยที่มีอาการเจ็บคอเนื่องจากติดเชื้อ Streptococcus group A",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "condition": "post_strep_nephritis",
+          "context": "ใช้แก้เจ็บคอ",
+          "level": "avoid",
+          "text": "ห้ามใช้แก้เจ็บคอในผู้ที่มีประวัติไตอักเสบจากการติดเชื้อ Streptococcus group A",
+          "evidence_quote": "ในผู้ป่วยที่มีประวัติเป็นโรคไตอักเสบ เนื่องจากเคยติดเชื้อ Streptococcus group A",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "condition": "rheumatic_heart_disease",
+          "context": "ใช้แก้เจ็บคอ",
+          "level": "avoid",
+          "text": "ห้ามใช้แก้เจ็บคอในผู้ที่มีประวัติโรคหัวใจรูห์มาติค",
+          "evidence_quote": "ในผู้ป่วยที่มีประวัติเป็นโรคหัวใจรูห์มาติค",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "condition": "severe_bacterial_throat_infection",
+          "context": "ใช้แก้เจ็บคอ",
+          "level": "avoid",
+          "text": "ห้ามใช้แก้เจ็บคอในผู้ที่เจ็บคอจากการติดเชื้อแบคทีเรียและมีอาการรุนแรง เช่น มีตุ่มหนองในคอ ไข้สูง หนาวสั่น",
+          "evidence_quote": "ในผู้ป่วยที่มีอาการเจ็บคอเนื่องจากมีการติดเชื้อแบคทีเรีย และมีอาการรุนแรง",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [
+        {
+          "drug_class": "antidiabetic",
+          "level": "caution",
+          "mechanism_tag": "hypoglycemia",
+          "evidence_tier": "A",
+          "text": "ผู้ป่วยเบาหวานที่อยู่ระหว่างใช้ยาลดน้ำตาลในเลือด ควรใช้ด้วยความระมัดระวัง",
+          "evidence_quote": "ที่อยู่ในระหว่างการใช้ยาลดน้ำตาลในเลือดหรือยาลดความดันโลหิต",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "drug_class": "antihypertensive",
+          "level": "caution",
+          "mechanism_tag": null,
+          "evidence_tier": "A",
+          "text": "ผู้ป่วยความดันโลหิตสูงที่อยู่ระหว่างใช้ยาลดความดันโลหิต ควรใช้ด้วยความระมัดระวัง",
+          "evidence_quote": "ที่อยู่ในระหว่างการใช้ยาลดน้ำตาลในเลือดหรือยาลดความดันโลหิต",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [
+        {
+          "condition": "hypotension",
+          "level": "caution",
+          "text": "ควรใช้ด้วยความระมัดระวังในผู้ที่มีภาวะความดันโลหิตต่ำ",
+          "evidence_quote": "ควรใช้ด้วยความระมัดระวังในผู้ที่มีภาวะความดันโลหิตต่ำ",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "condition": "diabetes",
+          "level": "caution",
+          "mechanism_tag": "hypoglycemia",
+          "text": "ควรใช้ด้วยความระมัดระวังในผู้ป่วยเบาหวาน",
+          "evidence_quote": "หรือในผู้ป่วยโรคเบาหวาน",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "condition": "hypertension",
+          "level": "caution",
+          "text": "ควรใช้ด้วยความระมัดระวังในผู้ป่วยความดันโลหิตสูง",
+          "evidence_quote": "หรือ โรคความดันโลหิตสูง",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "ใช้ติดต่อกันนานอาจทำให้แขนขาชาหรืออ่อนแรง (เล่มไม่ระบุจำนวนวัน)",
+          "evidence_quote": "อาจทำให้แขนขามีอาการชาหรืออ่อนแรง",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        },
+        {
+          "text": "หากใช้ติดต่อกัน 3 วันแล้วไม่หาย หรืออาการรุนแรงขึ้น ควรหยุดใช้และไปพบแพทย์ (ไม่ใช่เพดานระยะเวลาการใช้)",
+          "evidence_quote": "หากใช้ฟ้าทะลายโจรติดต่อกัน 3 วันแล้วไม่หาย",
+          "pdf_page": 155,
+          "source_page": 147,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          154,
+          158
+        ],
+        "printed_pages": [
+          146,
+          150
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "makham_pom",
+      "no": 39,
+      "name_th": "มะขามป้อม",
+      "parts": [
+        "ผลแก่สด"
+      ],
+      "contraindications": [
+        {
+          "condition": "uncontrolled_diabetes",
+          "level": "avoid",
+          "mechanism_tag": "hypoglycemia",
+          "text": "ข้อห้ามใช้: ผู้ป่วยเบาหวานที่ไม่สามารถควบคุมระดับน้ำตาลในเลือดได้",
+          "evidence_quote": "ผู้ป่วยเบาหวานที่ไม่สามารถควบคุมระดับน้ำตาลในเลือดได้",
+          "pdf_page": 165,
+          "source_page": 157,
+          "verified": false
+        },
+        {
+          "condition": "allergy_to_herb",
+          "level": "avoid",
+          "mechanism_tag": "allergy",
+          "text": "ผู้ที่แพ้หรือไวเกินต่อมะขามป้อมหรือพืชสกุล Phyllanthus ควรหลีกเลี่ยง",
+          "evidence_quote": "ผู้ที่มีภูมิแพ้หรือไวเกินต่อมะขามป้อม",
+          "pdf_page": 165,
+          "source_page": 157,
+          "verified": false
+        }
+      ],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [
+        {
+          "condition": "easy_diarrhea",
+          "level": "caution",
+          "mechanism_tag": "laxative_effect",
+          "text": "ควรระวังในผู้ที่ท้องเสียง่าย เพราะมีฤทธิ์เป็นยาระบาย",
+          "evidence_quote": "ควรระวังการใช้ในผู้ป่วยท้องเสียง่าย",
+          "pdf_page": 165,
+          "source_page": 157,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          165,
+          167
+        ],
+        "printed_pages": [
+          157,
+          159
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "mara_khi_nok",
+      "no": 42,
+      "name_th": "มะระขี้นก",
+      "parts": [
+        "ผลอ่อน"
+      ],
+      "contraindications": [
+        {
+          "condition": "breastfeeding",
+          "level": "avoid",
+          "mechanism_tag": "hypoglycemia",
+          "text": "ห้ามใช้ในหญิงให้นมบุตร เพราะมีรายงานว่าน้ำตาลในเลือดลดลงอย่างมากจนอาจชักได้",
+          "evidence_quote": "ห้ามใช้ในเด็กหรือหญิงให้นมบุตร เนื่องจากมีรายงานว่าทำให้ระดับน้ำตาลในเลือดลดลง",
+          "pdf_page": 174,
+          "source_page": 166,
+          "verified": false
+        },
+        {
+          "condition": "suspected_dengue",
+          "level": "avoid",
+          "text": "ผู้ที่สงสัยว่าเป็นไข้เลือดออกไม่ควรใช้ เพราะอาจบดบังอาการ",
+          "evidence_quote": "ผู้ที่สงสัยว่าเป็นไข้เลือดออกไม่ควรใช้มะระขี้นก",
+          "pdf_page": 174,
+          "source_page": 166,
+          "verified": false
+        }
+      ],
+      "age_limits": [
+        {
+          "min_age_years": null,
+          "applies_to": "เด็ก",
+          "level": "avoid",
+          "mechanism_tag": "hypoglycemia",
+          "text": "ห้ามใช้ในเด็ก (เล่มไม่ระบุอายุเป็นตัวเลข; engine ใช้เกณฑ์อายุที่ทีมตั้งใน data/config.json)",
+          "evidence_quote": "ห้ามใช้ในเด็กหรือหญิงให้นมบุตร เนื่องจากมีรายงานว่าทำให้ระดับน้ำตาลในเลือดลดลง",
+          "pdf_page": 174,
+          "source_page": 166,
+          "verified": false
+        }
+      ],
+      "drug_cautions": [
+        {
+          "drug_class": "antidiabetic",
+          "level": "caution",
+          "mechanism_tag": "hypoglycemia",
+          "evidence_tier": "A",
+          "text": "ควรระวังการใช้ร่วมกับยาลดน้ำตาลในเลือดชนิดรับประทาน เพราะอาจเสริมฤทธิ์กัน",
+          "evidence_quote": "ควรระวังการใช้ยานี้ร่วมกับยาลดน้ำตาลในเลือดชนิดรับประทาน",
+          "pdf_page": 175,
+          "source_page": 167,
+          "verified": false
+        },
+        {
+          "drug_class": "insulin",
+          "level": "caution",
+          "mechanism_tag": "hypoglycemia",
+          "evidence_tier": "A",
+          "text": "ควรระวังการใช้ร่วมกับการฉีดอินซูลิน เพราะอาจเสริมฤทธิ์กัน",
+          "evidence_quote": "หรือร่วมกับการฉีดอินซูลิน",
+          "pdf_page": 175,
+          "source_page": 167,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [
+        {
+          "condition": "liver_disease",
+          "level": "caution",
+          "mechanism_tag": "hepatotoxicity",
+          "text": "ควรระวังในผู้ป่วยโรคตับ เพราะเคยมีรายงานว่าทำให้ตับอักเสบ",
+          "evidence_quote": "ควรระวังการใช้ยานี้ในผู้ป่วยโรคตับ",
+          "pdf_page": 174,
+          "source_page": 166,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "ไม่ควรใช้ผลมะระสุก เพราะอาจเกิดอาการข้างเคียง เช่น คลื่นไส้ อาเจียน",
+          "evidence_quote": "ไม่ควรใช้ผลมะระสุกเนื่องจากอาจทำให้เกิดอาการข้างเคียง",
+          "pdf_page": 174,
+          "source_page": 166,
+          "verified": false
+        },
+        {
+          "text": "หากใช้เกิน 3 วันแล้วอาการไม่ดีขึ้น ควรปรึกษาแพทย์ (ไม่ใช่เพดานระยะเวลาการใช้)",
+          "evidence_quote": "หากใช้ยาเป็นเวลานานเกิน 3 วันแล้วอาการไม่ดีขึ้น ควรปรึกษาแพทย์",
+          "pdf_page": 175,
+          "source_page": 167,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          174,
+          176
+        ],
+        "printed_pages": [
+          166,
+          168
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "maweang_khruea",
+      "no": 44,
+      "name_th": "มะแว้งเครือ",
+      "parts": [
+        "ผลแก่จัด"
+      ],
+      "contraindications": [],
+      "age_limits": [],
+      "drug_cautions": [
+        {
+          "drug_class": "antidiabetic",
+          "level": "caution",
+          "mechanism_tag": "hypoglycemia",
+          "evidence_tier": "A",
+          "text": "ควรระวังการใช้ร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยเบาหวาน",
+          "evidence_quote": "ควรระวังการใช้มะแว้งเครือร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
+          "pdf_page": 180,
+          "source_page": 172,
+          "verified": false
+        }
+      ],
+      "condition_cautions": [
+        {
+          "condition": "diabetes",
+          "level": "caution",
+          "mechanism_tag": "hypoglycemia",
+          "text": "ผลมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด ควรระวังในผู้ป่วยเบาหวาน",
+          "evidence_quote": "ผลมะแว้งเครือมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด จึงควรระวังในการใช้ในผู้ป่วยโรคเบาหวาน",
+          "pdf_page": 180,
+          "source_page": 172,
+          "verified": false
+        }
+      ],
+      "duration_limits": [],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          180,
+          181
+        ],
+        "printed_pages": [
+          172,
+          173
+        ]
+      },
+      "verified": false,
+      "verified_by": null
     }
   ]
 }

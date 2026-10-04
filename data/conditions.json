@@ -13,6 +13,22 @@
     "surgery_planned": "กำลังจะผ่าตัดหรือทำฟัน",
     "diabetes": "เบาหวาน",
     "long_term_medication": "ต้องใช้ยารักษาโรคต่อเนื่อง",
-    "inflammatory_bowel_disease": "โรคลำไส้อักเสบ"
+    "inflammatory_bowel_disease": "โรคลำไส้อักเสบ",
+    "constipation": "ท้องผูก",
+    "diarrhea": "ท้องเดิน/ท้องร่วง",
+    "easy_diarrhea": "ท้องเสียง่าย",
+    "biliary_obstruction": "การอุดตันของท่อน้ำดี",
+    "asthma": "โรคหืด",
+    "hypertension": "ความดันโลหิตสูง",
+    "hypotension": "ความดันโลหิตต่ำ",
+    "hyperlipidemia": "ภาวะเลือดมีไขมันสูง",
+    "allergy_to_apiaceae": "แพ้พืชในวงศ์ผักชี (เช่น ผักชี ยี่หร่า)",
+    "peanut_hazelnut_allergy": "แพ้ถั่วลิสงหรือถั่วเฮเซล",
+    "frail_body": "ร่างกายอ่อนแอ",
+    "uncontrolled_diabetes": "เบาหวานที่ควบคุมน้ำตาลไม่ได้",
+    "strep_group_a_sore_throat": "เจ็บคอจากเชื้อ Streptococcus group A",
+    "post_strep_nephritis": "เคยเป็นไตอักเสบจากเชื้อ Streptococcus group A",
+    "rheumatic_heart_disease": "โรคหัวใจรูห์มาติค",
+    "severe_bacterial_throat_infection": "เจ็บคอจากแบคทีเรียอาการรุนแรง (ตุ่มหนอง ไข้สูง หนาวสั่น)"
   }
 }

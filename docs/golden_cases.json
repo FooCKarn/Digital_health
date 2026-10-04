@@ -169,6 +169,140 @@
       },
       "note": "ยังรอข้อมูลอาการ→สมุนไพร (symptom_id) ที่ตรวจแล้ว จึงยังกำหนดรายชื่อตัวเลือกที่ควรได้ไม่ได้ ห้ามเดาจากความรู้ภายนอก",
       "verified": false
+    },
+    {
+      "id": "G18",
+      "title": "รางจืด + มะแว้งเครือ + ยาเบาหวาน: ต้องรวมเป็นภาระความเสี่ยงน้ำตาลต่ำ (R3, 3 แหล่ง)",
+      "input": {
+        "herbs": [
+          {
+            "id": "rangchuet",
+            "part": "ใบ (เพสลาด)"
+          },
+          {
+            "id": "maweang_khruea",
+            "part": "ผลแก่จัด"
+          }
+        ],
+        "drugs": [
+          "metformin"
+        ],
+        "profile": {
+          "age": 58
+        }
+      },
+      "expected": {
+        "must_have_flags": [
+          {
+            "rule_id": "R2",
+            "herb_id": "rangchuet",
+            "drug_class": "antidiabetic",
+            "evidence_tier": "A",
+            "expected_min_level": "caution",
+            "source_page": 184
+          },
+          {
+            "rule_id": "R2",
+            "herb_id": "maweang_khruea",
+            "drug_class": "antidiabetic",
+            "evidence_tier": "A",
+            "expected_min_level": "caution"
+          }
+        ],
+        "must_have_aggregates": [
+          {
+            "mechanism_tag": "hypoglycemia",
+            "min_count": 3
+          }
+        ]
+      },
+      "note": "หน้าของมะแว้งเครือไม่ได้ระบุในเคสนี้ ให้ตรวจจาก herbs.json; ผลของเคสนี้ยืนยันว่ากลุ่มยาลดน้ำตาลของทั้งสองสมุนไพรเป็นชั้น A ตามที่เล่มระบุตรง ๆ",
+      "verified": false
+    },
+    {
+      "id": "G19",
+      "title": "มะระขี้นก + อินซูลิน (เล่มระบุ 'การฉีดอินซูลิน' ตรง ๆ)",
+      "input": {
+        "herbs": [
+          {
+            "id": "mara_khi_nok",
+            "part": "ผลอ่อน"
+          }
+        ],
+        "drugs": [
+          "insulin"
+        ],
+        "profile": {
+          "age": 50
+        }
+      },
+      "expected": {
+        "must_have_flags": [
+          {
+            "rule_id": "R2",
+            "herb_id": "mara_khi_nok",
+            "drug_class": "insulin",
+            "evidence_tier": "A",
+            "expected_min_level": "caution",
+            "source_page": 167
+          }
+        ]
+      },
+      "verified": false
+    },
+    {
+      "id": "G20",
+      "title": "เถาวัลย์เปรียง + หญิงมีครรภ์",
+      "input": {
+        "herbs": [
+          {
+            "id": "thao_wan_priang",
+            "part": "เถา"
+          }
+        ],
+        "drugs": [],
+        "profile": {
+          "age": 30,
+          "pregnant": true
+        }
+      },
+      "expected": {
+        "must_have_flags": [
+          {
+            "rule_id": "R1",
+            "herb_id": "thao_wan_priang",
+            "condition": "pregnancy",
+            "expected_min_level": "avoid"
+          }
+        ]
+      },
+      "verified": false
+    },
+    {
+      "id": "G21",
+      "title": "เถาวัลย์เปรียง + ไม่ตั้งครรภ์ ไม่กรอกโรค: ต้องไม่เตือนเรื่องตั้งครรภ์",
+      "input": {
+        "herbs": [
+          {
+            "id": "thao_wan_priang",
+            "part": "เถา"
+          }
+        ],
+        "drugs": [],
+        "profile": {
+          "age": 30,
+          "pregnant": false
+        }
+      },
+      "expected": {
+        "must_not_have_flags": [
+          {
+            "rule_id": "R1",
+            "herb_id": "thao_wan_priang"
+          }
+        ]
+      },
+      "verified": false
     }
   ]
 }

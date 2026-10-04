@@ -89,7 +89,8 @@
 const $ = (id) => document.getElementById(id);
 const SEV = { avoid: "ไม่ควรใช้ / ห้าม", caution: "ควรระวัง", info: "ข้อมูล" };
 const NOT_CHECKED = { pregnancy: "การตั้งครรภ์", breastfeeding: "การให้นมบุตร", age: "อายุ" };
-let META = null, LAST = null;
+let META = null, LAST = null, T0 = Date.now();
+const SID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2);  // สุ่มต่อการเปิดหน้า ไม่ผูกตัวตน
 
 // สร้าง DOM ด้วย textContent เท่านั้น (ไม่แทรก HTML จากข้อมูลใด ๆ กัน XSS)
 function el(tag, props = {}, kids = []) {
@@ -111,8 +112,31 @@ function flagCard(f) {
   return c;
 }
 
+// feedback การทดลอง (data-schema ข้อ 7): ส่งเข้า log ของเซิร์ฟเวอร์ + ดาวน์โหลดสำรองเป็นไฟล์ (log ของ Vercel ไม่ถาวร)
+function feedbackCard(flags) {
+  const opt = (pairs) => pairs.map(([v, t]) => el("option", { value: v, text: t }));
+  const role = el("select", { "aria-label": "บทบาทของคุณ" }, opt([["citizen", "ประชาชน"], ["pharmacist", "เภสัชกร"], ["other", "อื่น ๆ"]]));
+  const caseId = el("input", { type: "text", maxlength: 50, placeholder: "ชื่อเคสสมมติ (ถ้ามี)", "aria-label": "ชื่อเคส" });
+  const rows = flags.map((f) => ({ f, s: el("select", { "aria-label": "ความเห็นต่อธง " + f.flag_id }, opt([["", "— ยังไม่ตอบ —"], ["true", "เห็นด้วย"], ["false", "ไม่เห็นด้วย"], ["unsure", "ไม่แน่ใจ"]])) }));
+  const comment = el("textarea", { maxlength: 500, rows: 2, placeholder: "ความเห็น (ห้ามใส่ข้อมูลส่วนตัวหรือข้อมูลผู้ป่วยจริง)", "aria-label": "ความเห็น" });
+  const msg = el("span", { class: "meta", role: "status" });
+  const collect = () => ({ session_id: SID, case_id: caseId.value.trim(), reviewer_role: role.value, comment: comment.value,
+    time_spent_sec: Math.min(86400, Math.round((Date.now() - T0) / 1000)),
+    entries: rows.filter((x) => x.s.value !== "").map((x) => ({ flag_id: x.f.flag_id, agree: x.s.value === "unsure" ? "unsure" : x.s.value === "true" })) });
+  const send = el("button", { type: "button", text: "ส่งความเห็น" });
+  send.onclick = async () => { try { await post("/api/feedback", collect()); msg.textContent = "ขอบคุณ ส่งแล้ว"; } catch (e) { msg.textContent = "ส่งไม่สำเร็จ: " + e.message + " · ดาวน์โหลดไฟล์แล้วส่งให้ทีมแทนได้"; } };
+  const dl = el("button", { type: "button", text: "ดาวน์โหลดคำตอบ (JSON)" });
+  dl.onclick = () => { const a = el("a", { href: URL.createObjectURL(new Blob([JSON.stringify(collect(), null, 2)], { type: "application/json" })), download: "feedback.json" }); a.click(); URL.revokeObjectURL(a.href); };
+  return el("details", { class: "noprint" }, [el("summary", { text: "ช่วยเราปรับปรุง (ทดลองใช้)" }),
+    el("p", { class: "meta", text: "ใช้เคสสมมติเท่านั้น ข้อมูลที่ส่งไม่ผูกกับตัวตนของคุณ" }),
+    el("label", {}, [document.createTextNode("คุณคือ: "), role]), document.createTextNode(" "), caseId,
+    ...rows.map((x) => el("label", { class: "opt" }, [document.createTextNode(`${x.f.flag_id}: ${x.f.message_th.slice(0, 50)}… `), x.s])),
+    comment, el("p", {}, [send, document.createTextNode(" "), dl, document.createTextNode(" "), msg])]);
+}
+
 function renderResult(data) {
   const { result: r, summary: s } = data, cov = r.coverage, p = $("p1");
+  T0 = Date.now();
   p.replaceChildren(el("h2", { text: s.headline_th }));
   if (s.draft_notice_th) p.append(box("meta", "⚠️ " + s.draft_notice_th));
   if (r.pharmacist_review_required) p.append(box("err", "แนะนำให้ปรึกษาเภสัชกรก่อนใช้ (มียากลุ่มที่ทีมกำหนดให้เภสัชกรทบทวน) · ดูแท็บใบสรุปเภสัชกร"));
@@ -125,7 +149,7 @@ function renderResult(data) {
     exBtn.onclick = () => explainNow(exBtn, exBox);
     p.append(el("p", { class: "noprint" }, [exBtn]), exBox);
   }
-  p.append(coverageBox(cov), el("p", { class: "meta", text: r.disclaimer_th }));
+  p.append(coverageBox(cov), el("p", { class: "meta", text: r.disclaimer_th }), feedbackCard(r.flags));
 
   const q = $("p2"), herbs = s.herbs.map((h) => `${h.name_th || h.id}${h.part ? " (" + h.part + ")" : ""}${h.days_in_use ? " " + h.days_in_use + " วัน" : ""}`);
   q.replaceChildren(el("h2", { text: "ใบสรุปสำหรับเภสัชกร" }),

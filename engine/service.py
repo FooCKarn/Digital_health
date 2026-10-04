@@ -80,6 +80,31 @@ def run(payload) -> dict:
     return {"result": result, "summary": pharmacist_summary(inp, result, HERBS, CONFIG)}
 
 
+ROLES = {"citizen": "ประชาชน", "pharmacist": "เภสัชกร", "other": "อื่น ๆ"}
+
+
+def feedback(payload) -> dict:
+    """เก็บ feedback การทดลอง (data-schema ข้อ 7): ตรวจ schema เข้ม แล้วพิมพ์เป็นบรรทัด JSON ลง log ของฟังก์ชัน
+    ไม่มีข้อมูลระบุตัวตน (session_id สุ่มจากเบราว์เซอร์) ที่เก็บ = log ของ Vercel ไม่ถาวร ผู้ทดลองควรดาวน์โหลดสำรอง"""
+    if not isinstance(payload, dict):
+        raise ValueError("ข้อมูลต้องเป็น JSON object")
+    sid, case, role, comment = payload.get("session_id"), payload.get("case_id", ""), payload.get("reviewer_role"), payload.get("comment", "")
+    if not isinstance(sid, str) or not 1 <= len(sid) <= 64:
+        raise ValueError("session_id ไม่ถูกต้อง")
+    if not isinstance(case, str) or len(case) > 50 or not isinstance(comment, str) or len(comment) > 500:
+        raise ValueError("case_id/comment ยาวเกินไป")
+    if role not in ROLES:
+        raise ValueError("reviewer_role ไม่ถูกต้อง")
+    entries = payload.get("entries", [])
+    if not isinstance(entries, list) or len(entries) > 50 or not all(
+            isinstance(e, dict) and isinstance(e.get("flag_id"), str) and len(e["flag_id"]) <= 20 and e.get("agree") in (True, False, "unsure") for e in entries):
+        raise ValueError("entries ไม่ถูกต้อง")
+    spent = _int(payload.get("time_spent_sec", 0), 0, 86400, "time_spent_sec")
+    record = {"session_id": sid, "case_id": case, "reviewer_role": role, "entries": entries, "comment": comment, "time_spent_sec": spent}
+    print("FEEDBACK " + json.dumps(record, ensure_ascii=False))
+    return {"ok": True}
+
+
 class ServiceUnavailable(Exception):
     """ฟีเจอร์ LLM ใช้ไม่ได้ (ไม่มี API key / เรียกไม่สำเร็จ) -> HTTP 503"""
 
