@@ -199,6 +199,24 @@ def test_5xx_twice_fails_and_4xx_is_never_retried(monkeypatch):
     assert len(calls) == 1  # 400 = คำขอผิด ลองใหม่ไม่ช่วย
 
 
+def test_thinking_config_only_sent_when_requested(monkeypatch):
+    import llm
+    bodies = []
+    monkeypatch.setattr(llm.urllib.request, "urlopen",
+                        lambda req, timeout=0: bodies.append(json.loads(req.data)) or _Resp({"candidates": [{"content": {"parts": [{"text": "x"}]}}]}))
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    for k in ("GEMINI_THINKING_BUDGET", "GEMINI_THINKING_LEVEL"):
+        monkeypatch.delenv(k, raising=False)
+    llm.gemini_complete("s", "u")
+    monkeypatch.setenv("GEMINI_THINKING_BUDGET", "0")
+    llm.gemini_complete("s", "u")
+    monkeypatch.setenv("GEMINI_THINKING_LEVEL", "minimal")
+    llm.gemini_complete("s", "u")
+    assert "thinkingConfig" not in bodies[0]["generationConfig"]
+    assert bodies[1]["generationConfig"]["thinkingConfig"] == {"thinkingBudget": 0}  # 0 ต้องถูกส่ง (ไม่ใช่ถูกมองเป็นว่าง)
+    assert bodies[2]["generationConfig"]["thinkingConfig"] == {"thinkingBudget": 0, "thinkingLevel": "minimal"}
+
+
 def test_model_chain_falls_back_on_quota_and_missing_but_not_on_bad_request(monkeypatch):
     import llm
     tried = []
