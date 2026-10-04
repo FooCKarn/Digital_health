@@ -16,6 +16,25 @@ class LLMUnavailable(Exception):
     """ไม่ได้ตั้ง API key หรือเรียก API ไม่สำเร็จ"""
 
 
+def _timeout() -> float:
+    try:
+        return max(5.0, min(float(os.environ.get("LLM_TIMEOUT_SEC", "45")), 55.0))  # เพดาน 55 วินาที < maxDuration ของฟังก์ชัน (60)
+    except ValueError:
+        return 45.0
+
+
+def _fetch(req) -> dict:
+    """เรียก HTTP แล้วคืน JSON; ข้อผิดพลาดทุกแบบเป็น LLMUnavailable โดยไม่เปิดเผยรายละเอียดต้นทาง (อาจมี URL/key)"""
+    t = _timeout()
+    try:
+        with urllib.request.urlopen(req, timeout=t) as r:
+            return json.load(r)
+    except Exception as e:  # noqa: BLE001
+        if isinstance(e, TimeoutError) or isinstance(getattr(e, "reason", None), TimeoutError):
+            raise LLMUnavailable(f"AI ตอบช้าเกินกำหนด (เกิน {int(t)} วินาที)") from e
+        raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})") from e
+
+
 def anthropic_complete(system: str, user: str, max_tokens: int = 800) -> str:
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key:
@@ -25,10 +44,9 @@ def anthropic_complete(system: str, user: str, max_tokens: int = 800) -> str:
     req = urllib.request.Request(API_URL, data=body, headers={
         "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
     try:
-        with urllib.request.urlopen(req, timeout=25) as r:
-            return json.load(r)["content"][0]["text"]
-    except Exception as e:  # noqa: BLE001  ไม่ส่งรายละเอียดต้นทางออกไป (อาจมีข้อมูลสำคัญ)
-        raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})") from e
+        return _fetch(req)["content"][0]["text"]
+    except (KeyError, IndexError, TypeError) as e:
+        raise LLMUnavailable(f"รูปแบบคำตอบจาก LLM ไม่ถูกต้อง ({type(e).__name__})") from e
 
 
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -46,11 +64,10 @@ def gemini_complete(system: str, user: str, max_tokens: int = 800) -> str:
     req = urllib.request.Request(GEMINI_URL.format(model=model), data=body,
                                  headers={"x-goog-api-key": key, "content-type": "application/json"})
     try:
-        with urllib.request.urlopen(req, timeout=25) as r:
-            parts = json.load(r)["candidates"][0]["content"]["parts"]
+        parts = _fetch(req)["candidates"][0]["content"]["parts"]
         return "".join(p.get("text", "") for p in parts if not p.get("thought"))  # ตัดส่วน 'thought' ถ้าโมเดลส่งมา
-    except Exception as e:  # noqa: BLE001  ไม่ส่งรายละเอียดต้นทางออกไป (ข้อความ error อาจมี URL/key)
-        raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})") from e
+    except (KeyError, IndexError, TypeError) as e:  # เช่น ถูกบล็อกโดยตัวกรอง/ไม่มี candidates
+        raise LLMUnavailable(f"รูปแบบคำตอบจาก LLM ไม่ถูกต้อง ({type(e).__name__})") from e
 
 
 def default_complete(system: str, user: str, max_tokens: int = 800) -> str:

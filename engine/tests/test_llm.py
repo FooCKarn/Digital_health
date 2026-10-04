@@ -124,6 +124,31 @@ def test_gemini_failure_never_leaks_key(monkeypatch):
     assert "secret-key-123" not in str(e.value)
 
 
+def test_timeout_reports_slow_model_and_respects_env(monkeypatch):
+    import llm
+    seen = {}
+
+    def slow(req, timeout=0):
+        seen["timeout"] = timeout
+        raise TimeoutError("read timed out")
+    monkeypatch.setattr(llm.urllib.request, "urlopen", slow)
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("LLM_TIMEOUT_SEC", "50")
+    with pytest.raises(LLMUnavailable) as e:
+        llm.gemini_complete("s", "u")
+    assert "ตอบช้า" in str(e.value) and "50" in str(e.value) and seen["timeout"] == 50
+    monkeypatch.setenv("LLM_TIMEOUT_SEC", "9999")
+    assert llm._timeout() == 55.0  # ไม่เกินเพดาน
+
+
+def test_malformed_gemini_reply_is_unavailable_not_crash(monkeypatch):
+    import llm
+    monkeypatch.setattr(llm.urllib.request, "urlopen", lambda req, timeout=0: _Resp({"promptFeedback": {"blockReason": "SAFETY"}}))
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    with pytest.raises(LLMUnavailable):
+        llm.gemini_complete("s", "u")
+
+
 def test_default_provider_selection(monkeypatch):
     import llm
     calls = []
