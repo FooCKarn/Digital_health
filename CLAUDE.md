@@ -45,11 +45,12 @@ HerbGuard TTM: ระบบ rule-based ตรวจความปลอดภ�
 ## คำสั่ง (ปรับเมื่อตั้งค่าโปรเจกต์แล้ว)
 
 ```
-# ติดตั้ง:        pip install -r requirements.txt   (Python 3.12)
+# ติดตั้ง:        pip install -r requirements-dev.txt   (Python 3.12; ห้ามตั้งชื่อ requirements.txt ที่ root เพราะ Vercel จะติดตั้ง Streamlit/PyMuPDF ให้ฟังก์ชันเว็บโดยไม่จำเป็น)
 # รัน engine test: python -m pytest engine/tests
 # รัน golden set:  python scripts/run_golden.py
 # สกัดข้อมูล:      python scripts/extract_pdf.py <pdf> && python scripts/round_a.py && python scripts/verify_extraction.py
-# รัน dev server:  streamlit run app/app.py
+# รันเว็บ (Vercel ฉบับท้องถิ่น): python scripts/dev_server.py 8000   แล้วเปิด http://localhost:8000
+# รัน UI Streamlit (ต้นแบบแรก): streamlit run app/app.py
 ```
 
 ## นิยามว่า "เสร็จ"
