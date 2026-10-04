@@ -43,7 +43,7 @@ try:
         if "gemma" in n or "flash" in n:
             print(f"  {n:45} {','.join(m.get('supportedGenerationMethods', []))}")
     for model in [m.strip() for m in MODEL.split(",") if m.strip()]:
-        mine = [m for m in names if m["name"] == "models/" + model]
+        mine = [m for m in names if m["name"] == "models/" + model.split("@")[0]]  # "ชื่อรุ่น@ระดับ" -> ตรวจเฉพาะชื่อรุ่น
         print(f"  -> '{model}' อยู่ในรายชื่อ: {bool(mine)}" + (f" | วิธีที่รองรับ: {mine[0].get('supportedGenerationMethods')} | thinking: {mine[0].get('thinking')}" if mine else ""))
 except urllib.error.HTTPError as e:
     print(f"  ดึงรายชื่อไม่ได้: HTTP {e.code} (key ผิดหรือไม่มีสิทธิ์?)")

@@ -217,6 +217,25 @@ def test_thinking_config_only_sent_when_requested(monkeypatch):
     assert bodies[2]["generationConfig"]["thinkingConfig"] == {"thinkingBudget": 0, "thinkingLevel": "minimal"}
 
 
+def test_per_model_thinking_level_applies_only_to_that_model(monkeypatch):
+    import llm
+    seen = []
+
+    def fake(req, timeout=0):
+        seen.append((req.full_url.split("/models/")[1].split(":")[0], json.loads(req.data)["generationConfig"].get("thinkingConfig")))
+        if len(seen) == 1:
+            raise _http_err(req, 429)  # รุ่นแรกเต็ม -> ไปรุ่นสอง
+        return _Resp({"candidates": [{"content": {"parts": [{"text": "x"}]}}]})
+    monkeypatch.setattr(llm.urllib.request, "urlopen", fake)
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_MODEL", "gemma-x@minimal,flash-y")
+    for k in ("GEMINI_THINKING_BUDGET", "GEMINI_THINKING_LEVEL"):
+        monkeypatch.delenv(k, raising=False)
+    llm.gemini_complete("s", "u")
+    assert seen == [("gemma-x", {"thinkingLevel": "minimal"}), ("flash-y", None)]  # รุ่นสำรองไม่ได้รับ thinkingLevel ของ gemma
+
+
 def test_model_chain_falls_back_on_quota_and_missing_but_not_on_bad_request(monkeypatch):
     import llm
     tried = []

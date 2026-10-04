@@ -95,22 +95,22 @@ def gemini_complete(system: str, user: str, max_tokens: int = 800) -> str:
     # gemma-4-31b-it 15-44 วินาทีและเจอ HTTP 500; gemini-2.5-flash-lite ถูกปิดสำหรับผู้ใช้ใหม่ (404)
     # หมายเหตุ: ชื่อ -latest เป็น alias ที่ Google เปลี่ยนรุ่นเบื้องหลังได้ ถ้าต้องการผลที่ทำซ้ำได้ให้ตั้ง GEMINI_MODEL เป็นรุ่นที่ระบุเลข
     # GEMINI_MODEL รับรายชื่อรุ่นคั่นด้วยจุลภาค ลองตามลำดับเมื่อรุ่นก่อนหน้าเต็ม/หาย/ล่ม (free tier คิดโควตาแยกต่อรุ่น จึงเพิ่มความจุได้)
-    models = [m.strip() for m in os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODELS).split(",") if m.strip()]
-    gen = {"maxOutputTokens": max_tokens, "temperature": 0}
-    # ปิด/ลด thinking (ทดลอง): รุ่นต่างกันใช้พารามิเตอร์ต่างกัน ถ้ารุ่นไม่รองรับ Google จะตอบ HTTP 400 (ไม่ลองรุ่นอื่นต่อ)
-    # ใช้ env เดียวกับทุกรุ่นในรายการ จึงควรตั้งเฉพาะเมื่อทุกรุ่นในรายการรองรับ
-    think: dict = {}
+    entries = [m.strip() for m in os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODELS).split(",") if m.strip()]
+    # ปิด/ลด thinking: กำหนดต่อรุ่นด้วย "ชื่อรุ่น@ระดับ" (เช่น gemma-4-26b-a4b-it@minimal) เพราะรุ่นต่างกันรับพารามิเตอร์ต่างกัน
+    # (ถ้าไม่รองรับ Google ตอบ 400 และโซ่หยุด) ตัวแปร GEMINI_THINKING_LEVEL/BUDGET เป็นค่ากลางสำหรับรุ่นที่ไม่ได้ระบุ @ ไว้
+    default_think: dict = {}
     if os.environ.get("GEMINI_THINKING_BUDGET", "").lstrip("-").isdigit():
-        think["thinkingBudget"] = int(os.environ["GEMINI_THINKING_BUDGET"])
+        default_think["thinkingBudget"] = int(os.environ["GEMINI_THINKING_BUDGET"])
     if os.environ.get("GEMINI_THINKING_LEVEL"):
-        think["thinkingLevel"] = os.environ["GEMINI_THINKING_LEVEL"]
-    if think:
-        gen["thinkingConfig"] = think
-    body = json.dumps({"contents": [{"role": "user", "parts": [{"text": f"{system}\n\n---\n{user}"}]}],
-                       "generationConfig": gen}).encode()
+        default_think["thinkingLevel"] = os.environ["GEMINI_THINKING_LEVEL"]
     deadline = time.monotonic() + _timeout()  # งบเวลารวมของทุกรุ่น ไม่เกินเพดานของฟังก์ชัน
     last: LLMUnavailable | None = None
-    for model in models:
+    for entry in entries:
+        model, _, level = entry.partition("@")
+        think = {"thinkingLevel": level} if level else default_think
+        gen = {"maxOutputTokens": max_tokens, "temperature": 0, **({"thinkingConfig": think} if think else {})}
+        body = json.dumps({"contents": [{"role": "user", "parts": [{"text": f"{system}\n\n---\n{user}"}]}],
+                           "generationConfig": gen}).encode()
         left = deadline - time.monotonic()
         if left < 3:
             break
