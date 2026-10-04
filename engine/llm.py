@@ -19,7 +19,7 @@ class LLMUnavailable(Exception):
 def anthropic_complete(system: str, user: str, max_tokens: int = 800) -> str:
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key:
-        raise LLMUnavailable("ยังไม่ได้ตั้งค่า ANTHROPIC_API_KEY")
+        raise LLMUnavailable("ยังไม่ได้ตั้งค่า LLM API key (GEMINI_API_KEY หรือ ANTHROPIC_API_KEY)")
     body = json.dumps({"model": os.environ.get("HERBGUARD_MODEL", "claude-haiku-4-5-20251001"), "max_tokens": max_tokens,
                        "system": system, "messages": [{"role": "user", "content": user}]}).encode()
     req = urllib.request.Request(API_URL, data=body, headers={
@@ -29,6 +29,36 @@ def anthropic_complete(system: str, user: str, max_tokens: int = 800) -> str:
             return json.load(r)["content"][0]["text"]
     except Exception as e:  # noqa: BLE001  ไม่ส่งรายละเอียดต้นทางออกไป (อาจมีข้อมูลสำคัญ)
         raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})") from e
+
+
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+
+
+def gemini_complete(system: str, user: str, max_tokens: int = 800) -> str:
+    """เรียกโมเดลผ่าน Gemini API (เช่น gemma-4-31b-it) key อยู่ใน header ไม่ใส่ใน URL (กันไปโผล่ใน log)
+    รวม system ไว้ในข้อความผู้ใช้ เพราะโมเดลตระกูล Gemma อาจไม่รองรับ system_instruction/โหมด JSON; ตัวดึง JSON และตัวตรวจรับมือเอง"""
+    key = os.environ.get("GEMINI_API_KEY")
+    if not key:
+        raise LLMUnavailable("ยังไม่ได้ตั้งค่า GEMINI_API_KEY")
+    model = os.environ.get("GEMINI_MODEL", "gemma-4-31b-it")
+    body = json.dumps({"contents": [{"role": "user", "parts": [{"text": f"{system}\n\n---\n{user}"}]}],
+                       "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0}}).encode()
+    req = urllib.request.Request(GEMINI_URL.format(model=model), data=body,
+                                 headers={"x-goog-api-key": key, "content-type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=25) as r:
+            parts = json.load(r)["candidates"][0]["content"]["parts"]
+        return "".join(p.get("text", "") for p in parts if not p.get("thought"))  # ตัดส่วน 'thought' ถ้าโมเดลส่งมา
+    except Exception as e:  # noqa: BLE001  ไม่ส่งรายละเอียดต้นทางออกไป (ข้อความ error อาจมี URL/key)
+        raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})") from e
+
+
+def default_complete(system: str, user: str, max_tokens: int = 800) -> str:
+    """เลือกผู้ให้บริการจาก LLM_PROVIDER (gemini|anthropic); ไม่ตั้ง = ใช้ gemini ถ้ามี GEMINI_API_KEY ไม่เช่นนั้น anthropic"""
+    p = os.environ.get("LLM_PROVIDER", "").lower()
+    if p not in ("gemini", "anthropic"):
+        p = "gemini" if os.environ.get("GEMINI_API_KEY") else "anthropic"
+    return (gemini_complete if p == "gemini" else anthropic_complete)(system, user, max_tokens)
 
 
 def _json_from(text: str):
@@ -47,8 +77,9 @@ PARSE_SYSTEM = (
 )
 
 
-def parse_text(text: str, herbs_db: dict, complete=anthropic_complete) -> dict:
+def parse_text(text: str, herbs_db: dict, complete=None) -> dict:
     """คืน {"herbs":[{id,days_in_use?}], "drugs":[...], "unmatched":[...]} หลังตรวจแล้ว; ผู้ใช้ต้องยืนยันก่อนส่งเข้า /check"""
+    complete = complete or default_complete
     herb_list = [{"id": h["id"], "name_th": h["name_th"]} for h in herbs_db["herbs"]]
     raw = _json_from(complete(PARSE_SYSTEM, f"รายการสมุนไพรที่เลือกได้: {json.dumps(herb_list, ensure_ascii=False)}\n<user_text>{text}</user_text>"))
     known = {h["id"] for h in herb_list}
@@ -114,8 +145,9 @@ def _template(result: dict, reason: str | None) -> dict:
             "disclaimer_th": result["disclaimer_th"]}
 
 
-def explain(inp: dict, result: dict, herbs_db: dict, drug_map: dict, complete=anthropic_complete) -> dict:
+def explain(inp: dict, result: dict, herbs_db: dict, drug_map: dict, complete=None) -> dict:
     """เรียบเรียงผลตรวจ ถ้า LLM ใช้ไม่ได้/ตอบไม่ผ่านตัวตรวจ ใช้ template; ต่อท้าย disclaimer เสมอ"""
+    complete = complete or default_complete
     if not result["flags"]:
         return _template(result, None)
     names = {h["id"]: h["name_th"] for h in herbs_db["herbs"]}

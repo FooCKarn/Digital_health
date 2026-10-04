@@ -78,9 +78,10 @@ def test_http_bad_input_gets_400_not_500(base):
 
 
 def test_http_parse_without_api_key_is_503_with_clear_message(base, monkeypatch):
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    for k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "LLM_PROVIDER"):
+        monkeypatch.delenv(k, raising=False)
     s, body = call(base + "/api/parse", {"text": "กินขิง"})
-    assert s == 503 and body["error"] == "llm_unavailable" and "ANTHROPIC_API_KEY" in body["message"]
+    assert s == 503 and body["error"] == "llm_unavailable" and "API key" in body["message"]
 
 
 def test_http_parse_validates_text(base):
@@ -90,7 +91,8 @@ def test_http_parse_validates_text(base):
 
 
 def test_http_explain_without_api_key_falls_back_to_template(base, monkeypatch):
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    for k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "LLM_PROVIDER"):
+        monkeypatch.delenv(k, raising=False)
     s, body = call(base + "/api/explain", {"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}})
     x = body["explanation"]
     assert s == 200 and x["source"] == "template" and x["items"] and x["disclaimer_th"]

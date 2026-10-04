@@ -87,6 +87,56 @@ def test_explain_llm_unavailable_falls_back_not_error():
     assert explain(INP, RESULT, HERBS, DRUGS, down)["source"] == "template"
 
 
+# --- ผู้ให้บริการ Gemini (ไม่เรียกเครือข่ายจริง) ---
+class _Resp:
+    def __init__(self, obj): self.data = json.dumps(obj).encode()
+    def __enter__(self): return self
+    def __exit__(self, *a): return False
+    def read(self, *a): return self.data
+
+
+def test_gemini_request_shape_and_thought_filtering(monkeypatch):
+    import llm
+    seen = {}
+
+    def fake_urlopen(req, timeout=0):
+        seen.update(url=req.full_url, headers={k.lower(): v for k, v in req.header_items()}, body=json.loads(req.data))
+        return _Resp({"candidates": [{"content": {"parts": [{"text": "คิดอยู่", "thought": True}, {"text": '{"ok": 1}'}]}}]})
+    monkeypatch.setattr(llm.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setenv("GEMINI_API_KEY", "secret-key-123")
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    assert llm.gemini_complete("SYS", "USER") == '{"ok": 1}'
+    assert seen["url"].endswith("models/gemma-4-31b-it:generateContent") and "secret-key-123" not in seen["url"]  # key ไม่อยู่ใน URL
+    assert seen["headers"]["x-goog-api-key"] == "secret-key-123"
+    text = seen["body"]["contents"][0]["parts"][0]["text"]
+    assert "SYS" in text and "USER" in text and "system_instruction" not in seen["body"]  # รวม system ไว้ในข้อความผู้ใช้
+
+
+def test_gemini_failure_never_leaks_key(monkeypatch):
+    import llm
+
+    def boom(req, timeout=0):
+        raise RuntimeError("401 for https://x/?key=secret-key-123")
+    monkeypatch.setattr(llm.urllib.request, "urlopen", boom)
+    monkeypatch.setenv("GEMINI_API_KEY", "secret-key-123")
+    with pytest.raises(LLMUnavailable) as e:
+        llm.gemini_complete("s", "u")
+    assert "secret-key-123" not in str(e.value)
+
+
+def test_default_provider_selection(monkeypatch):
+    import llm
+    calls = []
+    monkeypatch.setattr(llm, "gemini_complete", lambda s, u, m=800: calls.append("gemini") or "{}")
+    monkeypatch.setattr(llm, "anthropic_complete", lambda s, u, m=800: calls.append("anthropic") or "{}")
+    for k in ("LLM_PROVIDER", "GEMINI_API_KEY"):
+        monkeypatch.delenv(k, raising=False)
+    llm.default_complete("s", "u")                      # ไม่ตั้งอะไร -> anthropic
+    monkeypatch.setenv("GEMINI_API_KEY", "k"); llm.default_complete("s", "u")   # มี key gemini -> gemini
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic"); llm.default_complete("s", "u")  # ระบุชัด -> ตามที่ระบุ
+    assert calls == ["anthropic", "gemini", "anthropic"]
+
+
 def test_explain_no_flags_never_calls_llm_and_never_says_safe():
     inp = {"herbs": [{"id": "krachai"}], "drugs": [], "profile": {"age": 30}}
     res = check(inp, HERBS, DRUGS, CONFIG, TAGS)
