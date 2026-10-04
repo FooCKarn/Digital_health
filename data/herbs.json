@@ -458,6 +458,162 @@
       },
       "verified": false,
       "verified_by": null
+    },
+    {
+      "id": "chumhet_thet",
+      "no": 18,
+      "name_th": "ชุมเห็ดเทศ",
+      "parts": [
+        "ดอก",
+        "ใบ"
+      ],
+      "contraindications": [
+        {
+          "condition": "gi_obstruction",
+          "level": "avoid",
+          "mechanism_tag": "laxative_effect",
+          "text": "ห้ามใช้ในผู้ป่วยที่มีภาวะทางเดินอาหารอุดตัน",
+          "evidence_quote": "ห้ามใช้ในผู้ป่วยที่มีภาวะทางเดินอาหารอุดตัน",
+          "pdf_page": 101,
+          "source_page": 93,
+          "verified": false
+        },
+        {
+          "condition": "diarrhea_or_abdominal_symptoms",
+          "level": "avoid",
+          "mechanism_tag": "laxative_effect",
+          "text": "ห้ามใช้ในผู้ที่มีอาการท้องร่วง ท้องเสีย อุจจาระเหลว ปวดท้อง คลื่นไส้ อาเจียน",
+          "evidence_quote": "ท้องร่วง ท้องเสีย อุจจาระเหลว ปวดท้อง คลื่นไส้ อาเจียน",
+          "pdf_page": 101,
+          "source_page": 93,
+          "verified": false
+        },
+        {
+          "condition": "pregnancy",
+          "level": "caution",
+          "mechanism_tag": "pregnancy_risk",
+          "text": "ควรระวังการใช้ในสตรีมีครรภ์",
+          "evidence_quote": "สตรีมีครรภ์และหญิงให้นมบุตร",
+          "pdf_page": 101,
+          "source_page": 93,
+          "verified": false
+        },
+        {
+          "condition": "breastfeeding",
+          "level": "caution",
+          "text": "ควรระวังการใช้ในหญิงให้นมบุตร",
+          "evidence_quote": "สตรีมีครรภ์และหญิงให้นมบุตร",
+          "pdf_page": 101,
+          "source_page": 93,
+          "verified": false
+        }
+      ],
+      "age_limits": [
+        {
+          "min_age_years": 12,
+          "level": "caution",
+          "text": "ควรระวังการใช้ในเด็กอายุต่ำกว่า 12 ปี",
+          "evidence_quote": "ควรระวังการใช้ในเด็กอายุต่ำกว่า 12 ปี",
+          "pdf_page": 101,
+          "source_page": 93,
+          "verified": false
+        }
+      ],
+      "drug_cautions": [],
+      "condition_cautions": [
+        {
+          "condition": "inflammatory_bowel_disease",
+          "level": "caution",
+          "text": "ควรระวังการใช้ในผู้ป่วยโรคลำไส้อักเสบ",
+          "evidence_quote": "ผู้ป่วยโรคลำไส้อักเสบ (inflammatory bowel disease)",
+          "pdf_page": 101,
+          "source_page": 93,
+          "verified": false
+        }
+      ],
+      "duration_limits": [
+        {
+          "max_days": 7,
+          "group": "senna_laxatives",
+          "group_members_per_book": [
+            "ขี้เหล็ก",
+            "ชุมเห็ดเทศ"
+          ],
+          "level": "caution",
+          "mechanism_tag": "laxative_effect",
+          "text": "ยาระบายสมุนไพรสกุล Senna ไม่ควรใช้ติดต่อกันนานเกิน 7 วัน (เพดานระบุในหน้าขี้เหล็กที่เอ่ยชื่อชุมเห็ดเทศ; หน้าชุมเห็ดเทศเองไม่ระบุจำนวนวัน)",
+          "evidence_herb_no": 15,
+          "evidence_quote": "ไม่ควรใช้ยาระบายสมุนไพรในสกุล Senna เช่น ขี้เหล็ก ชุมเห็ดเทศ ติดต่อกันนานเกิน 7 วัน",
+          "pdf_page": 93,
+          "source_page": 85,
+          "verified": false
+        }
+      ],
+      "notes": [
+        {
+          "text": "ขนาดสูงอาจทำให้เกิดไตอักเสบ",
+          "evidence_quote": "การรับประทานยาในขนาดสูงอาจทำให้เกิดไตอักเสบ (nephritis)",
+          "pdf_page": 101,
+          "source_page": 93,
+          "verified": false
+        },
+        {
+          "text": "ไม่ควรใช้ติดต่อกันเป็นระยะเวลานาน (เล่มไม่ระบุจำนวนวัน) เพราะท้องเสียและสูญเสียน้ำ/เกลือแร่ และลำไส้ชินต่อยา",
+          "evidence_quote": "ไม่ควรใช้ติดต่อกันเป็นระยะเวลานาน",
+          "pdf_page": 101,
+          "source_page": 93,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          100,
+          103
+        ],
+        "printed_pages": [
+          92,
+          95
+        ]
+      },
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "id": "krachai",
+      "no": 2,
+      "name_th": "กระชาย",
+      "parts": [
+        "ราก",
+        "เหง้า"
+      ],
+      "contraindications": [],
+      "age_limits": [],
+      "drug_cautions": [],
+      "condition_cautions": [],
+      "duration_limits": [],
+      "notes": [
+        {
+          "text": "เล่มระบุข้อห้ามใช้และคำเตือนเป็น '-' ส่วนข้อควรระวัง: ผู้หญิงวัยเจริญพันธุ์ที่ใช้ปริมาณมากเกินไปอาจมีเลือดออกทางช่องคลอด (profile ยังไม่มีเพศ/ขนาดยา จึงไม่ออกเป็นธง)",
+          "evidence_quote": "ผู้หญิงในวัยเจริญพันธุ์ หากใช้กระชายในปริมาณมากเกินไป อาจทำให้มีเลือดออกทางช่องคลอดได้",
+          "pdf_page": 46,
+          "source_page": 38,
+          "verified": false
+        }
+      ],
+      "source": {
+        "doc": "TTM first 2568",
+        "pdf_pages": [
+          45,
+          48
+        ],
+        "printed_pages": [
+          37,
+          40
+        ]
+      },
+      "verified": false,
+      "verified_by": null
     }
   ]
 }

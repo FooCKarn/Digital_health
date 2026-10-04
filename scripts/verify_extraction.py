@@ -27,13 +27,17 @@ def main() -> int:
     errors, review, out = [], [], []
     for h in herbs_b:
         ix = index[h["no"]]
-        text, offs = "", []  # offs: (เริ่มที่ตำแหน่ง, หน้า PDF) ในข้อความที่ลบช่องว่างแล้ว
-        for pn in range(ix["pdf_start"], ix["pdf_end"] + 1):
-            offs.append((len(text), pn))
-            text += NS(FOOTER.sub("", pages[pn - 1]["clean"]))
-        heads = sorted((text.find(k), k) for k in SECTION_HEADS if text.find(k) >= 0)
 
-        def locate(quote: str):
+        def ctx(no):
+            text, offs = "", []  # offs: (เริ่มที่ตำแหน่ง, หน้า PDF) ในข้อความที่ลบช่องว่างแล้ว
+            for pn in range(index[no]["pdf_start"], index[no]["pdf_end"] + 1):
+                offs.append((len(text), pn))
+                text += NS(FOOTER.sub("", pages[pn - 1]["clean"]))
+            return text, offs, sorted((text.find(k), k) for k in SECTION_HEADS if text.find(k) >= 0)
+
+        def locate(quote: str, no: int):
+            # no = เลขรายการที่วลีอยู่จริง (ปกติคือสมุนไพรเอง; evidence_herb_no ใช้เมื่อเล่มอ้างข้อจำกัดข้ามรายการ เช่น Senna)
+            text, offs, heads = ctx(no)
             pos = text.find(NS(quote))
             if pos < 0:
                 return None
@@ -43,7 +47,7 @@ def main() -> int:
 
         for key in ITEM_KEYS:
             for item in h.get(key, []):
-                hit = locate(item["evidence_quote"])
+                hit = locate(item["evidence_quote"], item.get("evidence_herb_no", h["no"]))
                 if not hit:
                     errors.append(f"{h['id']}.{key}: ไม่พบวลีในต้นฉบับ: {item['evidence_quote'][:50]}")
                     continue
