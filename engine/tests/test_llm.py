@@ -141,6 +141,22 @@ def test_timeout_reports_slow_model_and_respects_env(monkeypatch):
     assert llm._timeout() == 55.0  # ไม่เกินเพดาน
 
 
+def test_http_error_exposes_only_status_publicly_and_redacts_key_in_detail(monkeypatch):
+    import io
+    import urllib.error
+    import llm
+
+    def err(req, timeout=0):
+        body = json.dumps({"error": {"code": 400, "message": "bad request near secret-key-123"}}).encode()
+        raise urllib.error.HTTPError(req.full_url, 400, "Bad Request", {}, io.BytesIO(body))
+    monkeypatch.setattr(llm.urllib.request, "urlopen", err)
+    monkeypatch.setenv("GEMINI_API_KEY", "secret-key-123")
+    with pytest.raises(LLMUnavailable) as e:
+        llm.gemini_complete("s", "u")
+    assert str(e.value) == "เรียก LLM ไม่สำเร็จ (HTTP 400)"           # หน้าเว็บเห็นแค่รหัสสถานะ
+    assert "bad request" in e.value.detail and "secret-key-123" not in e.value.detail  # detail ไม่มี key
+
+
 def test_malformed_gemini_reply_is_unavailable_not_crash(monkeypatch):
     import llm
     monkeypatch.setattr(llm.urllib.request, "urlopen", lambda req, timeout=0: _Resp({"promptFeedback": {"blockReason": "SAFETY"}}))

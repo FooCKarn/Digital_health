@@ -42,7 +42,11 @@ try:
         n = m["name"].removeprefix("models/")
         if "gemma" in n or "flash" in n:
             print(f"  {n:45} {','.join(m.get('supportedGenerationMethods', []))}")
-    print(f"  -> '{MODEL}' อยู่ในรายชื่อ: {any(m['name'] == 'models/' + MODEL for m in names)}")
+    mine = [m for m in names if m["name"] == "models/" + MODEL]
+    print(f"  -> '{MODEL}' อยู่ในรายชื่อ: {bool(mine)}")
+    if mine:
+        print(f"     วิธีที่รองรับ: {mine[0].get('supportedGenerationMethods')} | token เข้า/ออกสูงสุด: "
+              f"{mine[0].get('inputTokenLimit')}/{mine[0].get('outputTokenLimit')} | thinking: {mine[0].get('thinking')}")
 except urllib.error.HTTPError as e:
     print(f"  ดึงรายชื่อไม่ได้: HTTP {e.code} (key ผิดหรือไม่มีสิทธิ์?)")
 except Exception as e:  # noqa: BLE001
@@ -57,7 +61,7 @@ def timed(label, system, user, timeout):
         print(f"  {label}: {time.time() - t:.1f}s OK  คำตอบ(ต้น): {out[:120]!r}")
         return out
     except llm.LLMUnavailable as e:
-        print(f"  {label}: {time.time() - t:.1f}s ล้มเหลว: {e}")
+        print(f"  {label}: {time.time() - t:.1f}s ล้มเหลว: {e}" + (f"\n     ข้อความจาก Google: {e.detail}" if e.detail else ""))
 
 
 print(f"\n== 2) ข้อความสั้นมาก ({MODEL}) ==")
@@ -71,4 +75,4 @@ try:
     r = llm.parse_text("กินขิงมา 3 วัน กับยา warfarin", herbs)
     print(f"  parse: {time.time() - t:.1f}s OK  ผล: {r}")
 except Exception as e:  # noqa: BLE001
-    print(f"  parse: {time.time() - t:.1f}s ล้มเหลว: {type(e).__name__}: {e}")
+    print(f"  parse: {time.time() - t:.1f}s ล้มเหลว: {type(e).__name__}: {e}" + (f"\n     ข้อความจาก Google: {e.detail}" if getattr(e, "detail", None) else ""))

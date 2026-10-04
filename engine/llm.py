@@ -7,13 +7,19 @@ complete(system, user) -> str ฉีดจากภายนอกได้ (ใ
 import json
 import os
 import re
+import urllib.error
 import urllib.request
 
 API_URL = "https://api.anthropic.com/v1/messages"
 
 
 class LLMUnavailable(Exception):
-    """ไม่ได้ตั้ง API key หรือเรียก API ไม่สำเร็จ"""
+    """ไม่ได้ตั้ง API key หรือเรียก API ไม่สำเร็จ
+    detail = ข้อความ error จากผู้ให้บริการ (ไว้ให้ scripts/llm_probe.py ใช้วินิจฉัย; ไม่ใส่ในข้อความที่ส่งออกหน้าเว็บ)"""
+
+    def __init__(self, message: str, detail: str | None = None):
+        super().__init__(message)
+        self.detail = detail
 
 
 def _timeout() -> float:
@@ -32,6 +38,16 @@ def _fetch(req) -> dict:
     except Exception as e:  # noqa: BLE001
         if isinstance(e, TimeoutError) or isinstance(getattr(e, "reason", None), TimeoutError):
             raise LLMUnavailable(f"AI ตอบช้าเกินกำหนด (เกิน {int(t)} วินาที)") from e
+        if isinstance(e, urllib.error.HTTPError):  # ส่งออกหน้าเว็บแค่รหัสสถานะ; ข้อความของผู้ให้บริการเก็บใน .detail
+            try:
+                body = e.read(2000).decode("utf-8", "replace")
+                detail = json.loads(body).get("error", {}).get("message", body)
+            except Exception:  # noqa: BLE001
+                detail = None
+            for k in ("GEMINI_API_KEY", "ANTHROPIC_API_KEY"):  # กันกรณีผู้ให้บริการสะท้อน key กลับมา
+                if detail and os.environ.get(k):
+                    detail = detail.replace(os.environ[k], "***")
+            raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ (HTTP {e.code})", (detail or "")[:500]) from e
         raise LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})") from e
 
 
