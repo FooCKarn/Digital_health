@@ -76,6 +76,14 @@ def test_http_bad_input_gets_400_not_500(base):
     assert call(base + "/api/analyze", b"{not json")[0] == 400
 
 
+def test_http_internal_error_returns_json_500_with_cause(base, monkeypatch):
+    def boom():
+        raise FileNotFoundError("data/herbs.json")
+    monkeypatch.setattr(service, "meta", boom)
+    s, body = call(base + "/api/meta")
+    assert s == 500 and body["error"] == "server_error" and "FileNotFoundError" in body["detail"]
+
+
 def test_http_index_page_served(base):
     with urllib.request.urlopen(base + "/") as r:
         html = r.read().decode()

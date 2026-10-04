@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/*.py": { "includeFiles": "{data,engine}/**" }
+    "api/*.py": { "includeFiles": "**" }
   },
   "headers": [
     {

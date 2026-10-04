@@ -1,11 +1,11 @@
+import sys
 from http.server import BaseHTTPRequestHandler
+from pathlib import Path
 
-from _http import read_json, send, service
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # ให้ import _http ได้ไม่ว่า runtime ตั้ง path ไว้อย่างไร
+from _http import call, read_json  # noqa: E402
 
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        try:
-            send(self, 200, service.run(read_json(self)))
-        except ValueError as e:  # รวม json.JSONDecodeError; ไม่เปิดเผยรายละเอียดภายในเซิร์ฟเวอร์
-            send(self, 400, {"error": str(e)})
+        call(self, lambda s: s.run(read_json(self)))
