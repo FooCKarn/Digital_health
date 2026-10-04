@@ -18,9 +18,10 @@ class LLMUnavailable(Exception):
     """ไม่ได้ตั้ง API key หรือเรียก API ไม่สำเร็จ
     detail = ข้อความ error จากผู้ให้บริการ (ไว้ให้ scripts/llm_probe.py ใช้วินิจฉัย; ไม่ใส่ในข้อความที่ส่งออกหน้าเว็บ)"""
 
-    def __init__(self, message: str, detail: str | None = None):
+    def __init__(self, message: str, detail: str | None = None, status: int | None = None):
         super().__init__(message)
         self.detail = detail
+        self.status = status  # รหัส HTTP ถ้าเป็นข้อผิดพลาดจากผู้ให้บริการ (ใช้ตัดสินใจลองรุ่นถัดไป)
 
 
 def _timeout() -> float:
@@ -30,10 +31,10 @@ def _timeout() -> float:
         return 45.0
 
 
-def _fetch(req) -> dict:
+def _fetch(req, budget: float | None = None) -> dict:
     """เรียก HTTP แล้วคืน JSON; ข้อผิดพลาดทุกแบบเป็น LLMUnavailable โดยไม่เปิดเผยรายละเอียดต้นทาง (อาจมี URL/key)
-    ลองใหม่ 1 ครั้งเมื่อผู้ให้บริการตอบ 5xx (ข้อผิดพลาดชั่วคราวฝั่งเขา) ภายใต้งบเวลารวม LLM_TIMEOUT_SEC"""
-    t = _timeout()
+    ลองใหม่ 1 ครั้งเมื่อผู้ให้บริการตอบ 5xx (ข้อผิดพลาดชั่วคราวฝั่งเขา) ภายใต้งบเวลา (budget หรือ LLM_TIMEOUT_SEC)"""
+    t = _timeout() if budget is None else budget
     deadline = time.monotonic() + t
     for attempt in (1, 2):
         try:
@@ -61,7 +62,7 @@ def _unavailable(e: Exception, t: float) -> LLMUnavailable:
         for k in ("GEMINI_API_KEY", "ANTHROPIC_API_KEY"):  # กันกรณีผู้ให้บริการสะท้อน key กลับมา
             if os.environ.get(k):
                 detail = detail.replace(os.environ[k], "***")
-        return LLMUnavailable(f"เรียก LLM ไม่สำเร็จ (HTTP {e.code})", detail[:500])
+        return LLMUnavailable(f"เรียก LLM ไม่สำเร็จ (HTTP {e.code})", detail[:500], e.code)
     return LLMUnavailable(f"เรียก LLM ไม่สำเร็จ ({type(e).__name__})")
 
 
@@ -80,6 +81,8 @@ def anthropic_complete(system: str, user: str, max_tokens: int = 800) -> str:
 
 
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+DEFAULT_GEMINI_MODELS = "gemini-flash-lite-latest,gemini-3.5-flash-lite"  # รุ่นที่สองยังไม่เคยวัด (Google แนะนำในข้อความ 404)
+FALLBACK_STATUSES = {404, 429, 500, 502, 503, 504}  # รุ่นนี้ใช้ไม่ได้ชั่วคราว/ถาวร -> ลองรุ่นถัดไป
 
 
 def gemini_complete(system: str, user: str, max_tokens: int = 800) -> str:
@@ -91,16 +94,28 @@ def gemini_complete(system: str, user: str, max_tokens: int = 800) -> str:
     # ค่าเริ่มต้นจากการวัดจริงบนบัญชีทีม (2026-10-05, ตัวอย่างเดียว): gemini-flash-lite-latest ~0.8 วินาที ถูกต้อง;
     # gemma-4-31b-it 15-44 วินาทีและเจอ HTTP 500; gemini-2.5-flash-lite ถูกปิดสำหรับผู้ใช้ใหม่ (404)
     # หมายเหตุ: ชื่อ -latest เป็น alias ที่ Google เปลี่ยนรุ่นเบื้องหลังได้ ถ้าต้องการผลที่ทำซ้ำได้ให้ตั้ง GEMINI_MODEL เป็นรุ่นที่ระบุเลข
-    model = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")
+    # GEMINI_MODEL รับรายชื่อรุ่นคั่นด้วยจุลภาค ลองตามลำดับเมื่อรุ่นก่อนหน้าเต็ม/หาย/ล่ม (free tier คิดโควตาแยกต่อรุ่น จึงเพิ่มความจุได้)
+    models = [m.strip() for m in os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODELS).split(",") if m.strip()]
     body = json.dumps({"contents": [{"role": "user", "parts": [{"text": f"{system}\n\n---\n{user}"}]}],
                        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0}}).encode()
-    req = urllib.request.Request(GEMINI_URL.format(model=model), data=body,
-                                 headers={"x-goog-api-key": key, "content-type": "application/json"})
-    try:
-        parts = _fetch(req)["candidates"][0]["content"]["parts"]
-        return "".join(p.get("text", "") for p in parts if not p.get("thought"))  # ตัดส่วน 'thought' ถ้าโมเดลส่งมา
-    except (KeyError, IndexError, TypeError) as e:  # เช่น ถูกบล็อกโดยตัวกรอง/ไม่มี candidates
-        raise LLMUnavailable(f"รูปแบบคำตอบจาก LLM ไม่ถูกต้อง ({type(e).__name__})") from e
+    deadline = time.monotonic() + _timeout()  # งบเวลารวมของทุกรุ่น ไม่เกินเพดานของฟังก์ชัน
+    last: LLMUnavailable | None = None
+    for model in models:
+        left = deadline - time.monotonic()
+        if left < 3:
+            break
+        req = urllib.request.Request(GEMINI_URL.format(model=model), data=body,
+                                     headers={"x-goog-api-key": key, "content-type": "application/json"})
+        try:
+            parts = _fetch(req, left)["candidates"][0]["content"]["parts"]
+            return "".join(p.get("text", "") for p in parts if not p.get("thought"))  # ตัดส่วน 'thought' ถ้าโมเดลส่งมา
+        except (KeyError, IndexError, TypeError) as e:  # เช่น ถูกบล็อกโดยตัวกรอง/ไม่มี candidates
+            last = LLMUnavailable(f"รูปแบบคำตอบจาก LLM ไม่ถูกต้อง ({type(e).__name__})")
+        except LLMUnavailable as e:
+            if e.status is not None and e.status not in FALLBACK_STATUSES:  # เช่น 400/401/403 = คำขอหรือ key ผิด รุ่นอื่นก็ไม่ช่วย
+                raise
+            last = e
+    raise last or LLMUnavailable("AI ตอบช้าเกินกำหนด (หมดงบเวลา)")
 
 
 def default_complete(system: str, user: str, max_tokens: int = 800) -> str:

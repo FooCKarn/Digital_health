@@ -189,6 +189,7 @@ def test_5xx_twice_fails_and_4xx_is_never_retried(monkeypatch):
     monkeypatch.setattr(llm.urllib.request, "urlopen", always)
     monkeypatch.setattr(llm.time, "sleep", lambda s: None)
     monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_MODEL", "only-one")  # รุ่นเดียว: 5xx ลองซ้ำรุ่นเดิม 1 ครั้ง (ถ้ามีหลายรุ่น จะลองรุ่นถัดไปด้วย)
     with pytest.raises(LLMUnavailable) as e:
         llm.gemini_complete("s", "u")
     assert len(calls) == 2 and "HTTP 500" in str(e.value) and e.value.detail == "Internal error encountered."
@@ -196,6 +197,38 @@ def test_5xx_twice_fails_and_4xx_is_never_retried(monkeypatch):
     with pytest.raises(LLMUnavailable):
         llm.gemini_complete("s", "u")
     assert len(calls) == 1  # 400 = คำขอผิด ลองใหม่ไม่ช่วย
+
+
+def test_model_chain_falls_back_on_quota_and_missing_but_not_on_bad_request(monkeypatch):
+    import llm
+    tried = []
+    behavior = {"gemini-a": 429, "gemini-b": 404, "gemini-c": None}
+
+    def fake(req, timeout=0):
+        model = req.full_url.split("/models/")[1].split(":")[0]
+        tried.append(model)
+        if behavior[model]:
+            raise _http_err(req, behavior[model])
+        return _Resp({"candidates": [{"content": {"parts": [{"text": "from-c"}]}}]})
+    monkeypatch.setattr(llm.urllib.request, "urlopen", fake)
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-a, gemini-b ,gemini-c")
+    assert llm.gemini_complete("s", "u") == "from-c" and tried == ["gemini-a", "gemini-b", "gemini-c"]  # 429/404 ไม่ลองซ้ำรุ่นเดิม
+    tried.clear(); behavior["gemini-a"] = 400
+    with pytest.raises(LLMUnavailable):
+        llm.gemini_complete("s", "u")
+    assert tried == ["gemini-a"]  # 400 = คำขอผิด ไม่ลองรุ่นอื่น
+
+
+def test_model_chain_all_fail_raises_last_error(monkeypatch):
+    import llm
+    monkeypatch.setattr(llm.urllib.request, "urlopen", lambda req, timeout=0: (_ for _ in ()).throw(_http_err(req, 429)))
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_MODEL", "a,b")
+    with pytest.raises(LLMUnavailable) as e:
+        llm.gemini_complete("s", "u")
+    assert e.value.status == 429
 
 
 def test_malformed_gemini_reply_is_unavailable_not_crash(monkeypatch):
