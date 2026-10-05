@@ -19,30 +19,35 @@
  "description":"ต้นแบบเครื่องมือสนับสนุนการตัดสินใจ ตรวจธงเตือนเมื่อใช้สมุนไพรไทยร่วมกับยาแผนปัจจุบัน จากหนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) ข้อมูลยังเป็นร่าง ไม่ใช่การวินิจฉัยหรือสั่งยา"}
 </script>
 <style>
-  :root { --bg:#f6f7f4; --card:#fff; --text:#1d2b22; --muted:#46564c; --line:#c9d1c9; --brand:#2f6b4a; --focus:#0b57d0;
+  :root { --bg:#f6f7f4; --card:#fff; --text:#1d2b22; --muted:#46564c; --line:#c9d1c9; --field:#6b7a70; --brand:#2f6b4a; --focus:#0b57d0;
           --avoid:#a1221b; --avoid-bg:#fdecea; --caution:#7a4f00; --caution-bg:#fff4dc; --info:#1f4e79; --info-bg:#e8f1fb; --scope-bg:#eef0ee; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#141a16; --card:#1d2620; --text:#e8eee9; --muted:#b7c4bb; --line:#3d4d43; --brand:#7fd3a5; --focus:#8ab4f8;
+  @media (prefers-color-scheme: dark) { :root { --bg:#141a16; --card:#1d2620; --text:#e8eee9; --muted:#b7c4bb; --line:#3d4d43; --field:#7d8f83; --brand:#7fd3a5; --focus:#8ab4f8;
           --avoid:#ff9d94; --avoid-bg:#3a1b19; --caution:#ffd37a; --caution-bg:#3a2f12; --info:#a9d0f5; --info-bg:#1a2b3d; --scope-bg:#252f29; } }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.55 system-ui,"Sarabun","Noto Sans Thai",sans-serif; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.55 system-ui,"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif; }
+  .sr-only { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
   header, main, footer { max-width: 720px; margin: 0 auto; padding: 0 12px; }
   header { padding-top: 12px; }
   h1 { margin: 0; font-size: 1.35rem; color: var(--brand); }
   h2 { font-size: 1.05rem; margin: 0 0 6px; }
-  h2:focus { outline: none; }
+  h3 { font-size: .98rem; margin: 10px 0 4px; }
+  h2:focus, [tabindex="-1"]:focus { outline: none; }
   .sub { color: var(--muted); margin: 2px 0 0; font-size: .92rem; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin: 10px 0; }
   .field { margin: 0 0 10px; }
   .field > label { display: block; font-weight: 600; margin-bottom: 3px; }
   .row3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 10px; }
   .row3 label { display: block; font-weight: 600; margin-bottom: 3px; }
-  input[type=number], input[type=text], select, textarea { font: inherit; min-height: 40px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); max-width: 100%; }
-  .row3 select, .row3 input, .field > select, .field > input, textarea { width: 100%; }
+  input[type=number], input[type=text], select, textarea { font: inherit; min-height: 40px; padding: 4px 8px; border: 1px solid var(--field); border-radius: 8px; background: var(--card); color: var(--text); max-width: 100%; }
+  .row3 select, .row3 input, .field > input, textarea { width: 100%; }
+  .adder { display: flex; gap: 6px; }
+  .adder select { flex: 1; min-width: 0; }
   textarea { min-height: 60px; margin: 4px 0; }
   button { font: inherit; cursor: pointer; min-height: 40px; border-radius: 10px; border: 1px solid var(--brand); padding: 4px 14px; background: var(--card); color: var(--brand); }
   button.primary { background: var(--brand); color: var(--card); font-weight: 600; padding: 6px 28px; }
-  button:disabled { opacity: .6; cursor: progress; }
-  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  button[aria-disabled=true] { opacity: .6; cursor: progress; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible, [tabindex="0"]:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .sel { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border: 1px solid var(--brand); border-radius: 10px; padding: 4px 6px 4px 10px; margin: 6px 0; }
   .sel .nm { font-weight: 600; flex: 1 1 6em; }
   .sel select { flex: 1 1 8em; min-height: 36px; }
@@ -51,18 +56,19 @@
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   .chips:empty { display: none; }
   .chipsel { display: inline-flex; align-items: center; gap: 2px; border: 1px solid var(--brand); border-radius: 999px; padding: 0 2px 0 12px; }
-  .chipsel button { min-height: 32px; padding: 0 10px; border: 0; background: transparent; font-weight: 700; }
+  .chipsel button { min-height: 40px; min-width: 40px; padding: 0 10px; border: 0; background: transparent; font-weight: 700; }
   .hint { color: var(--muted); font-size: .9rem; margin: 2px 0 0; }
   .fielderr { color: var(--avoid); font-weight: 600; margin: 2px 0 0; }
   .fielderr:empty { display: none; }
   details > summary { cursor: pointer; min-height: 36px; display: flex; align-items: center; font-weight: 600; }
-  details.opt-box { border: 1px dashed var(--line); border-radius: 10px; padding: 0 10px; margin: 0 0 10px; }
+  details.opt-box { border: 1px dashed var(--field); border-radius: 10px; padding: 0 10px; margin: 0 0 10px; }
   details.opt-box[open] { padding-bottom: 8px; }
   .tabs { display: flex; gap: 6px; margin: 10px 0 0; flex-wrap: wrap; }
   .tabs button[aria-selected=true] { background: var(--brand); color: var(--card); font-weight: 600; }
   .scope { background: var(--scope-bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; margin: 6px 0 8px; font-size: .92rem; }
   .scope p { margin: 0; } .scope p + p { margin-top: 2px; }
   .nonote { font-weight: 600; margin: 2px 0; }
+  ul.flags { list-style: none; padding: 0; margin: 0; }
   .flag { border-left: 7px solid; border-radius: 8px; padding: 7px 10px; margin: 8px 0; }
   .flag.avoid { background: var(--avoid-bg); border-color: var(--avoid); }
   .flag.caution { background: var(--caution-bg); border-color: var(--caution); }
@@ -93,10 +99,11 @@
 </header>
 <main>
   <noscript><p class="err">หน้านี้ต้องเปิดใช้ JavaScript จึงจะตรวจได้ HerbGuard TTM เป็นต้นแบบเครื่องมือตรวจธงเตือนการใช้สมุนไพรไทยร่วมกับยาแผนปัจจุบัน ไม่ใช่การวินิจฉัย</p></noscript>
+  <p id="live" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
   <div id="loadErr" class="err" role="alert" hidden></div>
 
-  <form id="form" class="card" autocomplete="off" novalidate>
-    <h2>1) กรอกข้อมูล (สมมติ)</h2>
+  <form id="form" class="card" autocomplete="off" novalidate aria-labelledby="formHead">
+    <h2 id="formHead">1) กรอกข้อมูล (สมมติ)</h2>
 
     <details class="opt-box">
       <summary>ตัวเลือก: พิมพ์เป็นข้อความ ให้ AI ช่วยกรอก</summary>
@@ -107,16 +114,22 @@
 
     <div class="field">
       <label for="herbAdd">สมุนไพรที่ใช้</label>
-      <select id="herbAdd" aria-describedby="herbHint herbErr"><option value="">+ เพิ่มสมุนไพร…</option></select>
-      <div id="herbSel" aria-label="สมุนไพรที่เลือก"></div>
+      <div class="adder">
+        <select id="herbAdd" aria-describedby="herbHint herbErr"><option value="">เลือกสมุนไพร…</option></select>
+        <button type="button" id="herbAddBtn" aria-label="เพิ่มสมุนไพร">เพิ่ม</button>
+      </div>
+      <div id="herbSel" role="group" aria-label="สมุนไพรที่เลือก"></div>
       <p id="herbHint" class="hint">ยังไม่ได้เลือกสมุนไพร</p>
       <p id="herbErr" class="fielderr" role="alert"></p>
     </div>
 
     <div class="field">
       <label for="drugAdd">ยาที่ใช้ (ในตาราง)</label>
-      <select id="drugAdd"><option value="">+ เพิ่มยา…</option></select>
-      <div id="drugSel" class="chips" aria-label="ยาที่เลือก"></div>
+      <div class="adder">
+        <select id="drugAdd"><option value="">เลือกยา…</option></select>
+        <button type="button" id="drugAddBtn" aria-label="เพิ่มยา">เพิ่ม</button>
+      </div>
+      <div id="drugSel" class="chips" role="group" aria-label="ยาที่เลือก"></div>
       <details class="opt-box" style="margin-top:6px">
         <summary>ยาอื่นที่ไม่อยู่ในรายการ</summary>
         <label for="otherDrugs" class="hint">คั่นด้วยจุลภาค ยาที่ไม่อยู่ในตารางจะแสดงเป็น "ยังไม่ได้ตรวจ" ระบบไม่เดา</label>
@@ -125,27 +138,31 @@
     </div>
 
     <div class="row3">
-      <div><label for="age">อายุ (ปี)</label><input type="number" id="age" min="0" max="120" inputmode="numeric" placeholder="ไม่ระบุ"></div>
+      <div><label for="age">อายุ (ปี)</label><input type="number" id="age" min="0" max="120" step="1" inputmode="numeric" placeholder="ไม่ระบุ" aria-describedby="ageErr"></div>
       <div><label for="pregnant">ตั้งครรภ์</label><select id="pregnant"><option value="">ไม่ระบุ</option><option value="no">ไม่ใช่</option><option value="yes">ใช่</option></select></div>
       <div><label for="breastfeeding">ให้นมบุตร</label><select id="breastfeeding"><option value="">ไม่ระบุ</option><option value="no">ไม่ใช่</option><option value="yes">ใช่</option></select></div>
     </div>
+    <p id="ageErr" class="fielderr" role="alert"></p>
 
     <div class="field">
       <label for="condAdd">โรค/สภาวะ</label>
-      <select id="condAdd"><option value="">+ เพิ่มโรค/สภาวะ…</option></select>
-      <div id="condSel" class="chips" aria-label="โรคหรือสภาวะที่เลือก"></div>
+      <div class="adder">
+        <select id="condAdd"><option value="">เลือกโรค/สภาวะ…</option></select>
+        <button type="button" id="condAddBtn" aria-label="เพิ่มโรคหรือสภาวะ">เพิ่ม</button>
+      </div>
+      <div id="condSel" class="chips" role="group" aria-label="โรคหรือสภาวะที่เลือก"></div>
     </div>
 
     <button type="submit" class="primary" id="go">ตรวจ</button>
   </form>
 
   <section id="out" hidden aria-label="ผลลัพธ์">
-    <div class="tabs" role="tablist" aria-label="ผลลัพธ์">
+    <div class="tabs" role="tablist" aria-label="มุมมองผลลัพธ์">
       <button type="button" role="tab" id="t1" aria-selected="true" aria-controls="p1" tabindex="0">2) ผลตรวจ</button>
       <button type="button" role="tab" id="t2" aria-selected="false" aria-controls="p2" tabindex="-1">3) ใบสรุปเภสัชกร</button>
     </div>
-    <div id="p1" class="card" role="tabpanel" aria-labelledby="t1"></div>
-    <div id="p2" class="card" role="tabpanel" aria-labelledby="t2" hidden></div>
+    <div id="p1" class="card" role="tabpanel" aria-labelledby="t1" tabindex="0"></div>
+    <div id="p2" class="card" role="tabpanel" aria-labelledby="t2" tabindex="0" hidden></div>
   </section>
 </main>
 <footer>
@@ -164,7 +181,7 @@ const $ = (id) => document.getElementById(id);
 const SEV = { avoid: "ไม่ควรใช้ / ห้าม", caution: "ควรระวัง", info: "ข้อมูล" };
 const NOT_CHECKED = { pregnancy: "การตั้งครรภ์", breastfeeding: "การให้นมบุตร", age: "อายุ" };
 const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้";  // ข้อความมาตรฐานของกฎข้อ 5 ห้ามเปลี่ยนเป็นคำที่สื่อว่าไม่มีความเสี่ยง
-let META = null, LAST = null, T0 = Date.now();
+let META = null, LAST = null, T0 = Date.now(), gen = 0;
 const SID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2);  // สุ่มต่อการเปิดหน้า ไม่ผูกตัวตน
 
 // สร้าง DOM ด้วย textContent เท่านั้น (ไม่แทรก HTML จากข้อมูลใด ๆ กัน XSS)
@@ -176,7 +193,23 @@ function el(tag, props = {}, kids = []) {
 }
 const box = (cls, text) => el("div", { class: cls, text });
 const txt = (s) => document.createTextNode(s);
-const stale = () => { $("out").hidden = true; };  // แก้ข้อมูล = ผลเก่าไม่ตรงแล้ว ซ่อนทันที
+
+// ประกาศให้โปรแกรมอ่านหน้าจอ (พื้นที่ประกาศมีอยู่ในหน้าตั้งแต่โหลด) รวมข้อความที่มาพร้อมกันเป็นประโยคเดียว
+let liveBuf = [], liveT = null;
+function live(m) {
+  liveBuf.push(m); if (liveT) return;
+  $("live").textContent = "";
+  liveT = setTimeout(() => { $("live").textContent = liveBuf.join(" · "); liveBuf = []; liveT = null; }, 60);
+}
+// stale: แก้ข้อมูลหลังกดตรวจ = ผลเก่าไม่ตรงแล้ว ซ่อนทันที และเพิ่มตัวนับรอบ เพื่อทิ้งผลของคำขอที่ยังค้างอยู่ (กันผลเก่าโผล่ทับข้อมูลใหม่)
+function stale() {
+  gen++;
+  const o = $("out");
+  if (!o.hidden) { o.hidden = true; live("ข้อมูลเปลี่ยนแล้ว ผลเดิมถูกซ่อน กด “ตรวจ” อีกครั้ง"); }
+}
+// ปุ่มที่กำลังทำงานใช้ aria-disabled (ไม่ใช้ disabled เพราะโฟกัสจะหลุดจากปุ่ม)
+const setBusy = (b, on) => b.setAttribute("aria-disabled", on ? "true" : "false");
+const isBusy = (b) => b.getAttribute("aria-disabled") === "true";
 
 // ไอคอนความรุนแรง (รูปทรงต่างกัน ไม่พึ่งสีอย่างเดียว) path เป็นค่าคงที่ ไม่มาจากข้อมูล
 const ICON = {
@@ -204,20 +237,16 @@ function evidence(f) {
     el("span", { class: "chip", text: `กฎ ${f.rule_id}` })]);
 }
 
-function flagCard(f) {
-  return el("div", { class: "flag " + f.severity }, [
-    el("div", { class: "sev" }, [icon(f.severity), el("span", { text: SEV[f.severity] })]),
-    el("p", { class: "msg", text: f.message_th }), evidence(f)]);
-}
+const flagItem = (f) => el("li", { class: "flag " + f.severity }, [
+  el("div", { class: "sev" }, [icon(f.severity), el("span", { text: SEV[f.severity] })]),
+  el("p", { class: "msg", text: f.message_th }), evidence(f)]);
 
-function aggCard(a) {
-  return el("div", { class: "flag " + a.severity }, [
-    el("div", { class: "sev" }, [icon(a.severity), el("span", { text: `ภาระความเสี่ยงรวม (${a.label_th}) · ${SEV[a.severity]}` })]),
-    el("p", { class: "msg", text: a.message_th })]);
-}
+const aggItem = (a) => el("li", { class: "flag " + a.severity }, [
+  el("div", { class: "sev" }, [icon(a.severity), el("span", { text: `ภาระความเสี่ยงรวม (${a.label_th}) · ${SEV[a.severity]}` })]),
+  el("p", { class: "msg", text: a.message_th })]);
 
 function glossary() {
-  return el("div", {}, [el("strong", { text: "ชั้นหลักฐาน A/B/C และคำว่า 'ร่าง' หมายถึงอะไร" }),
+  return el("div", {}, [el("h3", { text: "ชั้นหลักฐาน A/B/C และคำว่า 'ร่าง' หมายถึงอะไร" }),
     el("ul", {}, [
       el("li", { text: "ชั้น A: ข้อความที่หนังสือแนวทางฯ ระบุไว้โดยตรง (ธงทั้งหมดในเวอร์ชันนี้)" }),
       el("li", { text: "ชั้น C: ทีมอนุมานจากสรรพคุณที่หนังสือระบุ ยังไม่ใช่ข้อห้ามที่ระบุตรง ๆ (ยังไม่มีในเวอร์ชันนี้)" }),
@@ -225,12 +254,14 @@ function glossary() {
       el("li", { text: "ร่าง: ข้อมูลนี้ยังไม่ถูกตรวจเทียบกับหนังสือโดยผู้เชี่ยวชาญ ใช้เพื่อสาธิตเท่านั้น" })])]);
 }
 
+const herbName = (id) => (META.herbs.find((h) => h.id === id) || {}).name_th || id || "";
+
 // feedback การทดลอง (data-schema ข้อ 7): ส่งเข้า log ของเซิร์ฟเวอร์ + ดาวน์โหลดสำรองเป็นไฟล์ (log ของ Vercel ไม่ถาวร)
 function feedbackCard(flags) {
   const opt = (pairs) => pairs.map(([v, t]) => el("option", { value: v, text: t }));
   const role = el("select", { "aria-label": "บทบาทของคุณ" }, opt([["citizen", "ประชาชน"], ["pharmacist", "เภสัชกร"], ["other", "อื่น ๆ"]]));
   const caseId = el("input", { type: "text", maxlength: 50, placeholder: "ชื่อเคสสมมติ (ถ้ามี)", "aria-label": "ชื่อเคส" });
-  const rows = flags.map((f) => ({ f, s: el("select", { "aria-label": "ความเห็นต่อธง " + f.flag_id }, opt([["", "— ยังไม่ตอบ —"], ["true", "เห็นด้วย"], ["false", "ไม่เห็นด้วย"], ["unsure", "ไม่แน่ใจ"]])) }));
+  const rows = flags.map((f, i) => ({ f, i, s: el("select", { "aria-label": `ความเห็นต่อธงที่ ${i + 1} (${herbName(f.herb_id)})` }, opt([["", "— ยังไม่ตอบ —"], ["true", "เห็นด้วย"], ["false", "ไม่เห็นด้วย"], ["unsure", "ไม่แน่ใจ"]])) }));
   const comment = el("textarea", { maxlength: 500, rows: 2, placeholder: "ความเห็น (ห้ามใส่ข้อมูลส่วนตัวหรือข้อมูลผู้ป่วยจริง)", "aria-label": "ความเห็น" });
   const msg = el("span", { class: "meta", role: "status" });
   const collectFb = () => ({ session_id: SID, case_id: caseId.value.trim(), reviewer_role: role.value, comment: comment.value,
@@ -240,10 +271,10 @@ function feedbackCard(flags) {
   send.onclick = async () => { try { await post("/api/feedback", collectFb()); msg.textContent = "ขอบคุณ ส่งแล้ว"; } catch (e) { msg.textContent = "ส่งไม่สำเร็จ: " + e.message + " · ดาวน์โหลดไฟล์แล้วส่งให้ทีมแทนได้"; } };
   const dl = el("button", { type: "button", text: "ดาวน์โหลดคำตอบ (JSON)" });
   dl.onclick = () => download("feedback.json", collectFb());
-  return el("div", {}, [el("strong", { text: "ช่วยเราปรับปรุง (ทดลองใช้)" }),
+  return el("div", {}, [el("h3", { text: "ช่วยเราปรับปรุง (ทดลองใช้)" }),
     el("p", { class: "meta", text: "ใช้เคสสมมติเท่านั้น ข้อมูลที่ส่งไม่ผูกกับตัวตนของคุณ" }),
     el("label", {}, [txt("คุณคือ: "), role]), txt(" "), caseId,
-    ...rows.map((x) => el("label", { class: "meta", style: "display:block;margin-top:4px" }, [txt(`${x.f.flag_id}: ${x.f.message_th.slice(0, 50)}… `), x.s])),
+    ...rows.map((x) => el("label", { class: "meta", style: "display:block;margin-top:4px" }, [txt(`ธงที่ ${x.i + 1}: ${x.f.message_th.slice(0, 50)}… `), x.s])),
     comment, el("p", {}, [send, txt(" "), dl, txt(" "), msg])]);
 }
 
@@ -262,7 +293,8 @@ function profileText(pf) {
 function summaryTable(flags) {
   const head = ["ความรุนแรง", "ข้อความ", "ชั้นหลักฐาน", "หน้า", "สถานะข้อมูล", "กฎ"];
   const body = flags.map((f) => el("tr", {}, [SEV[f.severity], f.message_th, f.evidence_tier, String(f.source_page), f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจ", f.rule_id].map((t) => el("td", { text: t }))));
-  return el("div", { class: "tablewrap" }, [el("table", {}, [el("thead", {}, [el("tr", {}, head.map((h) => el("th", { text: h, scope: "col" })))]), el("tbody", {}, body)])]);
+  return el("div", { class: "tablewrap" }, [el("table", {}, [el("caption", { class: "sr-only", text: "ธงเตือนทั้งหมดเรียงตามความรุนแรง" }),
+    el("thead", {}, [el("tr", {}, head.map((h) => el("th", { text: h, scope: "col" })))]), el("tbody", {}, body)])]);
 }
 
 function renderResult(data) {
@@ -276,13 +308,12 @@ function renderResult(data) {
   p.append(scopeBox(cov, r.disclaimer_th));  // ขอบเขต + ข้อความไม่ใช่การวินิจฉัย อยู่เหนือธงแรกเสมอ (กฎข้อ 5)
   if (s.draft_notice_th) p.append(box("warn", s.draft_notice_th));
   if (r.pharmacist_review_required) p.append(box("err", "แนะนำให้ปรึกษาเภสัชกรก่อนใช้ (มียากลุ่มที่ทีมกำหนดให้เภสัชกรทบทวน) · ดูแท็บใบสรุปเภสัชกร"));
-  r.aggregates.forEach((a) => p.append(aggCard(a)));
-  r.flags.forEach((f) => p.append(flagCard(f)));
+  if (r.aggregates.length || r.flags.length) p.append(el("ul", { class: "flags", "aria-label": "ธงเตือน" }, [...r.aggregates.map(aggItem), ...r.flags.map(flagItem)]));
   if (cov.unknown_inputs.length) p.append(box("warn", "ยังไม่ได้ตรวจ (ไม่มีในฐานข้อมูล): " + cov.unknown_inputs.join(", ") + " · ระบบไม่เดา โปรดปรึกษาเภสัชกร"));
   if (cov.not_checked.length) p.append(box("warn", "ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก): " + cov.not_checked.map((c) => NOT_CHECKED[c] || c).join(", ")));
   if (!none) {
     const exBox = el("div", { id: "explainBox", "aria-live": "polite" }), exBtn = el("button", { type: "button", text: "ตัวเลือก: ให้ AI เรียบเรียงภาษาง่าย" });
-    exBtn.onclick = () => explainNow(exBtn, exBox);
+    exBtn.onclick = () => { if (!isBusy(exBtn)) explainNow(exBtn, exBox); };
     p.append(el("p", { class: "noprint" }, [exBtn]), exBox);
   }
   p.append(el("details", { class: "opt-box noprint" }, [el("summary", { text: "เพิ่มเติม: อธิบายชั้นหลักฐาน · ช่วยเราปรับปรุง" }), glossary(), feedbackCard(r.flags)]));
@@ -295,15 +326,22 @@ function renderResult(data) {
     el("p", { class: "nonote", text: none ? NO_FLAG : s.headline_th }),
     scopeBox(cov, s.disclaimer_th));
   if (s.draft_notice_th) q.append(box("warn", s.draft_notice_th));
-  if (s.flags.length) q.append(el("strong", { text: "ธงเรียงตามความรุนแรง" }), summaryTable(s.flags));
-  if (s.aggregates.length) { q.append(el("strong", { text: "ภาระความเสี่ยงรวม (สรุปโดยระบบ)" })); const al = el("ul"); s.aggregates.forEach((a) => al.append(el("li", { text: a.message_th }))); q.append(al); }
-  q.append(el("strong", { text: "คำถามที่ควรถามต่อ (ร่าง ผู้เชี่ยวชาญต้องตรวจ)" }));
+  if (s.flags.length) q.append(el("h3", { text: "ธงเรียงตามความรุนแรง" }), summaryTable(s.flags));
+  if (s.aggregates.length) { q.append(el("h3", { text: "ภาระความเสี่ยงรวม (สรุปโดยระบบ)" })); const al = el("ul"); s.aggregates.forEach((a) => al.append(el("li", { text: a.message_th }))); q.append(al); }
+  q.append(el("h3", { text: "คำถามที่ควรถามต่อ (ร่าง ผู้เชี่ยวชาญต้องตรวจ)" }));
   const ql = el("ul"); s.follow_up_questions_th.forEach((t) => ql.append(el("li", { text: t }))); q.append(ql);
   q.append(el("p", { text: "ยังไม่ได้ตรวจ: " + (s.unknown_inputs.concat(s.not_checked.map((c) => NOT_CHECKED[c] || c)).join(", ") || "-") }));
   const dl = el("button", { type: "button", text: "ดาวน์โหลดใบสรุป (JSON)" }); dl.onclick = () => download("pharmacist_summary.json", s);
   const pr = el("button", { type: "button", text: "พิมพ์ / บันทึกเป็น PDF" }); pr.onclick = () => window.print();
   q.append(el("p", { class: "noprint" }, [dl, txt(" "), pr]));
-  $("out").hidden = false;
+  $("t2").hidden = false; $("out").hidden = false;
+}
+
+// ตรวจล้มเหลว: ล้างใบสรุปเก่าและซ่อนแท็บ 3 (กันข้อมูลเก่าค้าง) แล้วประกาศข้อผิดพลาดด้วย role=alert และย้ายโฟกัสไปที่ข้อความนั้น
+function showError(message) {
+  LAST = null; $("p2").replaceChildren(); $("t2").hidden = true;
+  const b = box("err", "ตรวจไม่สำเร็จ: " + message); b.setAttribute("role", "alert"); b.tabIndex = -1;
+  $("p1").replaceChildren(b); $("out").hidden = false; setTab(1); b.focus();
 }
 
 async function post(url, body) {
@@ -314,7 +352,7 @@ async function post(url, body) {
 }
 
 async function explainNow(btn, holder) {
-  btn.disabled = true; holder.replaceChildren(el("p", { class: "meta", text: "กำลังเรียบเรียง..." }));
+  setBusy(btn, true); holder.replaceChildren(el("p", { class: "meta", text: "กำลังเรียบเรียง..." }));
   try {
     const { explanation: x } = await post("/api/explain", LAST);
     holder.replaceChildren(el("div", { class: "note" }, [
@@ -323,10 +361,11 @@ async function explainNow(btn, holder) {
       el("ul", {}, x.items.map((i) => el("li", { text: i.text_th }))),
       el("p", { class: "meta", text: x.disclaimer_th })]));
   } catch (err) { holder.replaceChildren(box("warn", "เรียบเรียงไม่สำเร็จ: " + err.message + " (ยังดูผลตรวจด้านบนได้ตามปกติ)")); }
-  finally { btn.disabled = false; }
+  finally { setBusy(btn, false); }
 }
 
-// ---------- ฟอร์ม: dropdown เพิ่มรายการ (สมุนไพร=แถว, ยา/โรค=ชิป) ----------
+// ---------- ฟอร์ม: dropdown + ปุ่ม "เพิ่ม" (สมุนไพร=แถว, ยา/โรค=ชิป) ----------
+// เพิ่มเมื่อกดปุ่ม ไม่ใช่เมื่อเปลี่ยนค่า เพราะบางเบราว์เซอร์ยิง change ทุกครั้งที่กดลูกศรบน dropdown ที่ปิดอยู่ ทำให้ผู้ใช้คีย์บอร์ดเลื่อนดูรายการไม่ได้
 function avail(selectId, value, on) {  // ซ่อนตัวเลือกที่เลือกไปแล้ว คืนเมื่อเอาออก
   const o = [...$(selectId).options].find((x) => x.value === value);
   if (o) { o.disabled = !on; o.hidden = !on; }
@@ -334,14 +373,19 @@ function avail(selectId, value, on) {  // ซ่อนตัวเลือก�
 function wireAdder(selectId, items, onPick) {
   const s = $(selectId);
   items.forEach(([v, t]) => s.append(el("option", { value: v, text: t })));
-  s.onchange = () => { const v = s.value; s.value = ""; if (v) onPick(v); };
+  $(selectId + "Btn").onclick = () => {
+    const v = s.value;
+    if (!v) { live("เลือกรายการจากช่องก่อน แล้วกดปุ่ม เพิ่ม"); s.focus(); return; }
+    s.value = ""; onPick(v); s.focus();
+  };
 }
 
 const herbRow = (id) => document.querySelector(`#herbSel .sel[data-id="${id}"]`);
 function syncHerbs() {
   const n = document.querySelectorAll("#herbSel .sel").length;
   $("herbHint").textContent = n ? `เลือกแล้ว ${n} ชนิด` : "ยังไม่ได้เลือกสมุนไพร";
-  if (n) $("herbErr").textContent = "";
+  if (n) { $("herbErr").textContent = ""; $("herbAdd").removeAttribute("aria-invalid"); }
+  return n;
 }
 
 function addHerb(id, days) {
@@ -350,18 +394,18 @@ function addHerb(id, days) {
   const part = el("select", { class: "part", "aria-label": "ส่วนที่ใช้ " + h.name_th }); h.parts.forEach((p) => part.append(el("option", { value: p, text: p })));
   const dEl = el("input", { type: "number", class: "days", min: 0, max: 365, placeholder: "วันที่ใช้", "aria-label": "จำนวนวันที่ใช้ติดต่อกัน " + h.name_th });
   if (days) dEl.value = days;
-  const rm = el("button", { type: "button", text: "ลบ", "aria-label": "เอา " + h.name_th + " ออก" });
+  const rm = el("button", { type: "button", text: "ลบ", "aria-label": "ลบ " + h.name_th });  // ชื่อที่โปรแกรมอ่านเสียงขึ้นต้นด้วยคำที่เห็น (สั่งด้วยเสียงได้)
   const row = el("div", { class: "sel", "data-id": id }, [el("span", { class: "nm", text: h.name_th }), part, dEl, rm]);
-  rm.onclick = () => { row.remove(); avail("herbAdd", id, true); syncHerbs(); stale(); $("herbAdd").focus(); };
-  $("herbSel").append(row); avail("herbAdd", id, false); syncHerbs(); stale();
+  rm.onclick = () => { row.remove(); avail("herbAdd", id, true); syncHerbs(); stale(); live(`ลบ ${h.name_th} แล้ว`); $("herbAdd").focus(); };
+  $("herbSel").append(row); avail("herbAdd", id, false); const n = syncHerbs(); stale(); live(`เพิ่ม ${h.name_th} แล้ว เลือกแล้ว ${n} ชนิด`);
 }
 
 function addChip(boxId, selectId, value, label) {
   if ([...$(boxId).children].some((c) => c.dataset.v === value)) return;
-  const rm = el("button", { type: "button", text: "×", "aria-label": "เอา " + label + " ออก" });
+  const rm = el("button", { type: "button", text: "×", "aria-label": "ลบ " + label });
   const chip = el("span", { class: "chipsel", "data-v": value }, [el("span", { text: label }), rm]);
-  rm.onclick = () => { chip.remove(); avail(selectId, value, true); stale(); $(selectId).focus(); };
-  $(boxId).append(chip); avail(selectId, value, false); stale();
+  rm.onclick = () => { chip.remove(); avail(selectId, value, true); stale(); live(`ลบ ${label} แล้ว`); $(selectId).focus(); };
+  $(boxId).append(chip); avail(selectId, value, false); stale(); live(`เพิ่ม ${label} แล้ว`);
 }
 function clearAll() {
   document.querySelectorAll("#herbSel .sel").forEach((r) => { avail("herbAdd", r.dataset.id, true); r.remove(); });
@@ -384,37 +428,47 @@ function collect() {
   return { herbs, drugs, profile };
 }
 
+function ageProblem() {  // ว่าง = ไม่ระบุ (ใช้ได้); ค่าอื่นต้องเป็นจำนวนเต็ม 0-120
+  const a = $("age"), bad = a.validity && a.validity.badInput;
+  if (a.value === "" && !bad) return "";
+  const n = Number(a.value);
+  return bad || !Number.isInteger(n) || n < 0 || n > 120 ? "อายุต้องเป็นจำนวนเต็ม 0-120 ปี หรือเว้นว่างถ้าไม่ระบุ" : "";
+}
+
 function applyParsed(p) {
   clearAll();
   p.herbs.forEach((h) => addHerb(h.id, h.days_in_use));
-  const known = META.drugs, others = [];
-  p.drugs.forEach((n) => { const k = known.find((x) => x.toLowerCase() === n.toLowerCase()); if (k) addChip("drugSel", "drugAdd", k, k); else others.push(n); });
+  const others = [];
+  p.drugs.forEach((n) => { const k = META.drugs.find((x) => x.toLowerCase() === n.toLowerCase()); if (k) addChip("drugSel", "drugAdd", k, k); else others.push(n); });
   $("otherDrugs").value = others.join(", ");
   stale();
 }
 
 $("parseBtn").onclick = async () => {
-  const text = $("freeText").value.trim(), msg = $("parseMsg");
-  if (!text) { msg.textContent = "พิมพ์ข้อความก่อน"; return; }
-  $("parseBtn").disabled = true; msg.textContent = "กำลังแปลง...";
+  const text = $("freeText").value.trim(), msg = $("parseMsg"), btn = $("parseBtn");
+  if (isBusy(btn)) return;
+  if (!text) { msg.textContent = "พิมพ์ข้อความก่อน"; $("freeText").focus(); return; }
+  setBusy(btn, true); msg.textContent = "กำลังแปลง...";
   try {
     const p = await post("/api/parse", { text });
     applyParsed(p);
     msg.textContent = `AI ใส่ให้แล้ว: สมุนไพร ${p.herbs.length} ยา ${p.drugs.length} · โปรดตรวจและแก้ในฟอร์มก่อนกด "ตรวจ"` + (p.unmatched.length ? ` · ไม่พบในฐานข้อมูล/ไม่แน่ใจ: ${p.unmatched.join(", ")}` : "")
       + (p.dropped ? ` · AI ส่งรายการที่ระบบไม่รู้จักกลับมา ${p.dropped} รายการ (ตัดทิ้งแล้ว) โปรดเทียบกับข้อความที่พิมพ์` : "");
   } catch (err) { msg.textContent = "ใช้ AI ไม่ได้: " + err.message + " · กรอกในฟอร์มเองได้ตามปกติ"; }
-  finally { $("parseBtn").disabled = false; }
+  finally { setBusy(btn, false); }
 };
 
-// ---------- แท็บ (ใช้ลูกศรซ้าย/ขวาได้) ----------
+// ---------- แท็บ (ลูกศรซ้าย/ขวา, Home, End) ----------
 function setTab(n) {
   $("p1").hidden = n !== 1; $("p2").hidden = n !== 2;
   [1, 2].forEach((i) => { $("t" + i).setAttribute("aria-selected", n === i); $("t" + i).tabIndex = n === i ? 0 : -1; });
 }
 $("t1").onclick = () => setTab(1); $("t2").onclick = () => setTab(2);
 document.querySelector(".tabs").addEventListener("keydown", (e) => {
-  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-  const n = $("t1").getAttribute("aria-selected") === "true" ? 2 : 1;
+  let n;
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") n = $("t1").getAttribute("aria-selected") === "true" ? 2 : 1;
+  else if (e.key === "Home") n = 1; else if (e.key === "End") n = 2; else return;
+  if ($("t" + n).hidden) return;
   setTab(n); $("t" + n).focus(); e.preventDefault();
 });
 
@@ -426,22 +480,34 @@ function build() {
   syncHerbs();
 }
 
-$("form").addEventListener("input", (e) => { if (e.target.id !== "freeText") stale(); });
+// การเลือกใน dropdown ยังไม่ใช่การเปลี่ยนข้อมูล (เปลี่ยนเมื่อกดปุ่ม เพิ่ม) จึงไม่ซ่อนผลเก่า
+$("form").addEventListener("input", (e) => {
+  if (["freeText", "herbAdd", "drugAdd", "condAdd"].includes(e.target.id)) return;
+  if (e.target.id === "age") { $("ageErr").textContent = ""; $("age").removeAttribute("aria-invalid"); }
+  stale();
+});
 $("form").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const go = $("go");
+  if (isBusy(go)) return;
+  const ap = ageProblem();
+  if (ap) { $("ageErr").textContent = ap; $("age").setAttribute("aria-invalid", "true"); $("age").focus(); return; }
   const body = collect();
-  if (!body.herbs.length) { $("herbErr").textContent = "เลือกสมุนไพรอย่างน้อย 1 ชนิดก่อนกด “ตรวจ”"; $("herbAdd").focus(); return; }
+  if (!body.herbs.length) { $("herbErr").textContent = "เลือกสมุนไพรอย่างน้อย 1 ชนิดก่อนกด “ตรวจ”"; $("herbAdd").setAttribute("aria-invalid", "true"); $("herbAdd").focus(); return; }
   $("herbErr").textContent = "";
-  $("go").disabled = true;
+  const my = ++gen; setBusy(go, true);  // ถ้าผู้ใช้แก้ข้อมูลระหว่างรอ stale() จะเพิ่ม gen และผลของคำขอนี้จะถูกทิ้ง
   try {
     const res = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาด");
+    if (my !== gen) return;
     LAST = body; renderResult(data); setTab(1);
+    const h = $("resHead"); h.focus({ preventScroll: true });  // ย้ายโฟกัสไปหัวข้อผล ให้โปรแกรมอ่านหน้าจอประกาศ
+    const calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    $("out").scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
   } catch (err) {
-    $("p1").replaceChildren(box("err", "ตรวจไม่สำเร็จ: " + err.message)); $("out").hidden = false; setTab(1);
-  } finally { $("go").disabled = false; }
-  const h = $("resHead") || $("p1"); h.tabIndex = -1; h.focus({ preventScroll: true }); $("out").scrollIntoView({ behavior: "smooth", block: "start" });  // ย้ายโฟกัสไปหัวข้อผล ให้โปรแกรมอ่านหน้าจอประกาศ
+    if (my === gen) showError(err.message);
+  } finally { setBusy(go, false); }
 });
 
 fetch("/api/meta").then((r) => r.json()).then((m) => { META = m; build(); })

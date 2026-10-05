@@ -150,6 +150,19 @@ def test_index_page_seo_basics_and_noindex_until_verified():
     assert 'property="og:title"' in html and 'property="og:description"' in html
 
 
+def test_index_page_accessibility_markers():
+    import re
+    html = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    assert 'aria-labelledby="formHead"' in html and 'id="live"' in html and 'role="status"' in html   # ฟอร์มมีชื่อ + พื้นที่ประกาศถาวร
+    assert html.count('role="tabpanel"') == 2 and html.count('role="tabpanel" aria-labelledby="t1" tabindex="0"') == 1 and 'aria-labelledby="t2" tabindex="0"' in html
+    assert "--field:" in html and "var(--field)" in html and "prefers-reduced-motion" in html            # ขอบช่องกรอก 3:1 + ลดการเคลื่อนไหว
+    assert "e.key === \"Home\"" in html and "e.key === \"End\"" in html                                   # แท็บ Home/End
+    assert 'id="herbAddBtn"' in html and 'id="drugAddBtn"' in html and 'id="condAddBtn"' in html         # เพิ่มด้วยปุ่ม ไม่ใช่ตอนเปลี่ยนค่า
+    assert "s.onchange" not in html and "onchange" not in html                                          # dropdown ไม่เพิ่มรายการเมื่อเปลี่ยนค่า
+    assert not re.search(r'<div[^>]*aria-label=[^>]*>', html.split("<script>")[0]) or all("role=" in m for m in re.findall(r'<div[^>]*aria-label=[^>]*>', html.split("<script>")[0]))
+    assert 'aria-disabled' in html and "button:disabled" not in html and ".disabled = true" not in html  # ปุ่มกำลังทำงานใช้ aria-disabled
+
+
 def test_robots_txt_and_header_block_indexing_consistently(base):
     with urllib.request.urlopen(base + "/robots.txt") as r:
         assert "Disallow: /" in r.read().decode()
