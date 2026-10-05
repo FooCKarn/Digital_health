@@ -186,7 +186,7 @@ def test_timeout_reports_slow_model_and_respects_env(monkeypatch):
     monkeypatch.setenv("LLM_TIMEOUT_SEC", "50")
     with pytest.raises(LLMUnavailable) as e:
         llm.gemini_complete("s", "u")
-    assert "ตอบช้า" in str(e.value) and "50" in str(e.value) and seen["timeout"] == 50
+    assert "ตอบช้า" in str(e.value) and "50" in str(e.value) and abs(seen["timeout"] - 50) < 1  # งบเวลานับจากนาฬิกา จึงเทียบแบบมีช่วงคลาดเคลื่อน
     monkeypatch.setenv("LLM_TIMEOUT_SEC", "9999")
     assert llm._timeout() == 55.0  # ไม่เกินเพดาน
 

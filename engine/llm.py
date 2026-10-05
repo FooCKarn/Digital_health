@@ -52,7 +52,7 @@ def _fetch(req, budget: float | None = None) -> dict:
 def _unavailable(e: Exception, t: float) -> LLMUnavailable:
     """แปลงข้อผิดพลาดเป็น LLMUnavailable: หน้าเว็บเห็นแค่ชนิด/รหัสสถานะ ข้อความของผู้ให้บริการเก็บใน .detail"""
     if isinstance(e, TimeoutError) or isinstance(getattr(e, "reason", None), TimeoutError):
-        return LLMUnavailable(f"AI ตอบช้าเกินกำหนด (เกิน {int(t)} วินาที)")
+        return LLMUnavailable(f"AI ตอบช้าเกินกำหนด (เกิน {round(t)} วินาที)")  # round: งบเวลาคำนวณจากนาฬิกา อาจเป็น 49.99
     if isinstance(e, urllib.error.HTTPError):
         try:
             body = e.read(2000).decode("utf-8", "replace")
