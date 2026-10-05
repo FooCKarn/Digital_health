@@ -131,3 +131,12 @@ work/   (ข้อความต้นฉบับที่ดึงจาก P
 - [~] UI Streamlit (ต้นแบบแรก) (`app/app.py`) เสร็จเวอร์ชันแรก: กรอกข้อมูล → ผลตรวจ (ธงพร้อมชั้นหลักฐาน/หน้า/สถานะ verified, unknown_inputs, not_checked, ขอบเขต, disclaimer) → ใบสรุปเภสัชกร (+ดาวน์โหลด JSON) smoke test อัตโนมัติ 3 เคสผ่าน (`engine/tests/test_ui.py`) ผู้ใช้เลือกจากรายการ ยังไม่มี LLM `/parse` `/explain` และยังไม่ deploy ลิงก์ ยังไม่ได้ให้ผู้ใช้จริงลองหน้าจอ (หน้าตา/ภาษาเป็นร่าง)
 - [ ] golden set + ผู้เชี่ยวชาญตรวจ + ทดลองผู้ใช้
 - [ ] สไลด์ Data Flow / Architecture / Demo / รายงานผล
+
+## 11. เปิดให้ค้นหาได้ (SEO go-live)
+
+ตอนนี้ปิดการจัดทำดัชนีไว้ทั้งหมด (2026-10-05) เพราะข้อมูลทุกแถวยังเป็นร่างที่ยังไม่ผ่านผู้เชี่ยวชาญ การให้ search engine แสดงธงเตือนทางการแพทย์ที่ยังไม่ผ่านการตรวจต่อสาธารณะมีความเสี่ยง ทำ SEO พื้นฐานไว้แล้ว (title, description, Open Graph, JSON-LD, h1 เดียว, header/main/footer, favicon, noscript) เปิดดัชนีเมื่อ **ผู้เชี่ยวชาญตรวจข้อมูลแล้ว** และมีโดเมนจริง:
+1. `public/index.html`: เปลี่ยน `<meta name="robots">` เป็น `index, follow`
+2. `public/robots.txt`: เปลี่ยนเป็น `Allow: /` และเติมบรรทัด `Sitemap: https://<โดเมนจริง>/sitemap.xml`
+3. `vercel.json`: เอาหัวข้อ `X-Robots-Tag` ออก
+4. เติมด้วยโดเมนจริง (ตอนนี้ไม่ใส่เพราะไม่รู้โดเมน และเทสต์ตรวจว่าไม่มีลิงก์ที่เดาเอา): `<link rel="canonical">`, `og:url`, ไฟล์ `public/sitemap.xml`; ถ้ามีรูปแชร์จริงให้เติม `og:image` (ไฟล์ PNG/JPG ยังไม่มี)
+5. แก้เทสต์ `test_index_page_seo_basics_and_noindex_until_verified` และ `test_robots_txt_and_header_block_indexing_consistently` ให้ตรงกับสถานะใหม่ แล้วเอา Vercel Deployment Protection ออกเมื่อพร้อมเปิดสาธารณะ

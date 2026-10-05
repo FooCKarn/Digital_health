@@ -136,6 +136,26 @@ def test_http_index_page_served(base):
     assert "HerbGuard TTM" in html and "innerHTML" not in html  # ห้ามใช้ innerHTML กับข้อมูล (กัน XSS)
 
 
+def test_index_page_seo_basics_and_noindex_until_verified():
+    import re
+    html = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    title = re.search(r"<title>(.*?)</title>", html).group(1)
+    desc = re.search(r'<meta name="description" content="(.*?)">', html).group(1)
+    assert "HerbGuard TTM" in title and len(title) <= 90 and 60 <= len(desc) <= 300
+    assert html.count("<h1") == 1 and '<html lang="th">' in html and "<header>" in html and "<main>" in html and "<footer>" in html
+    assert '<meta name="robots" content="noindex, nofollow">' in html          # ข้อมูลยังเป็นร่าง ปิดดัชนีไว้ก่อน
+    ld = json.loads(re.search(r'<script type="application/ld\+json">\s*(\{.*?\})\s*</script>', html, re.S).group(1))
+    assert ld["@type"] == "WebApplication" and ld["inLanguage"] == "th"
+    assert not re.search(r'<meta property="og:(image|url)"|<link rel="canonical"', html)  # ยังไม่มีโดเมน/รูปจริง ไม่ใส่ลิงก์ที่เดาเอา
+    assert 'property="og:title"' in html and 'property="og:description"' in html
+
+
+def test_robots_txt_and_header_block_indexing_consistently(base):
+    with urllib.request.urlopen(base + "/robots.txt") as r:
+        assert "Disallow: /" in r.read().decode()
+    assert "noindex" in (ROOT / "vercel.json").read_text(encoding="utf-8")     # X-Robots-Tag
+
+
 def test_index_page_respects_ui_rule_5_and_has_no_reassurance_glyphs():
     html = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
     assert 'const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้"' in html           # ข้อความมาตรฐานเมื่อไม่พบธง
