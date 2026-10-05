@@ -207,7 +207,8 @@ $("parseBtn").onclick = async () => {
   try {
     const p = await post("/api/parse", { text });
     applyParsed(p);
-    msg.textContent = `AI ใส่ให้แล้ว: สมุนไพร ${p.herbs.length} ยา ${p.drugs.length} · โปรดตรวจและแก้ในฟอร์มก่อนกด "ตรวจ"` + (p.unmatched.length ? ` · ไม่พบในฐานข้อมูล/ไม่แน่ใจ: ${p.unmatched.join(", ")}` : "");
+    msg.textContent = `AI ใส่ให้แล้ว: สมุนไพร ${p.herbs.length} ยา ${p.drugs.length} · โปรดตรวจและแก้ในฟอร์มก่อนกด "ตรวจ"` + (p.unmatched.length ? ` · ไม่พบในฐานข้อมูล/ไม่แน่ใจ: ${p.unmatched.join(", ")}` : "")
+      + (p.dropped ? ` · AI ส่งรายการที่ระบบไม่รู้จักกลับมา ${p.dropped} รายการ (ตัดทิ้งแล้ว) โปรดเทียบกับข้อความที่พิมพ์` : "");
   } catch (err) { msg.textContent = "ใช้ AI ไม่ได้: " + err.message + " · กรอกในฟอร์มเองได้ตามปกติ"; }
   finally { $("parseBtn").disabled = false; }
 };

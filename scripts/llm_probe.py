@@ -76,7 +76,7 @@ for model in [m.strip() for m in MODEL.split(",") if m.strip()]:  # GEMINI_MODEL
     inp = {"herbs": [{"id": "khing"}, {"id": "garlic"}], "drugs": ["warfarin"], "profile": {"age": 60}}
     t = time.time()
     os.environ["LLM_TIMEOUT_SEC"] = "55"
-    x = llm.explain(inp, check(inp, herbs, drugs_map, cfg, tags), herbs, drugs_map)
+    x = llm.explain(inp, check(inp, herbs, drugs_map, cfg, tags), herbs, drugs_map, cfg)
     print(f"  explain: {time.time() - t:.1f}s source={x['source']} (llm=AI ผ่านตัวตรวจ, template=ตกตัวตรวจหรือเรียกไม่ได้) เหตุผลที่ตก: {x['rejected_reason']}")
     print(f"  สรุป: {x['summary_th']}")
     for i in x["items"][:3]:

@@ -126,4 +126,4 @@ def explain(payload) -> dict:
     """LLM จุดที่ 2: คำนวณผลตรวจใหม่ฝั่งเซิร์ฟเวอร์ (ไม่เชื่อผลจากไคลเอนต์) แล้วเรียบเรียง; ไม่ผ่านตัวตรวจ = template"""
     inp = validate(payload)
     result = check(inp, HERBS, DRUGS, CONFIG, TAGS)
-    return {"explanation": llm.explain(inp, result, HERBS, DRUGS)}
+    return {"explanation": llm.explain(inp, result, HERBS, DRUGS, CONFIG)}

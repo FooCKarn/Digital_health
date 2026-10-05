@@ -158,17 +158,24 @@ def parse_text(text: str, herbs_db: dict, complete=None) -> dict:
     herb_list = [{"id": h["id"], "name_th": h["name_th"]} for h in herbs_db["herbs"]]
     raw = _json_from(complete(PARSE_SYSTEM, f"รายการสมุนไพรที่เลือกได้: {json.dumps(herb_list, ensure_ascii=False)}\n<user_text>{text}</user_text>"))
     known = {h["id"] for h in herb_list}
-    herbs, unmatched, seen = [], [str(u)[:100] for u in raw.get("unmatched", []) if isinstance(u, str)], set()
+    low = text.lower()
+
+    def from_user(s) -> bool:  # สตริงที่ LLM ส่งกลับต้องมาจากข้อความผู้ใช้จริง สั้น และไม่มีสิ่งแปลกปลอม กัน LLM ฝากข้อความอื่นไปแสดงบนหน้าเว็บ
+        return isinstance(s, str) and 0 < len(s.strip()) <= 100 and s.strip().lower() in low and not _foreign(s, 100)
+
+    herbs, unmatched, seen, dropped = [], [u.strip() for u in raw.get("unmatched", []) if from_user(u)][:10], set(), 0
     for h in raw.get("herbs", []):
         if not isinstance(h, dict) or h.get("id") not in known:
-            unmatched.append(str(h.get("id") if isinstance(h, dict) else h)[:100])  # id ที่ไม่อยู่ในฐาน = ไม่เดา
+            if isinstance(h, dict) and from_user(h.get("id")):  # id ที่ไม่อยู่ในฐาน = ไม่เดา แสดงเฉพาะถ้าตรงกับที่ผู้ใช้พิมพ์
+                unmatched.append(h["id"].strip())
+            else:
+                dropped += 1  # ข้อความจาก LLM ที่ไม่ใช่ของผู้ใช้ ไม่แสดง แต่นับไว้ให้หน้าเว็บบอกผู้ใช้ว่ามีบางรายการที่ระบบไม่รู้จัก
         elif h["id"] not in seen:
             seen.add(h["id"])
             d = h.get("days_in_use")
             herbs.append({"id": h["id"], **({"days_in_use": d} if isinstance(d, int) and not isinstance(d, bool) and 0 < d <= 365 else {})})
-    low = text.lower()
-    drugs = [d.strip() for d in raw.get("drugs", []) if isinstance(d, str) and 0 < len(d.strip()) <= 100 and d.strip().lower() in low]  # ต้องปรากฏในข้อความผู้ใช้จริง กัน LLM แต่งชื่อยา
-    return {"herbs": herbs, "drugs": list(dict.fromkeys(drugs)), "unmatched": list(dict.fromkeys(unmatched))}
+    drugs = [d.strip() for d in raw.get("drugs", []) if from_user(d)]  # ต้องปรากฏในข้อความผู้ใช้จริง กัน LLM แต่งชื่อยา
+    return {"herbs": herbs, "drugs": list(dict.fromkeys(drugs))[:30], "unmatched": list(dict.fromkeys(unmatched))[:10], "dropped": dropped}
 
 
 # ---------- จุดที่ 2: explain ----------
@@ -183,20 +190,48 @@ def _numbers(s: str) -> set:
     return set(re.findall(r"\d+", s))
 
 
+# ---------- guardrail สิ่งแปลกปลอม (ใช้กับทุกข้อความที่ LLM สร้าง) ----------
+# ตัวอักษรที่อนุญาต: ไทย + ASCII ที่พิมพ์ได้ + ขึ้นบรรทัดใหม่ + เครื่องหมายคำพูด/ขีด/จุดไข่ปลา/จุดกลางแบบทั่วไป
+_BAD_CHARS = re.compile("[^฀-๿ -~\n–—‘’“”…·]")
+_MARKUP = re.compile(r"https?://|www\.|<[^>]*>|```|\]\(|javascript:", re.I)
+_LATIN = re.compile(r"[A-Za-z]{3,}")
+MAX_ITEM, MAX_SUMMARY = 400, 300  # ข้อความต่อธง/สรุป: ยาวกว่านี้ผิดปกติสำหรับการเรียบเรียงสั้น ๆ
+
+
+def _foreign(text: str, limit: int, forbidden: list | None = None) -> str | None:
+    """คืนเหตุผลถ้ามีสิ่งแปลกปลอม: อักขระนอกชุดที่อนุญาต (จีน/อีโมจิ/อักขระล่องหน), URL/มาร์กอัป/โค้ด, ยาวเกิน, คำต้องห้ามจาก config"""
+    if _BAD_CHARS.search(text):
+        return "มีอักขระแปลกปลอม"
+    if _MARKUP.search(text):
+        return "มี URL/มาร์กอัป/โค้ด"
+    if len(text) > limit:
+        return f"ข้อความยาวผิดปกติ (>{limit})"
+    for p in forbidden or []:
+        if p in text:
+            return f"มีคำต้องห้าม: {p}"
+    return None
+
+
 def validate_explanation(out, flags: list, allowed_text: str, all_herb_names: list, all_drug_names: list,
-                         input_herb_names: list, allowed_drug_names: list):
+                         input_herb_names: list, allowed_drug_names: list, forbidden: list | None = None):
     """คืน None ถ้าผ่าน หรือสตริงเหตุผลที่ไม่ผ่าน (post-check ตาม rules-spec: ชื่อสมุนไพร/ยา/ตัวเลขต้องอยู่ใน JSON)"""
     if not isinstance(out, dict) or not isinstance(out.get("summary_th"), str) or not isinstance(out.get("items"), list):
         return "schema ไม่ตรง"
     ids = [i.get("flag_id") for i in out["items"] if isinstance(i, dict)]
     if sorted(ids) != sorted(f["flag_id"] for f in flags) or not all(isinstance(i.get("text_th"), str) for i in out["items"]):
         return "flag_id ไม่ครบหรือไม่ตรง"
-    texts = [out["summary_th"]] + [i["text_th"] for i in out["items"]]
-    blob = "\n".join(texts)
-    if "ปลอดภัย" in blob:
-        return "ใช้คำว่า 'ปลอดภัย'"
+    for t, limit in [(out["summary_th"], MAX_SUMMARY)] + [(i["text_th"], MAX_ITEM) for i in out["items"]]:
+        bad = _foreign(t, limit, forbidden)
+        if bad:
+            return bad
+    blob = "\n".join([out["summary_th"]] + [i["text_th"] for i in out["items"]])
     if _numbers(blob) - _numbers(allowed_text):
         return "มีตัวเลขที่ไม่อยู่ใน JSON"
+    # คำภาษาอังกฤษทุกคำต้องมีใน JSON/ชื่อยาที่ผู้ใช้กรอก: กันชื่อยา/สมุนไพรที่ LLM แต่งขึ้น แม้ไม่มีในฐานข้อมูล
+    seen = {w.lower() for w in _LATIN.findall(allowed_text)} | {w.lower() for a in allowed_drug_names for w in _LATIN.findall(a)}
+    extra = {w.lower() for w in _LATIN.findall(blob)} - seen
+    if extra:
+        return f"มีคำภาษาอังกฤษนอก JSON: {sorted(extra)[0]}"
     for n in all_herb_names:
         if n in blob and not any(n in h for h in input_herb_names):
             return f"มีชื่อสมุนไพรนอกผลตรวจ: {n}"
@@ -220,7 +255,7 @@ def _template(result: dict, reason: str | None) -> dict:
             "disclaimer_th": result["disclaimer_th"]}
 
 
-def explain(inp: dict, result: dict, herbs_db: dict, drug_map: dict, complete=None) -> dict:
+def explain(inp: dict, result: dict, herbs_db: dict, drug_map: dict, config: dict, complete=None) -> dict:
     """เรียบเรียงผลตรวจ ถ้า LLM ใช้ไม่ได้/ตอบไม่ผ่านตัวตรวจ ใช้ template; ต่อท้าย disclaimer เสมอ"""
     complete = complete or default_complete
     if not result["flags"]:
@@ -239,7 +274,8 @@ def explain(inp: dict, result: dict, herbs_db: dict, drug_map: dict, complete=No
         return _template(result, f"{type(e).__name__}")
     bad = validate_explanation(out, result["flags"], allowed + " " + " ".join(names[h["id"]] for h in inp["herbs"] if h["id"] in names),
                                list(names.values()), [n for e in drug_map["entries"] for n in e["names"]],
-                               [names[h["id"]] for h in inp["herbs"] if h["id"] in names], allowed_drugs)
+                               [names[h["id"]] for h in inp["herbs"] if h["id"] in names], allowed_drugs,
+                               config["llm_forbidden_phrases"]["value"])
     if bad:
         return _template(result, bad)
     return {"source": "llm", "rejected_reason": None, "summary_th": out["summary_th"],
