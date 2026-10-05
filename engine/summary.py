@@ -17,7 +17,7 @@ def pharmacist_summary(inp: dict, result: dict, herbs: dict, config: dict) -> di
         "follow_up_questions_th": config["pharmacist_questions_th"]["value"],
         "headline_th": (f"พบธงเตือน {len(flags)} รายการจากฐานข้อมูลนี้" if flags
                         else "ไม่พบธงเตือนในฐานข้อมูลนี้ (ดูขอบเขตความครอบคลุมด้านล่าง)"),
-        "draft_notice_th": ("ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (verified:false)"
+        "draft_notice_th": ("ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (สถานะ: ร่าง)"
                             if any(not f["verified"] for f in flags) else None),
         "disclaimer_th": result["disclaimer_th"],
     }

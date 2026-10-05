@@ -5,81 +5,139 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HerbGuard TTM</title>
 <style>
-  :root { --bg:#f6f7f4; --card:#fff; --text:#1d2b22; --muted:#5d6b62; --line:#d9dfd8; --brand:#2f6b4a;
-          --avoid:#b3261e; --avoid-bg:#fdecea; --caution:#8a5a00; --caution-bg:#fff4dc; --info:#1f4e79; --info-bg:#e8f1fb; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#141a16; --card:#1d2620; --text:#e8eee9; --muted:#a3b0a7; --line:#33423a; --brand:#6cc596;
-          --avoid:#ff8a80; --avoid-bg:#3a1b19; --caution:#ffcc66; --caution-bg:#3a2f12; --info:#9cc7f0; --info-bg:#1a2b3d; } }
+  :root { --bg:#f6f7f4; --card:#fff; --text:#1d2b22; --muted:#46564c; --line:#c9d1c9; --brand:#2f6b4a; --focus:#0b57d0;
+          --avoid:#a1221b; --avoid-bg:#fdecea; --caution:#7a4f00; --caution-bg:#fff4dc; --info:#1f4e79; --info-bg:#e8f1fb;
+          --scope-bg:#eef0ee; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141a16; --card:#1d2620; --text:#e8eee9; --muted:#b7c4bb; --line:#3d4d43; --brand:#7fd3a5; --focus:#8ab4f8;
+          --avoid:#ff9d94; --avoid-bg:#3a1b19; --caution:#ffd37a; --caution-bg:#3a2f12; --info:#a9d0f5; --info-bg:#1a2b3d; --scope-bg:#252f29; } }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui,"Sarabun","Noto Sans Thai",sans-serif; }
   main { max-width: 920px; margin: 0 auto; padding: 16px; }
   h1 { margin: 8px 0 0; font-size: 1.6rem; color: var(--brand); }
-  h2 { font-size: 1.15rem; margin: 0 0 8px; }
-  .sub { color: var(--muted); margin: 0 0 12px; }
+  h2 { font-size: 1.2rem; margin: 0 0 8px; }
+  h2:focus { outline: none; }
+  .sub { color: var(--muted); margin: 4px 0 12px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 12px 0; }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
-  label.opt { display: flex; gap: 8px; align-items: center; padding: 4px 0; }
-  .herb { border-bottom: 1px dashed var(--line); padding: 4px 0; }
-  .herb .extra { display: none; gap: 8px; margin: 4px 0 8px 28px; flex-wrap: wrap; }
-  .herb.on .extra { display: flex; }
-  input[type=number], input[type=text], select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); }
-  input[type=text], textarea { width: 100%; }
-  textarea { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); margin: 6px 0; }
-  button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--brand); padding: 8px 18px; background: var(--card); color: var(--brand); }
-  button.primary { background: var(--brand); color: #fff; }
-  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--info); outline-offset: 2px; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 8px; }
-  .tabs button[aria-selected=true] { background: var(--brand); color: #fff; }
-  .flag { border-left: 6px solid; border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+  .field { margin: 0 0 12px; }
+  .field > label, .field > strong, legend { display: block; font-weight: 600; margin-bottom: 4px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 12px; min-width: 0; }
+  input[type=number], input[type=text], input[type=search], select, textarea { font: inherit; min-height: 44px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); max-width: 100%; }
+  input[type=text], input[type=search], textarea { width: 100%; }
+  textarea { min-height: 72px; margin: 6px 0; }
+  button { font: inherit; cursor: pointer; min-height: 44px; border-radius: 10px; border: 1px solid var(--brand); padding: 8px 18px; background: var(--card); color: var(--brand); }
+  button.primary { background: var(--brand); color: var(--card); font-weight: 600; }
+  button[aria-pressed=true] { background: var(--brand); color: var(--card); }
+  button:disabled { opacity: .6; cursor: progress; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  label.opt { display: flex; gap: 10px; align-items: center; min-height: 44px; }
+  label.opt input[type=checkbox] { width: 22px; height: 22px; flex: none; }
+  .pick { max-height: 220px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 4px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .pick button { padding: 6px 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sel { border: 1px solid var(--brand); border-radius: 10px; padding: 8px 10px; margin: 8px 0; }
+  .sel .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .sel .row input { width: 11em; }
+  .sel header { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 600; }
+  .sel header button { padding: 4px 12px; }
+  .hint { color: var(--muted); }
+  .fielderr { color: var(--avoid); font-weight: 600; min-height: 1.4em; }
+  details > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; }
+  details.opt-box { border: 1px dashed var(--line); border-radius: 10px; padding: 0 12px; margin: 0 0 12px; }
+  details.opt-box[open] { padding-bottom: 8px; }
+  .conds { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  @media (max-width: 700px) { .conds { grid-template-columns: 1fr; } }
+  .tabs { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .tabs button[aria-selected=true] { background: var(--brand); color: var(--card); font-weight: 600; }
+  .scope { background: var(--scope-bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin: 8px 0 12px; }
+  .scope p { margin: 0; } .scope p + p { margin-top: 4px; }
+  .nonote { font-weight: 600; }
+  .flag { border-left: 8px solid; border-radius: 8px; padding: 10px 12px; margin: 10px 0; }
   .flag.avoid { background: var(--avoid-bg); border-color: var(--avoid); }
   .flag.caution { background: var(--caution-bg); border-color: var(--caution); }
   .flag.info { background: var(--info-bg); border-color: var(--info); }
-  .flag .tag { font-weight: 700; }
-  .flag.avoid .tag { color: var(--avoid); } .flag.caution .tag { color: var(--caution); } .flag.info .tag { color: var(--info); }
-  .meta { color: var(--muted); font-size: .88rem; }
+  .flag .sev { display: flex; gap: 6px; align-items: center; font-weight: 700; }
+  .flag.avoid .sev { color: var(--avoid); } .flag.caution .sev { color: var(--caution); } .flag.info .sev { color: var(--info); }
+  .flag .msg { margin: 4px 0 6px; font-size: 1.05rem; }
+  .ev { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-block; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 999px; padding: 1px 10px; font-size: .92rem; }
+  .chip.draft { border-color: var(--caution); color: var(--caution); font-weight: 600; }
   .note { background: var(--info-bg); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
   .warn { background: var(--caution-bg); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
   .err { background: var(--avoid-bg); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+  .meta { color: var(--muted); font-size: .92rem; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
   [hidden] { display: none !important; }
-  @media print { form, .tabs, button, .noprint { display: none !important; } }
+  @media print { form, .tabs, button, .noprint, details.opt-box { display: none !important; } .card { border: 0; } }
 </style>
 </head>
 <body>
 <main>
-  <h1>🌿 HerbGuard TTM</h1>
+  <h1>HerbGuard TTM</h1>
   <p class="sub">ตรวจธงเตือนการใช้สมุนไพรร่วมกับยา จากหนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) · <strong>ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง</strong></p>
-  <div id="loadErr" class="err" hidden></div>
+  <div id="loadErr" class="err" role="alert" hidden></div>
 
-  <form id="form" class="card" autocomplete="off">
+  <form id="form" class="card" autocomplete="off" novalidate>
     <h2>1) กรอกข้อมูล (สมมติ)</h2>
-    <div class="note">
-      <label for="freeText"><strong>หรือพิมพ์เป็นข้อความ</strong> เช่น "กินขิงมา 3 วัน กับยา warfarin" แล้วให้ AI ช่วยแปลงเป็นรายการด้านล่าง (AI แค่ช่วยกรอก คุณต้องตรวจและแก้เองก่อนกด "ตรวจ")</label>
+
+    <details class="opt-box">
+      <summary>ตัวเลือก: พิมพ์เป็นข้อความ ให้ AI ช่วยกรอก</summary>
+      <label for="freeText">เช่น "กินขิงมา 3 วัน กับยา warfarin" AI แค่ช่วยกรอกลงฟอร์มด้านล่าง คุณต้องตรวจและแก้เองก่อนกด "ตรวจ"</label>
       <textarea id="freeText" maxlength="1000" rows="2"></textarea>
       <button type="button" id="parseBtn">ให้ AI ช่วยกรอก</button> <span id="parseMsg" class="meta" role="status"></span>
-    </div>
+    </details>
+
     <div class="grid">
-      <div><strong>สมุนไพรที่ใช้</strong><div id="herbs"></div></div>
       <div>
-        <strong>ยาที่ใช้ (ในตาราง)</strong><div id="drugs"></div>
-        <label for="otherDrugs"><strong>ยาอื่นที่ไม่อยู่ในรายการ</strong> (คั่นด้วยจุลภาค)</label>
-        <input type="text" id="otherDrugs" maxlength="300" placeholder="ยาที่ไม่อยู่ในตารางจะแสดงเป็น 'ยังไม่ได้ตรวจ' ระบบไม่เดา">
-        <p><label for="age"><strong>อายุ (ปี)</strong> (เว้นว่าง = ไม่ระบุ)</label><br>
-           <input type="number" id="age" min="0" max="120" inputmode="numeric"></p>
-        <label class="opt"><input type="checkbox" id="pregnant"> ตั้งครรภ์</label>
-        <label class="opt"><input type="checkbox" id="breastfeeding"> ให้นมบุตร</label>
-        <strong>โรค/สภาวะ</strong><div id="conds"></div>
+        <div class="field">
+          <label for="herbSearch"><strong>สมุนไพรที่ใช้</strong> (พิมพ์ค้นหา แล้วกดเลือก)</label>
+          <input type="search" id="herbSearch" placeholder="เช่น ขิง" aria-describedby="herbErr herbHint">
+          <div id="herbList" class="pick" role="group" aria-label="รายชื่อสมุนไพรในฐานข้อมูล"></div>
+          <p id="herbErr" class="fielderr" role="alert"></p>
+        </div>
+        <div id="herbSel" aria-label="สมุนไพรที่เลือก"></div>
+        <p id="herbHint" class="hint">ยังไม่ได้เลือกสมุนไพร</p>
+      </div>
+      <div>
+        <fieldset>
+          <legend>ยาที่ใช้ (ในตาราง) <span class="hint">กดเพื่อเลือก/ยกเลิก</span></legend>
+          <div id="drugs" class="chips"></div>
+        </fieldset>
+        <div class="field">
+          <label for="otherDrugs"><strong>ยาอื่นที่ไม่อยู่ในรายการ</strong> (คั่นด้วยจุลภาค)</label>
+          <input type="text" id="otherDrugs" maxlength="300" placeholder="ยาที่ไม่อยู่ในตารางจะแสดงเป็น 'ยังไม่ได้ตรวจ' ระบบไม่เดา">
+        </div>
+        <div class="field">
+          <label for="age"><strong>อายุ (ปี)</strong> เว้นว่าง = ไม่ระบุ</label>
+          <input type="number" id="age" min="0" max="120" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="pregnant"><strong>ตั้งครรภ์</strong></label>
+          <select id="pregnant"><option value="">ไม่ระบุ</option><option value="no">ไม่ใช่</option><option value="yes">ใช่</option></select>
+        </div>
+        <div class="field">
+          <label for="breastfeeding"><strong>ให้นมบุตร</strong></label>
+          <select id="breastfeeding"><option value="">ไม่ระบุ</option><option value="no">ไม่ใช่</option><option value="yes">ใช่</option></select>
+        </div>
+        <details class="opt-box" id="condBox">
+          <summary id="condSum">โรค/สภาวะ (กดเพื่อเลือก)</summary>
+          <div id="conds" class="conds"></div>
+        </details>
       </div>
     </div>
     <p><button type="submit" class="primary" id="go">ตรวจ</button></p>
   </form>
 
   <section id="out" hidden>
-    <div class="tabs" role="tablist">
-      <button type="button" role="tab" id="t1" aria-selected="true">2) ผลตรวจ</button>
-      <button type="button" role="tab" id="t2" aria-selected="false">3) ใบสรุปเภสัชกร</button>
+    <div class="tabs" role="tablist" aria-label="ผลลัพธ์">
+      <button type="button" role="tab" id="t1" aria-selected="true" aria-controls="p1" tabindex="0">2) ผลตรวจ</button>
+      <button type="button" role="tab" id="t2" aria-selected="false" aria-controls="p2" tabindex="-1">3) ใบสรุปเภสัชกร</button>
     </div>
-    <div id="p1" class="card" role="tabpanel"></div>
-    <div id="p2" class="card" role="tabpanel" hidden></div>
+    <div id="p1" class="card" role="tabpanel" aria-labelledby="t1"></div>
+    <div id="p2" class="card" role="tabpanel" aria-labelledby="t2" hidden></div>
   </section>
   <p class="meta" id="foot"></p>
 </main>
@@ -89,6 +147,7 @@
 const $ = (id) => document.getElementById(id);
 const SEV = { avoid: "ไม่ควรใช้ / ห้าม", caution: "ควรระวัง", info: "ข้อมูล" };
 const NOT_CHECKED = { pregnancy: "การตั้งครรภ์", breastfeeding: "การให้นมบุตร", age: "อายุ" };
+const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้";  // ข้อความมาตรฐานของกฎข้อ 5 ห้ามเปลี่ยนเป็นคำที่สื่อว่าไม่มีความเสี่ยง
 let META = null, LAST = null, T0 = Date.now();
 const SID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2);  // สุ่มต่อการเปิดหน้า ไม่ผูกตัวตน
 
@@ -100,16 +159,54 @@ function el(tag, props = {}, kids = []) {
   return n;
 }
 const box = (cls, text) => el("div", { class: cls, text });
+const txt = (s) => document.createTextNode(s);
+const stale = () => { $("out").hidden = true; };  // แก้ข้อมูล = ผลเก่าไม่ตรงแล้ว ซ่อนทันที
 
-function coverageBox(cov) {
-  return box("note", `ขอบเขตของฐานข้อมูลนี้: สมุนไพร ${cov.herbs_in_db} ชนิด (จาก ${META.coverage.herbs_in_book} ชนิดในเล่ม) · กลุ่มยา ${cov.drug_classes_in_db} กลุ่ม · ยาหรือสมุนไพรนอกฐานจะไม่ถูกตรวจ`);
+// ไอคอนความรุนแรง (รูปทรงต่างกัน ไม่พึ่งสีอย่างเดียว) path เป็นค่าคงที่ ไม่มาจากข้อมูล
+const ICON = {
+  avoid: ["M8 2h8l6 6v8l-6 6H8l-6-6V8z", "M9 9l6 6M15 9l-6 6"],
+  caution: ["M12 3l10 18H2z", "M12 10v5M12 18v.01"],
+  info: ["M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z", "M12 11v6M12 7v.01"],
+};
+function icon(sev) {
+  const ns = "http://www.w3.org/2000/svg", s = document.createElementNS(ns, "svg");
+  for (const [k, v] of Object.entries({ width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": 2, "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" })) s.setAttribute(k, v);
+  ICON[sev].forEach((d) => { const p = document.createElementNS(ns, "path"); p.setAttribute("d", d); s.append(p); });
+  return s;
+}
+
+function scopeBox(cov, disclaimer) {
+  return el("div", { class: "scope" }, [
+    el("p", { text: `ขอบเขตของฐานข้อมูลนี้: สมุนไพร ${cov.herbs_in_db} ชนิด (จาก ${META.coverage.herbs_in_book} ชนิดในเล่ม) · กลุ่มยา ${cov.drug_classes_in_db} กลุ่ม · ยาหรือสมุนไพรนอกฐานจะไม่ถูกตรวจ` }),
+    el("p", { class: "meta", text: disclaimer })]);
+}
+
+function evidence(f) {
+  return el("div", { class: "ev" }, [
+    el("span", { class: "chip", text: `ชั้นหลักฐาน ${f.evidence_tier}` }), el("span", { class: "chip", text: `หน้า ${f.source_page}` }),
+    el("span", { class: "chip" + (f.verified ? "" : " draft"), text: f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ" }),
+    el("span", { class: "chip", text: `กฎ ${f.rule_id}` })]);
 }
 
 function flagCard(f) {
-  const c = el("div", { class: "flag " + f.severity });
-  c.append(el("div", {}, [el("span", { class: "tag", text: SEV[f.severity] + " · " }), document.createTextNode(f.message_th)]));
-  c.append(el("div", { class: "meta", text: `${f.rule_id} · ชั้นหลักฐาน ${f.evidence_tier} · หน้า ${f.source_page} · ${f.verified ? "ตรวจแล้ว" : "ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}` }));
-  return c;
+  return el("div", { class: "flag " + f.severity }, [
+    el("div", { class: "sev" }, [icon(f.severity), el("span", { text: SEV[f.severity] })]),
+    el("p", { class: "msg", text: f.message_th }), evidence(f)]);
+}
+
+function aggCard(a) {
+  return el("div", { class: "flag " + a.severity }, [
+    el("div", { class: "sev" }, [icon(a.severity), el("span", { text: `ภาระความเสี่ยงรวม (${a.label_th}) · ${SEV[a.severity]}` })]),
+    el("p", { class: "msg", text: a.message_th })]);
+}
+
+function glossary() {
+  return el("details", { class: "opt-box" }, [el("summary", { text: "ชั้นหลักฐาน A/B/C และคำว่า 'ร่าง' หมายถึงอะไร" }),
+    el("ul", {}, [
+      el("li", { text: "ชั้น A: ข้อความที่หนังสือแนวทางฯ ระบุไว้โดยตรง (ธงทั้งหมดในเวอร์ชันนี้)" }),
+      el("li", { text: "ชั้น C: ทีมอนุมานจากสรรพคุณที่หนังสือระบุ ยังไม่ใช่ข้อห้ามที่ระบุตรง ๆ (ยังไม่มีในเวอร์ชันนี้)" }),
+      el("li", { text: "ชั้น B: แผนในอนาคต ยังไม่มีในเวอร์ชันนี้" }),
+      el("li", { text: "ร่าง: ข้อมูลนี้ยังไม่ถูกตรวจเทียบกับหนังสือโดยผู้เชี่ยวชาญ ใช้เพื่อสาธิตเท่านั้น" })])]);
 }
 
 // feedback การทดลอง (data-schema ข้อ 7): ส่งเข้า log ของเซิร์ฟเวอร์ + ดาวน์โหลดสำรองเป็นไฟล์ (log ของ Vercel ไม่ถาวร)
@@ -120,53 +217,76 @@ function feedbackCard(flags) {
   const rows = flags.map((f) => ({ f, s: el("select", { "aria-label": "ความเห็นต่อธง " + f.flag_id }, opt([["", "— ยังไม่ตอบ —"], ["true", "เห็นด้วย"], ["false", "ไม่เห็นด้วย"], ["unsure", "ไม่แน่ใจ"]])) }));
   const comment = el("textarea", { maxlength: 500, rows: 2, placeholder: "ความเห็น (ห้ามใส่ข้อมูลส่วนตัวหรือข้อมูลผู้ป่วยจริง)", "aria-label": "ความเห็น" });
   const msg = el("span", { class: "meta", role: "status" });
-  const collect = () => ({ session_id: SID, case_id: caseId.value.trim(), reviewer_role: role.value, comment: comment.value,
+  const collectFb = () => ({ session_id: SID, case_id: caseId.value.trim(), reviewer_role: role.value, comment: comment.value,
     time_spent_sec: Math.min(86400, Math.round((Date.now() - T0) / 1000)),
     entries: rows.filter((x) => x.s.value !== "").map((x) => ({ flag_id: x.f.flag_id, agree: x.s.value === "unsure" ? "unsure" : x.s.value === "true" })) });
   const send = el("button", { type: "button", text: "ส่งความเห็น" });
-  send.onclick = async () => { try { await post("/api/feedback", collect()); msg.textContent = "ขอบคุณ ส่งแล้ว"; } catch (e) { msg.textContent = "ส่งไม่สำเร็จ: " + e.message + " · ดาวน์โหลดไฟล์แล้วส่งให้ทีมแทนได้"; } };
+  send.onclick = async () => { try { await post("/api/feedback", collectFb()); msg.textContent = "ขอบคุณ ส่งแล้ว"; } catch (e) { msg.textContent = "ส่งไม่สำเร็จ: " + e.message + " · ดาวน์โหลดไฟล์แล้วส่งให้ทีมแทนได้"; } };
   const dl = el("button", { type: "button", text: "ดาวน์โหลดคำตอบ (JSON)" });
-  dl.onclick = () => { const a = el("a", { href: URL.createObjectURL(new Blob([JSON.stringify(collect(), null, 2)], { type: "application/json" })), download: "feedback.json" }); a.click(); URL.revokeObjectURL(a.href); };
-  return el("details", { class: "noprint" }, [el("summary", { text: "ช่วยเราปรับปรุง (ทดลองใช้)" }),
+  dl.onclick = () => download("feedback.json", collectFb());
+  return el("details", { class: "opt-box noprint" }, [el("summary", { text: "ช่วยเราปรับปรุง (ทดลองใช้)" }),
     el("p", { class: "meta", text: "ใช้เคสสมมติเท่านั้น ข้อมูลที่ส่งไม่ผูกกับตัวตนของคุณ" }),
-    el("label", {}, [document.createTextNode("คุณคือ: "), role]), document.createTextNode(" "), caseId,
-    ...rows.map((x) => el("label", { class: "opt" }, [document.createTextNode(`${x.f.flag_id}: ${x.f.message_th.slice(0, 50)}… `), x.s])),
-    comment, el("p", {}, [send, document.createTextNode(" "), dl, document.createTextNode(" "), msg])]);
+    el("label", {}, [txt("คุณคือ: "), role]), txt(" "), caseId,
+    ...rows.map((x) => el("label", { class: "opt" }, [txt(`${x.f.flag_id}: ${x.f.message_th.slice(0, 50)}… `), x.s])),
+    comment, el("p", {}, [send, txt(" "), dl, txt(" "), msg])]);
+}
+
+function download(name, obj) {
+  const a = el("a", { href: URL.createObjectURL(new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" })), download: name });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function profileText(pf) {
+  const yn = (v) => (v === undefined ? "ไม่ระบุ" : v ? "ใช่" : "ไม่ใช่");
+  const parts = [`อายุ: ${Number.isInteger(pf.age) ? pf.age + " ปี" : "ไม่ระบุ"}`, `ตั้งครรภ์: ${yn(pf.pregnant)}`, `ให้นมบุตร: ${yn(pf.breastfeeding)}`];
+  parts.push("โรค/สภาวะ: " + (pf.conditions.map((c) => META.conditions[c] || c).join(", ") || "ไม่ระบุ"));
+  return parts.join(" · ");
+}
+
+function summaryTable(flags) {
+  const head = ["ความรุนแรง", "ข้อความ", "ชั้นหลักฐาน", "หน้า", "สถานะข้อมูล", "กฎ"];
+  const body = flags.map((f) => el("tr", {}, [SEV[f.severity], f.message_th, f.evidence_tier, String(f.source_page), f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจ", f.rule_id].map((t) => el("td", { text: t }))));
+  return el("div", { class: "tablewrap" }, [el("table", {}, [el("thead", {}, [el("tr", {}, head.map((h) => el("th", { text: h, scope: "col" })))]), el("tbody", {}, body)])]);
 }
 
 function renderResult(data) {
   const { result: r, summary: s } = data, cov = r.coverage, p = $("p1");
   T0 = Date.now();
-  p.replaceChildren(el("h2", { text: s.headline_th }));
-  if (s.draft_notice_th) p.append(box("meta", "⚠️ " + s.draft_notice_th));
+  const none = r.flags.length === 0;
+  const counts = ["avoid", "caution", "info"].map((k) => [k, r.flags.filter((f) => f.severity === k).length]).filter(([, n]) => n).map(([k, n]) => `${SEV[k]} ${n}`).join(" · ");
+  p.replaceChildren(el("h2", { id: "resHead", tabindex: "-1", text: none ? NO_FLAG : s.headline_th }));
+  if (!none) p.append(el("p", { class: "meta", text: counts }));
+  else p.append(el("p", { class: "nonote", text: "นี่ไม่ได้แปลว่าปลอดภัย โปรดปรึกษาเภสัชกร" }));
+  p.append(scopeBox(cov, r.disclaimer_th));  // ขอบเขต + ข้อความไม่ใช่การวินิจฉัย อยู่บนสุดเสมอ (กฎข้อ 5)
+  if (s.draft_notice_th) p.append(box("warn", s.draft_notice_th));
   if (r.pharmacist_review_required) p.append(box("err", "แนะนำให้ปรึกษาเภสัชกรก่อนใช้ (มียากลุ่มที่ทีมกำหนดให้เภสัชกรทบทวน) · ดูแท็บใบสรุปเภสัชกร"));
-  r.aggregates.forEach((a) => { const c = el("div", { class: "flag " + a.severity }); c.append(el("div", {}, [el("span", { class: "tag", text: `ภาระความเสี่ยงรวม (${a.label_th}) · ${SEV[a.severity]} · ` }), document.createTextNode(a.message_th)])); p.append(c); });
+  r.aggregates.forEach((a) => p.append(aggCard(a)));
   r.flags.forEach((f) => p.append(flagCard(f)));
   if (cov.unknown_inputs.length) p.append(box("warn", "ยังไม่ได้ตรวจ (ไม่มีในฐานข้อมูล): " + cov.unknown_inputs.join(", ") + " · ระบบไม่เดา โปรดปรึกษาเภสัชกร"));
   if (cov.not_checked.length) p.append(box("warn", "ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก): " + cov.not_checked.map((c) => NOT_CHECKED[c] || c).join(", ")));
-  if (r.flags.length) {
-    const exBox = el("div", { id: "explainBox" }), exBtn = el("button", { type: "button", text: "ให้ AI เรียบเรียงภาษาง่าย" });
+  if (!none) {
+    const exBox = el("div", { id: "explainBox", "aria-live": "polite" }), exBtn = el("button", { type: "button", text: "ตัวเลือก: ให้ AI เรียบเรียงภาษาง่าย" });
     exBtn.onclick = () => explainNow(exBtn, exBox);
     p.append(el("p", { class: "noprint" }, [exBtn]), exBox);
   }
-  p.append(coverageBox(cov), el("p", { class: "meta", text: r.disclaimer_th }), feedbackCard(r.flags));
+  p.append(glossary(), feedbackCard(r.flags));
 
   const q = $("p2"), herbs = s.herbs.map((h) => `${h.name_th || h.id}${h.part ? " (" + h.part + ")" : ""}${h.days_in_use ? " " + h.days_in_use + " วัน" : ""}`);
   q.replaceChildren(el("h2", { text: "ใบสรุปสำหรับเภสัชกร" }),
     el("p", { text: "สมุนไพร: " + (herbs.join(", ") || "-") }),
     el("p", { text: "ยา (ตามที่กรอก): " + (s.drugs_as_entered.join(", ") || "ไม่มี") }),
-    el("p", { text: "ผู้ใช้: " + JSON.stringify(LAST.profile) }),
-    el("strong", { text: "ธงเรียงตามความรุนแรง" }));
-  if (!s.flags.length) q.append(el("p", { text: s.headline_th }));
-  const ul = el("ul"); s.flags.forEach((f) => ul.append(el("li", { text: `[${f.severity}] ${f.message_th} (ชั้น ${f.evidence_tier}, หน้า ${f.source_page}, ${f.verified ? "verified" : "ยังไม่ verified"})` }))); q.append(ul);
+    el("p", { text: "ผู้ใช้: " + profileText(LAST.profile) }),
+    el("p", { class: "nonote", text: none ? NO_FLAG : s.headline_th }),
+    scopeBox(cov, s.disclaimer_th));
+  if (s.draft_notice_th) q.append(box("warn", s.draft_notice_th));
+  if (s.flags.length) q.append(el("strong", { text: "ธงเรียงตามความรุนแรง" }), summaryTable(s.flags));
   if (s.aggregates.length) { q.append(el("strong", { text: "ภาระความเสี่ยงรวม (สรุปโดยระบบ)" })); const al = el("ul"); s.aggregates.forEach((a) => al.append(el("li", { text: a.message_th }))); q.append(al); }
   q.append(el("strong", { text: "คำถามที่ควรถามต่อ (ร่าง ผู้เชี่ยวชาญต้องตรวจ)" }));
   const ql = el("ul"); s.follow_up_questions_th.forEach((t) => ql.append(el("li", { text: t }))); q.append(ql);
-  q.append(el("p", { text: "ยังไม่ได้ตรวจ: " + (s.unknown_inputs.concat(s.not_checked).join(", ") || "-") }), coverageBox(cov), el("p", { class: "meta", text: s.disclaimer_th }));
-  const dl = el("button", { type: "button", text: "ดาวน์โหลดใบสรุป (JSON)" });
-  dl.onclick = () => { const a = el("a", { href: URL.createObjectURL(new Blob([JSON.stringify(s, null, 2)], { type: "application/json" })), download: "pharmacist_summary.json" }); a.click(); URL.revokeObjectURL(a.href); };
+  q.append(el("p", { text: "ยังไม่ได้ตรวจ: " + (s.unknown_inputs.concat(s.not_checked.map((c) => NOT_CHECKED[c] || c)).join(", ") || "-") }));
+  const dl = el("button", { type: "button", text: "ดาวน์โหลดใบสรุป (JSON)" }); dl.onclick = () => download("pharmacist_summary.json", s);
   const pr = el("button", { type: "button", text: "พิมพ์ / บันทึกเป็น PDF" }); pr.onclick = () => window.print();
-  q.append(el("p", { class: "noprint" }, [dl, document.createTextNode(" "), pr]));
+  q.append(el("p", { class: "noprint" }, [dl, txt(" "), pr]));
   $("out").hidden = false;
 }
 
@@ -190,14 +310,54 @@ async function explainNow(btn, holder) {
   finally { btn.disabled = false; }
 }
 
+// ---------- ฟอร์ม: สมุนไพร (ค้นหา + การ์ดที่เลือก) ----------
+const selCard = (id) => document.querySelector(`.sel[data-id="${id}"]`);
+
+function syncHerbs() {
+  const q = $("herbSearch").value.trim().toLowerCase();
+  document.querySelectorAll("#herbList button").forEach((b) => { b.hidden = !!selCard(b.dataset.id) || (q && !b.textContent.toLowerCase().includes(q)); });
+  const n = document.querySelectorAll(".sel").length;
+  $("herbHint").textContent = n ? `เลือกแล้ว ${n} ชนิด` : "ยังไม่ได้เลือกสมุนไพร";
+  if (n) $("herbErr").textContent = "";
+}
+
+function addHerb(id, days) {
+  if (selCard(id)) return;
+  const h = META.herbs.find((x) => x.id === id); if (!h) return;
+  const part = el("select", { class: "part", "aria-label": "ส่วนที่ใช้ " + h.name_th }); h.parts.forEach((p) => part.append(el("option", { value: p, text: p })));
+  const dEl = el("input", { type: "number", class: "days", min: 0, max: 365, placeholder: "ใช้ติดต่อกัน (วัน)", "aria-label": "จำนวนวันที่ใช้ติดต่อกัน " + h.name_th });
+  if (days) dEl.value = days;
+  const rm = el("button", { type: "button", text: "เอาออก", "aria-label": "เอา " + h.name_th + " ออก" });
+  const card = el("div", { class: "sel", "data-id": id }, [el("header", {}, [el("span", { text: h.name_th }), rm]), el("div", { class: "row" }, [part, dEl])]);
+  rm.onclick = () => { card.remove(); syncHerbs(); stale(); $("herbSearch").focus(); };
+  $("herbSel").append(card); syncHerbs(); stale();
+}
+
+function clearHerbs() { document.querySelectorAll(".sel").forEach((c) => c.remove()); syncHerbs(); }
+
+function collect() {
+  const herbs = [...document.querySelectorAll(".sel")].map((d) => {
+    const days = parseInt(d.querySelector(".days").value, 10);
+    return { id: d.dataset.id, part: d.querySelector(".part").value, ...(days > 0 ? { days_in_use: days } : {}) };
+  });
+  // "ไม่ระบุ" = ไม่ส่งคีย์ -> engine แสดง "ไม่ได้ตรวจ" แทนการถือว่าตรวจแล้วว่าไม่ใช่ (สเปก R1)
+  const profile = { conditions: [...document.querySelectorAll("#conds input:checked")].map((i) => i.value) };
+  for (const k of ["pregnant", "breastfeeding"]) if ($(k).value) profile[k] = $(k).value === "yes";
+  const age = parseInt($("age").value, 10);
+  if (Number.isInteger(age)) profile.age = age;  // ว่าง = ไม่ระบุ -> engine แสดง "ไม่ได้ตรวจ"
+  const drugs = [...document.querySelectorAll("#drugs button[aria-pressed=true]")].map((b) => b.dataset.name)
+    .concat($("otherDrugs").value.split(",").map((s) => s.trim()).filter(Boolean));
+  return { herbs, drugs, profile };
+}
+
 function applyParsed(p) {
-  document.querySelectorAll(".herb").forEach((d) => { d.classList.remove("on"); d.querySelector("input[type=checkbox]").checked = false; d.querySelector(".days").value = ""; });
-  p.herbs.forEach((h) => { const d = document.querySelector(`.herb[data-id="${h.id}"]`); if (!d) return; d.querySelector("input[type=checkbox]").checked = true; d.classList.add("on"); if (h.days_in_use) d.querySelector(".days").value = h.days_in_use; });
-  const boxes = [...document.querySelectorAll("#drugs input")]; boxes.forEach((b) => (b.checked = false));
+  clearHerbs();
+  p.herbs.forEach((h) => addHerb(h.id, h.days_in_use));
+  const btns = [...document.querySelectorAll("#drugs button")]; btns.forEach((b) => b.setAttribute("aria-pressed", "false"));
   const others = [];
-  p.drugs.forEach((n) => { const b = boxes.find((x) => x.value.toLowerCase() === n.toLowerCase()); if (b) b.checked = true; else others.push(n); });
+  p.drugs.forEach((n) => { const b = btns.find((x) => x.dataset.name.toLowerCase() === n.toLowerCase()); if (b) b.setAttribute("aria-pressed", "true"); else others.push(n); });
   $("otherDrugs").value = others.join(", ");
-  $("out").hidden = true;
+  stale();
 }
 
 $("parseBtn").onclick = async () => {
@@ -213,47 +373,34 @@ $("parseBtn").onclick = async () => {
   finally { $("parseBtn").disabled = false; }
 };
 
+// ---------- แท็บ (ใช้ลูกศรซ้าย/ขวาได้) ----------
 function setTab(n) {
   $("p1").hidden = n !== 1; $("p2").hidden = n !== 2;
-  $("t1").setAttribute("aria-selected", n === 1); $("t2").setAttribute("aria-selected", n === 2);
+  [1, 2].forEach((i) => { $("t" + i).setAttribute("aria-selected", n === i); $("t" + i).tabIndex = n === i ? 0 : -1; });
 }
 $("t1").onclick = () => setTab(1); $("t2").onclick = () => setTab(2);
-
-function collect() {
-  const herbs = [...document.querySelectorAll(".herb.on")].map((d) => {
-    const days = parseInt(d.querySelector(".days").value, 10);
-    return { id: d.dataset.id, part: d.querySelector(".part").value, ...(days > 0 ? { days_in_use: days } : {}) };
-  });
-  const profile = { pregnant: $("pregnant").checked, breastfeeding: $("breastfeeding").checked,
-    conditions: [...document.querySelectorAll("#conds input:checked")].map((i) => i.value) };
-  const age = parseInt($("age").value, 10);
-  if (Number.isInteger(age)) profile.age = age;  // ว่าง = ไม่ระบุ -> engine แสดง "ไม่ได้ตรวจ"
-  const drugs = [...document.querySelectorAll("#drugs input:checked")].map((i) => i.value)
-    .concat($("otherDrugs").value.split(",").map((s) => s.trim()).filter(Boolean));
-  return { herbs, drugs, profile };
-}
+document.querySelector(".tabs").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const n = $("t1").getAttribute("aria-selected") === "true" ? 2 : 1;
+  setTab(n); $("t" + n).focus(); e.preventDefault();
+});
 
 function build() {
-  META.herbs.forEach((h) => {
-    const d = el("div", { class: "herb", "data-id": h.id });
-    const cb = el("input", { type: "checkbox" });
-    d.append(el("label", { class: "opt" }, [cb, document.createTextNode(h.name_th)]));
-    const part = el("select", { class: "part", "aria-label": "ส่วนที่ใช้ " + h.name_th }); h.parts.forEach((p) => part.append(el("option", { value: p, text: p })));
-    const days = el("input", { type: "number", class: "days", min: 0, max: 365, placeholder: "ใช้ติดต่อกัน (วัน)", "aria-label": "จำนวนวัน " + h.name_th });
-    d.append(el("div", { class: "extra" }, [part, days]));
-    cb.onchange = () => d.classList.toggle("on", cb.checked);
-    $("herbs").append(d);
-  });
-  META.drugs.forEach((n) => $("drugs").append(el("label", { class: "opt" }, [el("input", { type: "checkbox", value: n }), document.createTextNode(n)])));
-  Object.entries(META.conditions).forEach(([code, label]) => $("conds").append(el("label", { class: "opt" }, [el("input", { type: "checkbox", value: code }), document.createTextNode(label)])));
+  META.herbs.forEach((h) => { const b = el("button", { type: "button", "data-id": h.id, text: "+ " + h.name_th }); b.onclick = () => addHerb(h.id); $("herbList").append(b); });
+  META.drugs.forEach((n) => { const b = el("button", { type: "button", "data-name": n, "aria-pressed": "false", text: n }); b.onclick = () => { b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"); stale(); }; $("drugs").append(b); });
+  Object.entries(META.conditions).forEach(([code, label]) => $("conds").append(el("label", { class: "opt" }, [el("input", { type: "checkbox", value: code }), txt(label)])));
+  $("conds").addEventListener("change", () => { const n = document.querySelectorAll("#conds input:checked").length; $("condSum").textContent = n ? `โรค/สภาวะ (เลือกแล้ว ${n})` : "โรค/สภาวะ (กดเพื่อเลือก)"; });
   $("foot").textContent = META.disclaimer_th;
+  syncHerbs();
 }
 
-$("form").addEventListener("input", () => { $("out").hidden = true; });  // แก้ข้อมูล = ผลเก่าไม่ตรงแล้ว ซ่อนทันที
+$("herbSearch").addEventListener("input", syncHerbs);
+$("form").addEventListener("input", (e) => { if (!["herbSearch", "freeText"].includes(e.target.id)) stale(); });
 $("form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const body = collect();
-  if (!body.herbs.length) { $("p1").replaceChildren(box("warn", "เลือกสมุนไพรอย่างน้อย 1 ชนิด")); $("out").hidden = false; setTab(1); return; }
+  if (!body.herbs.length) { $("herbErr").textContent = "เลือกสมุนไพรอย่างน้อย 1 ชนิดก่อนกด “ตรวจ”"; $("herbSearch").focus(); return; }
+  $("herbErr").textContent = "";
   $("go").disabled = true;
   try {
     const res = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -263,6 +410,7 @@ $("form").addEventListener("submit", async (e) => {
   } catch (err) {
     $("p1").replaceChildren(box("err", "ตรวจไม่สำเร็จ: " + err.message)); $("out").hidden = false; setTab(1);
   } finally { $("go").disabled = false; }
+  const h = $("resHead") || $("p1"); h.tabIndex = -1; h.focus({ preventScroll: true }); $("out").scrollIntoView({ behavior: "smooth", block: "start" });  // ย้ายโฟกัสไปหัวข้อผล ให้โปรแกรมอ่านหน้าจอประกาศ
 });
 
 fetch("/api/meta").then((r) => r.json()).then((m) => { META = m; build(); })

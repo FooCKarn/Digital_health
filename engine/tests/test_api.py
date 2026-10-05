@@ -134,3 +134,12 @@ def test_http_index_page_served(base):
     with urllib.request.urlopen(base + "/") as r:
         html = r.read().decode()
     assert "HerbGuard TTM" in html and "innerHTML" not in html  # ห้ามใช้ innerHTML กับข้อมูล (กัน XSS)
+
+
+def test_index_page_respects_ui_rule_5_and_has_no_reassurance_glyphs():
+    html = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    assert 'const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้"' in html           # ข้อความมาตรฐานเมื่อไม่พบธง
+    assert "ปลอดภัย" not in html.replace("ไม่ได้แปลว่าปลอดภัย", "")           # คำนี้ใช้ได้เฉพาะแบบปฏิเสธ
+    assert not any(g in html for g in "✓✔✅☑👍")                              # ไม่มีสัญลักษณ์ติ๊ก/ปลอบใจในผลตรวจ
+    assert "scopeBox(cov, r.disclaimer_th)" in html and "evidence(f)" in html  # ขอบเขต+disclaimer และแถวหลักฐานถูกเรียกใช้
+    assert "aria-selected" in html and "aria-controls" in html               # แท็บมี aria ครบ
