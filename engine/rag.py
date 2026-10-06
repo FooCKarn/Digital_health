@@ -6,6 +6,8 @@ import math
 import re
 from collections import Counter
 
+import llm
+
 KINDS = ("contraindications", "age_limits", "drug_cautions", "condition_cautions", "duration_limits", "notes")
 # ตัดช่องว่างและเครื่องหมายวรรคตอน แต่ไม่ตัดสระ/วรรณยุกต์ไทย (\w ใน Python ไม่ครอบคลุมเครื่องหมายผสม จึงไม่ใช้)
 _STRIP = re.compile(r"[\s.,;:!?()\[\]{}\"'“”‘’\-–—/\\|*_<>]+")
@@ -148,8 +150,9 @@ def _extractive(chunks: list) -> str:
         f"• {c['herb_name_th']}: {c['text_th']} (ชั้นหลักฐาน {c['evidence_tier']}, หน้า {c['source_page']})" for c in chunks)
 
 
-def answer(question: str, result, context_herbs: list, checked_herbs: list, index: dict, config: dict) -> dict:
-    """คืนคำตอบแบบสกัดข้อความ (ไม่ใช้ LLM) result=None หมายถึงยังไม่มีผลตรวจ"""
+def answer(question: str, result, context_herbs: list, checked_herbs: list, index: dict, config: dict, complete=None, use_llm: bool = True) -> dict:
+    """ตอบคำถาม: ข้อความตายตัว/แบบสกัดข้อความเสมอ ถ้า use_llm จะให้ LLM เรียบเรียงจากรายการที่ค้นได้ (ไม่ผ่านตัวตรวจ = กลับแบบสกัดข้อความ)
+    result=None หมายถึงยังไม่มีผลตรวจ"""
     msgs = config["chat_messages_th"]["value"]
     follow = config["chat_followups_th"]["value"][:3]
 
@@ -185,4 +188,13 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
     if not hits:
         return out("refusal", msgs["no_info"])
     chunks = [c for c, _ in hits]
-    return out("database", _extractive(chunks), [_cite(c) for c in chunks])
+    base_text, why = _extractive(chunks), None
+    if use_llm:
+        allowed = " ".join(f"{c['herb_name_th']} {c['text_th']} {c['evidence_quote'] or ''} {c['drug_class'] or ''}" for c in chunks)
+        allowed += " " + " ".join(a for cls in {c["drug_class"] for c in chunks if c["drug_class"]} for a in index["classes"].get(cls, []))
+        allowed += " " + question
+        text, ids, why = llm.answer_with_llm(question, chunks, allowed, list(index["herb_names"].values()), index["drug_names"],
+                                             config["llm_forbidden_phrases"]["value"], complete)
+        if text is not None:
+            return out("llm", text, [_cite(c) for c in chunks if c["item_id"] in ids])
+    return out("database", base_text, [_cite(c) for c in chunks], why)
