@@ -34,20 +34,26 @@ def _alts(label: str) -> list:
     return [n for n in (norm(p) for p in re.split(r"\s*/\s*|\s*\(", label)) if len(n) >= 3]
 
 
-def build_index(herbs_db: dict, drug_map: dict, conds: dict, synonyms: dict) -> dict:
+def build_index(herbs_db: dict, drug_map: dict, conds: dict, synonyms: dict, kind_keywords: dict = None) -> dict:
+    """synonyms: คีย์ที่เป็นรหัสโรค/ภาวะ (conditions.json หรือที่ herbs.json ใช้) = คำพ้องของโรค นอกนั้น = คำพ้องของกลุ่มยา
+    kind_keywords: หัวข้อ (KINDS) -> คำบอกหัวข้อ ติดไปกับทุกรายการในหัวข้อนั้น และใช้เป็นหลักของคำถาม (has_anchor)"""
+    kind_keywords = kind_keywords or {}
+    cond_codes = set(conds) | {it["condition"] for h in herbs_db["herbs"] for k in KINDS for it in h.get(k, []) if it.get("condition")}
     class_alias = {}
     for e in drug_map["entries"]:
         for c in e["class"]:
             class_alias.setdefault(c, []).extend(e["names"])
     for c, words in synonyms.items():
-        class_alias.setdefault(c, []).extend(words)
+        if c not in cond_codes:
+            class_alias.setdefault(c, []).extend(words)
     chunks = []
     for h in herbs_db["herbs"]:
         for kind in KINDS:
             for n, it in enumerate(h.get(kind, [])):
-                cls = it.get("drug_class")
+                cls, cond = it.get("drug_class"), it.get("condition")
                 extra = " ".join(class_alias.get(cls, [])) + " " + " ".join(it.get("drug_names", [])) + " " + (cls or "")
-                label = conds.get(it.get("condition"), "") if it.get("condition") else ""
+                extra += " " + " ".join(kind_keywords.get(kind, []))
+                label = (conds.get(cond, "") + " " + " ".join(synonyms.get(cond, []))) if cond else ""
                 chunks.append({
                     "item_id": f"{h['id']}.{kind}.{n}", "herb_id": h["id"], "herb_name_th": h["name_th"], "kind": kind,
                     "text_th": it["text"], "condition": it.get("condition"), "drug_class": cls,
@@ -65,7 +71,8 @@ def build_index(herbs_db: dict, drug_map: dict, conds: dict, synonyms: dict) -> 
         "herb_by_name": sorted(((norm(h["name_th"]), h["id"]) for h in herbs_db["herbs"]), key=lambda x: -len(x[0])),
         "herb_names": {h["id"]: h["name_th"] for h in herbs_db["herbs"]},
         "classes": {c: [a for a in (norm(w) for w in ws) if len(a) >= 3] for c, ws in class_alias.items()},
-        "cond_alts": {code: _alts(label) for code, label in conds.items()},
+        "cond_alts": {code: _alts(conds.get(code, "")) + [a for a in (norm(w) for w in synonyms.get(code, [])) if len(a) >= 3] for code in sorted(cond_codes)},
+        "kinds": {k: [a for a in (norm(w) for w in ws) if len(a) >= 2] for k, ws in kind_keywords.items()},
         "drug_names": [n for e in drug_map["entries"] for n in e["names"]],
     }
 
@@ -95,15 +102,31 @@ def resolve_scope(question: str, index: dict, checked: list, context: list) -> s
     return set(checked) | set(context)
 
 
+def without_herb_names(text: str, index: dict) -> str:
+    """norm แล้วแทนชื่อสมุนไพรด้วย \\x00 (ชื่อยาวก่อน เหมือน named_herbs) กันข้อความสองฝั่งชื่อต่อกันเป็นคำใหม่"""
+    q = norm(text)
+    for name, _ in index["herb_by_name"]:
+        if name:
+            q = q.replace(name, "\x00")
+    return q
+
+
+def anchors(question: str, index: dict) -> tuple:
+    """'หลัก' ของคำถามนอกจากชื่อสมุนไพร: (กลุ่มยา, รหัสโรค/ภาวะ, หัวข้อ) ที่คำถามเอ่ยถึง (ชื่อยา/คำพ้อง/คำบอกหัวข้อใน config)
+    คำตอบแบบค้นใช้ได้เฉพาะรายการที่ตรงกับหลักอย่างน้อยหนึ่งอย่าง ไม่มีหลัก = ไม่ตอบ
+    (กฎข้อ 4(c): คำถามนอกขอบเขตต้องปฏิเสธ เช่น 'วันนี้อากาศเป็นอย่างไร' แม้มีสมุนไพรที่ตรวจอยู่)"""
+    q = without_herb_names(question, index)
+
+    def hit(d):
+        return {k for k, al in d.items() if any(a in q for a in al)}
+    return hit(index["classes"]), hit(index["cond_alts"]), hit(index["kinds"])
+
+
 def retrieve(query: str, index: dict, scope: set, top_k: int, min_score: float) -> list:
     """คะแนน = (น้ำหนัก idf ของ gram ในคำถามที่พบในรายการ) / (น้ำหนักรวมของ gram ทั้งหมดในคำถาม) เรียงคะแนนมาก->น้อย เท่ากันเรียงตามรหัส
     ชื่อสมุนไพรถูกตัดออกจากคำถามก่อนคิดคะแนน: ชื่อกำหนดขอบเขตแล้ว (resolve_scope) จึงไม่นับเป็นหลักฐานความเกี่ยวข้อง
     (ไม่งั้น 'ขิงรสอะไร' ได้คะแนนจากคำว่า 'ขิง' ล้วน ๆ)"""
-    q = norm(query)
-    for name, _ in index["herb_by_name"]:  # ชื่อยาวก่อน เหมือน named_herbs
-        if name:
-            q = q.replace(name, "\x00")
-    qg = set().union(*(grams(part) for part in q.split("\x00")))
+    qg = set().union(*(grams(part) for part in without_herb_names(query, index).split("\x00")))
     if not qg or not scope:
         return []
     idf, unseen = index["idf"], index["unseen"]
@@ -189,8 +212,10 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
         return out("database", head + lines, [_flag_cite(f, index) for f in flags])
 
     scope = resolve_scope(question, index, checked_herbs, context_herbs)
-    hits = retrieve(strip_stop(question, config["rag_stop_phrases"]["value"]), index, scope,
-                    config["rag_top_k"]["value"], config["rag_min_score"]["value"])
+    classes, codes, kinds = anchors(question, index)
+    hits = [h for h in retrieve(strip_stop(question, config["rag_stop_phrases"]["value"]), index, scope,
+                                len(index["chunks"]), config["rag_min_score"]["value"])
+            if h[0]["drug_class"] in classes or h[0]["condition"] in codes or h[0]["kind"] in kinds][:config["rag_top_k"]["value"]]
     if not hits:
         return out("refusal", msgs["no_info"])
     chunks = [c for c, _ in hits]

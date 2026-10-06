@@ -11,7 +11,7 @@ from check import check  # noqa: E402
 
 L = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E731
 HERBS, DRUGS, CONFIG, CONDS, TAGS = L("data/herbs.json"), L("data/drug_class_map.json"), L("data/config.json"), L("data/conditions.json")["conditions"], L("data/mechanism_tags.json")["tags"]
-INDEX = rag.build_index(HERBS, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"])
+INDEX = rag.build_index(HERBS, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"], CONFIG["rag_kind_keywords"]["value"])
 MSG = CONFIG["chat_messages_th"]["value"]
 
 KW_INP = {"herbs": [{"id": "khing"}, {"id": "garlic"}], "drugs": ["warfarin"], "profile": {"age": 60}}
@@ -89,6 +89,17 @@ def test_lookup_without_anchor_or_data_is_fixed_no_info_refusal():
     for q in ("ฟุตบอลคืออะไร", "ขิงรสอะไร"):   # คำถามที่ฐานข้อมูลไม่มีคำตอบ
         a = ask(q, result=None, checked=("khing",))
         assert a["source"] == "refusal" and a["text_th"] == MSG["no_info"] and a["cites"] == [], q
+
+
+def test_lookup_needs_an_anchor_matching_the_answered_item():
+    # ไม่มีหลัก (ยา/โรค/หัวข้อ) = ปฏิเสธ แม้มีสมุนไพรที่ตรวจอยู่และคะแนนค้นสูงพอ
+    for checked in (("garlic",), ("khilek",)):
+        assert ask("วันนี้อากาศเป็นอย่างไร", result=None, checked=checked)["text_th"] == MSG["no_info"], checked
+    assert ask("ขิงกับเบาหวาน", result=None, checked=())["source"] == "refusal"   # มีหลัก (เบาหวาน) แต่ขิงไม่มีรายการเรื่องนี้
+    assert ask("ใช้ได้นานกี่วัน", result=None, checked=("khing",))["source"] == "refusal"   # ขิงไม่มีรายการระยะเวลา
+    # มีหลักและมีรายการตรง = ตอบ
+    assert [c["item_id"] for c in ask("ขิงกับคนท้อง", result=None, checked=())["cites"]] == ["khing.contraindications.0"]
+    assert "khing.contraindications.0" in [c["item_id"] for c in ask("มีข้อห้ามอะไร", result=None, checked=("khing",))["cites"]]
 
 
 def test_every_answer_is_deterministic_and_has_no_internal_fields():

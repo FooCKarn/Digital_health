@@ -17,6 +17,8 @@
     {"id": "R14", "question": "ขิงกับนิ่วในถุงน้ำดี", "check": null, "expect": {"source": "database", "item_ids_any": ["khing.condition_cautions.1"]}},
     {"id": "R15", "question": "ใครต้องระวังเรื่องโรคตับ", "check": null, "expect": {"source": "database", "item_ids_any": ["khilek.contraindications.2", "mara_khi_nok.condition_cautions.0"]}},
     {"id": "R16", "question": "ทำไมถึงขึ้นธง", "check": {"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}}, "expect": {"source": "database", "item_ids_any": []}},
+    {"id": "R18", "question": "ขิงกับคนท้อง", "check": null, "expect": {"source": "database", "item_ids_any": ["khing.contraindications.0"]}},
+    {"id": "R19", "question": "มีข้อห้ามอะไร", "check": {"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "database", "item_ids_any": ["khing.contraindications.0"]}},
     {"id": "R17", "question": "ควรถามเภสัชกรว่าอะไร", "check": null, "expect": {"source": "database", "item_ids_any": []}},
     {"id": "N01", "question": "ขิงกับ warfarin ปลอดภัยไหม", "check": {"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}}, "expect": {"source": "database", "item_ids_any": []}},
     {"id": "N02", "question": "ขิงกินวันละกี่เม็ด", "check": null, "expect": {"source": "refusal", "item_ids_any": []}},
@@ -25,6 +27,10 @@
     {"id": "N05", "question": "ฟุตบอลคืออะไร", "check": {"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "refusal", "item_ids_any": []}},
     {"id": "N06", "question": "ขิงรสอะไร", "check": null, "expect": {"source": "refusal", "item_ids_any": []}},
     {"id": "N07", "question": "วันนี้อากาศเป็นอย่างไร", "check": null, "expect": {"source": "refusal", "item_ids_any": []}},
+    {"id": "N08", "question": "วันนี้อากาศเป็นอย่างไร", "check": {"herbs": [{"id": "garlic"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "refusal", "item_ids_any": []}},
+    {"id": "N09", "question": "วันนี้อากาศเป็นอย่างไร", "check": {"herbs": [{"id": "khilek"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "refusal", "item_ids_any": []}},
+    {"id": "N10", "question": "ขิงกับเบาหวาน", "check": null, "expect": {"source": "refusal", "item_ids_any": []}},
+    {"id": "N11", "question": "ใช้ได้นานกี่วัน", "check": {"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "refusal", "item_ids_any": []}},
     {"id": "K01", "question": "โสมกับ warfarin", "check": null, "expect": {"source": "refusal", "item_ids_any": []}, "known_limit": true}
   ]
 }

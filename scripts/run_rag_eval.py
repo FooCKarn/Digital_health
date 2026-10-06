@@ -15,7 +15,7 @@ load = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E73
 HERBS, DRUGS, CONFIG = load("data/herbs.json"), load("data/drug_class_map.json"), load("data/config.json")
 CONDS, TAGS = load("data/conditions.json")["conditions"], load("data/mechanism_tags.json")["tags"]
 CASES = load("docs/rag_eval.json")["cases"]
-INDEX = rag.build_index(HERBS, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"])
+INDEX = rag.build_index(HERBS, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"], CONFIG["rag_kind_keywords"]["value"])
 
 
 def run_case(c, config):

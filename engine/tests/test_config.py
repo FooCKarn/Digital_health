@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 CFG = json.loads((Path(__file__).resolve().parents[2] / "data" / "config.json").read_text(encoding="utf-8"))
-CHAT_KEYS = ["rag_top_k", "rag_min_score", "rag_stop_phrases", "rag_synonyms", "chat_emergency_phrases", "chat_dose_phrases",
+CHAT_KEYS = ["rag_top_k", "rag_min_score", "rag_stop_phrases", "rag_synonyms", "rag_kind_keywords", "chat_emergency_phrases", "chat_dose_phrases",
              "chat_diagnosis_phrases", "chat_safety_yesno_phrases", "chat_explain_phrases", "chat_pharmacist_phrases",
              "chat_messages_th", "chat_followups_th"]
 
@@ -34,5 +34,11 @@ def test_fixed_messages_never_claim_safety():
 
 
 def test_emergency_and_drug_synonym_lists_flagged_for_expert_review():
-    for k in ("chat_emergency_phrases", "chat_dose_phrases", "chat_diagnosis_phrases", "rag_synonyms"):
+    for k in ("chat_emergency_phrases", "chat_dose_phrases", "chat_diagnosis_phrases", "rag_synonyms", "rag_kind_keywords", "rag_min_score"):
         assert "ผู้เชี่ยวชาญต้องตรวจ" in CFG[k]["note"], k
+
+
+def test_kind_keywords_cover_only_known_kinds_with_nonempty_trigger_words():
+    kk = CFG["rag_kind_keywords"]["value"]
+    assert set(kk) <= {"contraindications", "age_limits", "drug_cautions", "condition_cautions", "duration_limits", "notes"} and kk
+    assert all(ws and all(isinstance(w, str) and len(w.strip()) >= 2 for w in ws) for ws in kk.values())

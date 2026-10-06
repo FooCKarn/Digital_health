@@ -16,7 +16,7 @@ _load = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E7
 HERBS, DRUGS, CONFIG = _load("data/herbs.json"), _load("data/drug_class_map.json"), _load("data/config.json")
 CONDS = _load("data/conditions.json")["conditions"]
 TAGS = _load("data/mechanism_tags.json")["tags"]
-RAG = rag.build_index(HERBS, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"])
+RAG = rag.build_index(HERBS, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"], CONFIG["rag_kind_keywords"]["value"])
 HERB_IDS = {h["id"] for h in HERBS["herbs"]}
 
 
