@@ -69,6 +69,7 @@ def build_index(herbs_db: dict, drug_map: dict, conds: dict, synonyms: dict) -> 
 
 
 def named_herbs(q_norm: str, index: dict) -> list:
+    # ponytail: จับแบบ substring ไม่มีขอบเขตคำ (ไทยไม่มีช่องว่าง); ชื่อสั้นอาจชนคำอื่น ถ้าพบให้เพิ่มรายการยกเว้นใน config
     found, rest = [], q_norm
     for name, hid in index["herb_by_name"]:  # ชื่อยาวก่อน: 'มะขามป้อม' ต้องไม่ถูกนับเป็น 'มะขาม' ซ้ำ
         if name and name in rest:
@@ -98,11 +99,11 @@ def retrieve(query: str, index: dict, scope: set, top_k: int, min_score: float) 
     if not qg or not scope:
         return []
     idf, unseen = index["idf"], index["unseen"]
-    denom = sum(idf.get(g, unseen) for g in qg)
+    denom = math.fsum(idf.get(g, unseen) for g in qg)  # fsum: ผลไม่ขึ้นกับลำดับ set (PYTHONHASHSEED)
     scored = []
     for c in index["chunks"]:
         if c["herb_id"] in scope:
-            score = sum(idf[g] for g in qg & c["_grams"]) / denom
+            score = math.fsum(idf[g] for g in qg & c["_grams"]) / denom
             if score >= min_score:
                 scored.append((score, c))
     scored.sort(key=lambda x: (-x[0], x[1]["item_id"]))

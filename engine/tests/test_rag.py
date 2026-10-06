@@ -81,3 +81,18 @@ def test_retrieve_is_deterministic_and_respects_min_score_and_scope():
 def test_retrieve_handles_empty_and_symbol_only_queries():
     assert rag.retrieve("", INDEX, {"khing"}, 4, 0.0) == [] and rag.retrieve("?!...", INDEX, {"khing"}, 4, 0.0) == []
     assert rag.retrieve("ขิง", INDEX, set(), 4, 0.0) == []
+
+
+def test_retrieval_identical_across_hash_seeds():
+    import os
+    import subprocess
+    code = (
+        "import sys, json; sys.path.insert(0, 'engine'); sys.path.insert(0, 'engine/tests');"
+        "import test_rag as t, rag;"
+        "qs = ['ขิงกับยากันเลือดเป็นลิ่ม', 'รางจืดกับยาเบาหวาน', 'กระเทียมกับไซโคลสปอริน', 'ใครต้องระวังเรื่องโรคตับ', 'warfarin ต้องระวังกับสมุนไพรอะไร'];"
+        "out = [[(c['item_id'], s) for c, s in rag.retrieve(rag.strip_stop(q, t.STOP), t.INDEX, rag.resolve_scope(q, t.INDEX, [], []), 8, 0.0)] for q in qs];"
+        "print(json.dumps(out))"
+    )
+    outs = [subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+                           env={**os.environ, "PYTHONHASHSEED": seed}).stdout for seed in ("1", "2", "3")]
+    assert outs[0] and outs[0] == outs[1] == outs[2]
