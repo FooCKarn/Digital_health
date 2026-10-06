@@ -108,3 +108,81 @@ def retrieve(query: str, index: dict, scope: set, top_k: int, min_score: float) 
                 scored.append((score, c))
     scored.sort(key=lambda x: (-x[0], x[1]["item_id"]))
     return [(c, round(s, 3)) for s, c in scored[:top_k]]
+
+
+# ---------- intent (กฎตายตัว ไม่ใช้ LLM) ----------
+def classify(question: str, config: dict) -> str:
+    """ลำดับความสำคัญ: emergency > dose > diagnosis > safety_yesno > pharmacist_q > explain_flags > lookup"""
+    q = norm(question)
+
+    def hit(key):
+        return any(norm(p) in q for p in config[key]["value"])
+
+    if hit("chat_emergency_phrases"):
+        return "emergency"
+    if hit("chat_dose_phrases"):
+        return "dose"
+    if hit("chat_diagnosis_phrases"):
+        return "diagnosis"
+    if hit("chat_safety_yesno_phrases"):
+        return "safety_yesno"
+    if hit("chat_pharmacist_phrases"):
+        return "pharmacist_q"
+    if hit("chat_explain_phrases"):
+        return "explain_flags"
+    return "lookup"
+
+
+# ---------- คำตอบ ----------
+def _cite(c: dict) -> dict:
+    return {k: c[k] for k in ("item_id", "herb_id", "herb_name_th", "source_page", "pdf_page", "evidence_quote", "verified")}
+
+
+def _flag_cite(f: dict, index: dict) -> dict:
+    return {"item_id": f"flag:{f['flag_id']}", "herb_id": f["herb_id"], "herb_name_th": index["herb_names"].get(f["herb_id"], f["herb_id"]),
+            "source_page": f["source_page"], "pdf_page": f.get("pdf_page"), "evidence_quote": f.get("evidence_quote"), "verified": f["verified"]}
+
+
+def _extractive(chunks: list) -> str:
+    return "จากฐานข้อมูลนี้:\n" + "\n".join(
+        f"• {c['herb_name_th']}: {c['text_th']} (ชั้นหลักฐาน {c['evidence_tier']}, หน้า {c['source_page']})" for c in chunks)
+
+
+def answer(question: str, result, context_herbs: list, checked_herbs: list, index: dict, config: dict) -> dict:
+    """คืนคำตอบแบบสกัดข้อความ (ไม่ใช้ LLM) result=None หมายถึงยังไม่มีผลตรวจ"""
+    msgs = config["chat_messages_th"]["value"]
+    follow = config["chat_followups_th"]["value"][:3]
+
+    def out(source, text, cites=(), why=None):
+        return {"source": source, "text_th": text, "cites": list(cites), "follow_ups": follow, "rejected_reason": why}
+
+    intent = classify(question, config)
+    if intent == "emergency":
+        return out("emergency", msgs["emergency"])
+    if intent == "dose":
+        return out("refusal", msgs["dose"])
+    if intent == "diagnosis":
+        return out("refusal", msgs["diagnosis"])
+    if intent == "pharmacist_q":
+        qs = config["pharmacist_questions_th"]["value"]
+        return out("database", "คำถามที่ควรถามเภสัชกร (ร่าง ผู้เชี่ยวชาญต้องตรวจ):\n" + "\n".join(f"• {q}" for q in qs))
+    if intent in ("safety_yesno", "explain_flags"):
+        if result is None:
+            return out("refusal", msgs["no_check"])
+        flags = result["flags"]
+        named = named_herbs(norm(question), index) if intent == "explain_flags" else []
+        if named:
+            flags = [f for f in flags if f["herb_id"] in named]
+        if not flags:
+            return out("database", msgs["safety_no_flag"])
+        lines = "\n".join(f"• {f['message_th']} (ชั้นหลักฐาน {f['evidence_tier']}, หน้า {f['source_page']})" for f in flags)
+        head = msgs["safety_prefix"] + "\n" if intent == "safety_yesno" else ""
+        return out("database", head + lines, [_flag_cite(f, index) for f in flags])
+
+    scope = resolve_scope(question, index, checked_herbs, context_herbs)
+    hits = retrieve(strip_stop(question, config["rag_stop_phrases"]["value"]), index, scope,
+                    config["rag_top_k"]["value"], config["rag_min_score"]["value"])
+    if not hits:
+        return out("refusal", msgs["no_info"])
+    chunks = [c for c, _ in hits]
+    return out("database", _extractive(chunks), [_cite(c) for c in chunks])
