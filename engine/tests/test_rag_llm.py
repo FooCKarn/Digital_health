@@ -98,3 +98,24 @@ def test_history_is_not_part_of_the_llm_prompt():
         return json.dumps(good()[0], ensure_ascii=False)
     ask(spy)
     assert set(json.loads(seen["user"].split("รายการข้อมูล: ")[1].split("\n")[0])[0]) == {"id", "text"} and "history" not in seen["user"].lower()
+
+
+def test_user_typed_number_or_drug_echo_is_rejected():
+    obj, _ = good()
+    for q, extra, why in (("รางจืดกับยาเบาหวาน 30 วัน", " ติดตามอาการ 30 วัน", "ตัวเลข"), ("รางจืดกับยาเบาหวาน metformin", " และ metformin", "อังกฤษ")):
+        base = ask(None, q=q, use_llm=False)
+        assert base["cites"], q
+        a = ask(fake({**obj, "answer_th": obj["answer_th"] + extra}), q=q)
+        assert a["source"] == "database" and why in a["rejected_reason"], (q, a["rejected_reason"])
+
+
+def test_affirmative_reword_of_a_caution_is_rejected():
+    a = ask(fake({"answer_th": "รางจืดใช้ร่วมกับยาลดระดับน้ำตาลในเลือดได้", "cites": ["rangchuet.drug_cautions.0"]}))
+    assert a["source"] == "database" and "กลับ" in a["rejected_reason"]
+
+
+def test_any_llm_exception_or_none_reply_falls_back():
+    def boom(system, user):
+        raise RuntimeError("x")
+    assert ask(boom)["source"] == "database" and ask(boom)["rejected_reason"] == "RuntimeError"
+    assert ask(lambda s, u: None)["source"] == "database"

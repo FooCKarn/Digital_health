@@ -1,6 +1,7 @@
-"""จุดใช้ LLM 2 จุด (CLAUDE.md กฎข้อ 4) ทั้งสองจุดมีตัวตรวจแบบ deterministic ทับผลของ LLM เสมอ:
+"""จุดใช้ LLM 3 จุด (CLAUDE.md กฎข้อ 4) ทั้งสองจุดมีตัวตรวจแบบ deterministic ทับผลของ LLM เสมอ:
   parse_text : ข้อความอิสระ -> รายการสมุนไพร/ยา "เสนอให้ผู้ใช้ยืนยัน" (ไม่ใช่ผลสุดท้าย)
   explain    : เรียบเรียงจาก JSON ผลตรวจ -> ถ้าไม่ผ่าน validate_explanation ใช้ template (message_th ของธง)
+  answer_with_llm : แชต เรียบเรียงจากรายการที่ค้นได้ -> ถ้าไม่ผ่าน validate_answer ใช้ข้อความสกัดจากฐานข้อมูล
 engine (check.py) ไม่เรียกไฟล์นี้ LLM ไม่ตัดสินว่ามีธงหรือไม่ และไม่เพิ่มข้อเท็จจริง
 complete(system, user) -> str ฉีดจากภายนอกได้ (ใช้ทดสอบโดยไม่เรียกเครือข่าย)
 """
@@ -293,7 +294,7 @@ MAX_ANSWER = 500
 
 
 def validate_answer(out, chunks: list, allowed_text: str, all_herb_names: list, all_drug_names: list, forbidden: list):
-    """คืน None ถ้าผ่าน หรือสตริงเหตุผลที่ไม่ผ่าน; allowed_text = ข้อความที่ค้นได้ + หลักฐาน + ชื่อ/นามแฝงยา + คำถาม"""
+    """คืน None ถ้าผ่าน หรือสตริงเหตุผลที่ไม่ผ่าน; allowed_text = ข้อความที่ค้นได้ + หลักฐาน + ชื่อ/นามแฝงยา (ห้ามรวมคำถามผู้ใช้)"""
     if not isinstance(out, dict) or not isinstance(out.get("answer_th"), str) or not isinstance(out.get("cites"), list):
         return "schema ไม่ตรง"
     ids = {c["item_id"] for c in chunks}
@@ -317,7 +318,8 @@ def validate_answer(out, chunks: list, allowed_text: str, all_herb_names: list, 
         if n.lower() in ans.lower() and n.lower() not in low:
             return f"มีชื่อยานอกรายการที่ค้นได้: {n}"
     cited = [c for c in chunks if c["item_id"] in cites]
-    if any(re.search(r"ไม่|ห้าม", c["text_th"]) for c in cited) and not re.search(r"ไม่|ห้าม|หลีกเลี่ยง", ans):
+    # ponytail: heuristic หยาบ ตรวจแค่คำเตือน/ปฏิเสธหายไป ไม่เข้าใจความหมายจริง
+    if any(re.search(r"ไม่|ห้าม|ควรระวัง", c["text_th"]) for c in cited) and not re.search(r"ไม่|ห้าม|หลีกเลี่ยง|ระวัง", ans):
         return "ความหมายอาจถูกกลับ (รายการที่อ้างเป็นข้อห้าม แต่คำตอบไม่มีคำปฏิเสธ)"
     return None
 
@@ -329,7 +331,7 @@ def answer_with_llm(question: str, chunks: list, allowed_text: str, all_herb_nam
     user = f"รายการข้อมูล: {json.dumps(items, ensure_ascii=False)}\n<user_text>{question}</user_text>"
     try:
         out = _json_from(complete(ASK_SYSTEM, user))
-    except (LLMUnavailable, ValueError, KeyError) as e:  # ValueError รวม JSONDecodeError
+    except Exception as e:  # noqa: BLE001  ทุกความล้มเหลวของ LLM/การแยก JSON = กลับไปใช้ข้อความสกัด
         return None, None, type(e).__name__
     bad = validate_answer(out, chunks, allowed_text, all_herb_names, all_drug_names, forbidden)
     return (None, None, bad) if bad else (out["answer_th"], out["cites"], None)

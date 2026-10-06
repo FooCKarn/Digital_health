@@ -21,7 +21,7 @@ NONE = check(NONE_INP, HERBS, DRUGS, CONFIG, TAGS)
 
 
 def ask(q, result=KW, checked=("khing", "garlic"), context=()):
-    return rag.answer(q, result, list(context), list(checked), INDEX, CONFIG)
+    return rag.answer(q, result, list(context), list(checked), INDEX, CONFIG, use_llm=False)
 
 
 def no_claim_of_safety(text):

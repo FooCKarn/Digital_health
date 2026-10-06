@@ -1,5 +1,5 @@
 """RAG แบบคุมได้ (สเปก docs/superpowers/specs/2026-10-06-chat-assistant-design.md)
-ส่วนนี้: คลังข้อความ ดัชนี n-gram ตัวอักษร (ภาษาไทยไม่มีช่องว่างคั่นคำ) ขอบเขตสมุนไพร และการค้น ล้วนกำหนดผลแน่นอน ไม่เรียก LLM
+ส่วนนี้: คลังข้อความ ดัชนี n-gram ตัวอักษร (ภาษาไทยไม่มีช่องว่างคั่นคำ) ขอบเขตสมุนไพร และการค้น ล้วนกำหนดผลแน่นอน; answer() เรียก llm ได้เฉพาะเพื่อเรียบเรียงข้อความที่ค้นได้ (ผ่านตัวตรวจ ไม่ผ่านใช้ข้อความสกัด)
 คลังข้อความ = รายการใน data/herbs.json เท่านั้น (ไม่ใช้ข้อความเต็มของหนังสือ ลิขสิทธิ์ ข้อ 9)
 """
 import math
@@ -192,7 +192,6 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
     if use_llm:
         allowed = " ".join(f"{c['herb_name_th']} {c['text_th']} {c['evidence_quote'] or ''} {c['drug_class'] or ''}" for c in chunks)
         allowed += " " + " ".join(a for cls in {c["drug_class"] for c in chunks if c["drug_class"]} for a in index["classes"].get(cls, []))
-        allowed += " " + question
         text, ids, why = llm.answer_with_llm(question, chunks, allowed, list(index["herb_names"].values()), index["drug_names"],
                                              config["llm_forbidden_phrases"]["value"], complete)
         if text is not None:
