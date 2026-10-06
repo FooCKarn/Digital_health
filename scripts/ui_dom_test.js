@@ -26,12 +26,19 @@ async function load() {
   await waitFor(() => d.querySelectorAll("#herbAdd option").length > 1);
   return { w, d, $: (id) => d.getElementById(id) };
 }
-// ผู้ใช้เลือกจาก dropdown แล้วกดปุ่ม "เพิ่ม"
+// ผู้ใช้เมาส์/นิ้วเลือกจาก dropdown: mousedown แล้วค่าเปลี่ยน -> เพิ่มทันที (แตะครั้งเดียว)
 function pick(w, d, selId, textPart) {
   const s = d.getElementById(selId), o = [...s.options].find((x) => x.textContent.includes(textPart) && !x.disabled);
   if (!o) throw new Error(`ไม่พบตัวเลือก '${textPart}' ใน ${selId}`);
+  s.dispatchEvent(new w.Event("mousedown", { bubbles: true }));
   s.value = o.value; s.dispatchEvent(new w.Event("input", { bubbles: true })); s.dispatchEvent(new w.Event("change", { bubbles: true }));
-  d.getElementById(selId + "Btn").click();
+}
+// ผู้ใช้คีย์บอร์ด: กดลูกศร (keydown) แล้วค่าเปลี่ยน -> ยังไม่เพิ่ม
+function arrowTo(w, d, selId, textPart) {
+  const s = d.getElementById(selId), o = [...s.options].find((x) => x.textContent.includes(textPart) && !x.disabled);
+  s.dispatchEvent(new w.KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+  s.value = o.value; s.dispatchEvent(new w.Event("input", { bubbles: true })); s.dispatchEvent(new w.Event("change", { bubbles: true }));
+  return s;
 }
 const busy = (d) => d.getElementById("go").getAttribute("aria-disabled") === "true";
 async function submit(d) { d.getElementById("go").click(); return waitFor(() => !busy(d) && (!d.getElementById("out").hidden)); }
@@ -57,17 +64,26 @@ function accName(e, d) {
   ok(ld && ld["@type"] === "WebApplication", "JSON-LD อ่านได้");
   ok(d.body.textContent.replace(/ไม่ได้(แปลว่า|หมายความว่า)ปลอดภัย/g, "").indexOf("ปลอดภัย") === -1, "ไม่มีคำว่า ปลอดภัย นอกเชิงปฏิเสธ");
 
-  console.log("== 1) dropdown + ปุ่ม 'เพิ่ม' (ไม่เพิ่มเมื่อเปลี่ยนค่า) ==");
+  console.log("== 1) dropdown: เมาส์/นิ้ว เพิ่มทันที · คีย์บอร์ดเลื่อนดูได้โดยไม่เพิ่ม ==");
   ok(d.querySelectorAll("#herbAdd option").length - 1 >= 21 && d.querySelectorAll("#drugAdd option").length - 1 >= 5 && d.querySelectorAll("#condAdd option").length - 1 >= 20, "dropdown ครบ");
   ok(d.querySelectorAll("input[type=checkbox]").length === 0, "ไม่มีช่องติ๊กรกหน้า");
   const hs = $("herbAdd"), khing = [...hs.options].find((o) => o.textContent === "ขิง");
-  hs.value = khing.value; hs.dispatchEvent(new w.Event("input", { bubbles: true })); hs.dispatchEvent(new w.Event("change", { bubbles: true }));  // เหมือนกดลูกศรบน dropdown ที่ปิดอยู่
-  ok(d.querySelectorAll("#herbSel .sel").length === 0, "เปลี่ยนค่าใน dropdown (เช่น กดลูกศร) ยังไม่เพิ่มสมุนไพร");
+  arrowTo(w, d, "herbAdd", "ขิง");  // กดลูกศรบน dropdown ที่ปิดอยู่ (เบราว์เซอร์ยิง change ทุกครั้ง)
+  ok(d.querySelectorAll("#herbSel .sel").length === 0 && hs.value === khing.value, "คีย์บอร์ด: กดลูกศรเลื่อนดู ยังไม่เพิ่มสมุนไพร");
+  hs.dispatchEvent(new w.Event("blur"));
+  ok(hs.value === "" && d.querySelectorAll("#herbSel .sel").length === 0, "คีย์บอร์ด: เลื่อนดูแล้วออกจากช่องโดยไม่ยืนยัน -> ยกเลิก ไม่ค้างค่าที่ยังไม่ได้เพิ่ม");
+  arrowTo(w, d, "herbAdd", "ขิง"); hs.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+  ok(d.querySelectorAll("#herbSel .sel").length === 1 && hs.value === "", "คีย์บอร์ด: กด Enter -> เพิ่ม");
+  d.querySelector("#herbSel .sel button").click();
+  arrowTo(w, d, "herbAdd", "ขิง"); $("herbAddBtn").click();
+  ok(d.querySelectorAll("#herbSel .sel").length === 1, "คีย์บอร์ด: กดปุ่ม เพิ่ม -> เพิ่ม");
+  d.querySelector("#herbSel .sel button").click();
   hs.value = ""; $("herbAddBtn").click();
   ok((await live(d)).includes("เลือกรายการจากช่องก่อน") && d.activeElement === hs, "กดเพิ่มโดยไม่เลือก -> ประกาศให้เลือกก่อน + โฟกัสอยู่ที่ dropdown");
-  pick(w, d, "herbAdd", "ขิง");
+  ok(!!$("addHint") && ["herbAdd", "drugAdd", "condAdd"].every((id) => ($(id).getAttribute("aria-describedby") || "").includes("addHint")), "มีคำอธิบายวิธีใช้คีย์บอร์ดผูกกับ dropdown ทั้ง 3");
+  pick(w, d, "herbAdd", "ขิง");  // เมาส์/นิ้ว: เลือกครั้งเดียวเพิ่มทันที (ไม่ต้องกดปุ่ม)
   const row = d.querySelector("#herbSel .sel");
-  ok(!!row && row.querySelector(".part") && row.querySelector(".days") && row.querySelector("button"), "กดเพิ่มแล้วขึ้นแถวเดียว: ชื่อ + ส่วนที่ใช้ + วัน + ลบ");
+  ok(!!row && row.querySelector(".part") && row.querySelector(".days") && row.querySelector("button"), "เมาส์/นิ้ว: เลือกครั้งเดียวขึ้นแถวทันที: ชื่อ + ส่วนที่ใช้ + วัน + ลบ");
   ok((await live(d)).includes("เพิ่ม ขิง แล้ว เลือกแล้ว 1 ชนิด"), "ประกาศการเพิ่ม (พื้นที่ประกาศ)");
   ok(khing.disabled && d.activeElement === hs, "ตัวเลือกที่เลือกแล้วถูกปิด และโฟกัสอยู่ที่ dropdown เพื่อเพิ่มต่อ");
   row.querySelector("button").click();

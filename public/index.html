@@ -41,8 +41,11 @@
   .row3 label { display: block; font-weight: 600; margin-bottom: 3px; }
   input[type=number], input[type=text], select, textarea { font: inherit; min-height: 40px; padding: 4px 8px; border: 1px solid var(--field); border-radius: 8px; background: var(--card); color: var(--text); max-width: 100%; }
   .row3 select, .row3 input, .field > input, textarea { width: 100%; }
-  .adder { display: flex; gap: 6px; }
+  .adder { display: flex; gap: 6px; position: relative; }
   .adder select { flex: 1; min-width: 0; }
+  /* ปุ่ม "เพิ่ม" ซ่อนไว้สำหรับคนใช้เมาส์/นิ้ว (เลือกแล้วเพิ่มทันที) แต่ยังอยู่ในลำดับ Tab และโปรแกรมอ่านหน้าจออ่านได้ และโผล่ให้เห็นเมื่อได้รับโฟกัส */
+  .adder button { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .adder button:focus { position: static; width: auto; height: auto; min-height: 40px; padding: 4px 14px; border: 1px solid var(--brand); overflow: visible; clip: auto; }
   textarea { min-height: 60px; margin: 4px 0; }
   button { font: inherit; cursor: pointer; min-height: 40px; border-radius: 10px; border: 1px solid var(--brand); padding: 4px 14px; background: var(--card); color: var(--brand); }
   button.primary { background: var(--brand); color: var(--card); font-weight: 600; padding: 6px 28px; }
@@ -100,6 +103,7 @@
 <main>
   <noscript><p class="err">หน้านี้ต้องเปิดใช้ JavaScript จึงจะตรวจได้ HerbGuard TTM เป็นต้นแบบเครื่องมือตรวจธงเตือนการใช้สมุนไพรไทยร่วมกับยาแผนปัจจุบัน ไม่ใช่การวินิจฉัย</p></noscript>
   <p id="live" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+  <p id="addHint" class="sr-only">ผู้ใช้เมาส์หรือหน้าจอสัมผัส เลือกแล้วจะเพิ่มทันที ผู้ใช้คีย์บอร์ด ใช้ลูกศรเลื่อนดู แล้วกด Enter หรือปุ่ม เพิ่ม เพื่อยืนยัน</p>
   <div id="loadErr" class="err" role="alert" hidden></div>
 
   <form id="form" class="card" autocomplete="off" novalidate aria-labelledby="formHead">
@@ -115,7 +119,7 @@
     <div class="field">
       <label for="herbAdd">สมุนไพรที่ใช้</label>
       <div class="adder">
-        <select id="herbAdd" aria-describedby="herbHint herbErr"><option value="">เลือกสมุนไพร…</option></select>
+        <select id="herbAdd" aria-describedby="herbHint herbErr addHint"><option value="">เลือกสมุนไพร…</option></select>
         <button type="button" id="herbAddBtn" aria-label="เพิ่มสมุนไพร">เพิ่ม</button>
       </div>
       <div id="herbSel" role="group" aria-label="สมุนไพรที่เลือก"></div>
@@ -126,7 +130,7 @@
     <div class="field">
       <label for="drugAdd">ยาที่ใช้ (ในตาราง)</label>
       <div class="adder">
-        <select id="drugAdd"><option value="">เลือกยา…</option></select>
+        <select id="drugAdd" aria-describedby="addHint"><option value="">เลือกยา…</option></select>
         <button type="button" id="drugAddBtn" aria-label="เพิ่มยา">เพิ่ม</button>
       </div>
       <div id="drugSel" class="chips" role="group" aria-label="ยาที่เลือก"></div>
@@ -147,7 +151,7 @@
     <div class="field">
       <label for="condAdd">โรค/สภาวะ</label>
       <div class="adder">
-        <select id="condAdd"><option value="">เลือกโรค/สภาวะ…</option></select>
+        <select id="condAdd" aria-describedby="addHint"><option value="">เลือกโรค/สภาวะ…</option></select>
         <button type="button" id="condAddBtn" aria-label="เพิ่มโรคหรือสภาวะ">เพิ่ม</button>
       </div>
       <div id="condSel" class="chips" role="group" aria-label="โรคหรือสภาวะที่เลือก"></div>
@@ -365,7 +369,7 @@ async function explainNow(btn, holder) {
 }
 
 // ---------- ฟอร์ม: dropdown + ปุ่ม "เพิ่ม" (สมุนไพร=แถว, ยา/โรค=ชิป) ----------
-// เพิ่มเมื่อกดปุ่ม ไม่ใช่เมื่อเปลี่ยนค่า เพราะบางเบราว์เซอร์ยิง change ทุกครั้งที่กดลูกศรบน dropdown ที่ปิดอยู่ ทำให้ผู้ใช้คีย์บอร์ดเลื่อนดูรายการไม่ได้
+// บางเบราว์เซอร์ยิง change ทุกครั้งที่กดลูกศรบน dropdown ที่ปิดอยู่ จึงแยกว่าค่าเปลี่ยนเพราะคีย์บอร์ดหรือเพราะเมาส์/นิ้ว (ดู wireAdder)
 function avail(selectId, value, on) {  // ซ่อนตัวเลือกที่เลือกไปแล้ว คืนเมื่อเอาออก
   const o = [...$(selectId).options].find((x) => x.value === value);
   if (o) { o.disabled = !on; o.hidden = !on; }
@@ -373,11 +377,21 @@ function avail(selectId, value, on) {  // ซ่อนตัวเลือก�
 function wireAdder(selectId, items, onPick) {
   const s = $(selectId);
   items.forEach(([v, t]) => s.append(el("option", { value: v, text: t })));
-  $(selectId + "Btn").onclick = () => {
+  let kb = false;  // true = ค่าเปลี่ยนเพราะคีย์บอร์ด (ลูกศร/พิมพ์ตัวอักษร) ยังเป็นแค่ "เลื่อนดู" ยังไม่เพิ่ม
+  const commit = () => {
     const v = s.value;
-    if (!v) { live("เลือกรายการจากช่องก่อน แล้วกดปุ่ม เพิ่ม"); s.focus(); return; }
-    s.value = ""; onPick(v); s.focus();
+    if (!v) { live("เลือกรายการจากช่องก่อน แล้วกด Enter หรือปุ่ม เพิ่ม"); s.focus(); return; }
+    s.value = ""; kb = false; onPick(v); s.focus();
   };
+  // เมาส์/นิ้วมือ: เลือกแล้วเพิ่มทันที (แตะครั้งเดียว) · คีย์บอร์ด/โปรแกรมอ่านหน้าจอ: เลื่อนดูด้วยลูกศรได้โดยไม่เพิ่ม แล้วกด Enter หรือปุ่ม เพิ่ม
+  s.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { if (s.value) { e.preventDefault(); commit(); } return; }
+    if (!["Tab", "Shift", "Escape", "Control", "Alt", "Meta"].includes(e.key)) kb = true;
+  });
+  ["pointerdown", "mousedown", "touchstart"].forEach((t) => s.addEventListener(t, () => { kb = false; }));
+  s.addEventListener("change", () => { if (!kb && s.value) commit(); });
+  s.addEventListener("blur", () => { if (kb) s.value = ""; kb = false; });  // เลื่อนดูแล้วออกจากช่องโดยไม่ยืนยัน = ยกเลิก ไม่ปล่อยให้ค้างเป็นค่าที่ยังไม่ได้เพิ่ม
+  $(selectId + "Btn").onclick = commit;
 }
 
 const herbRow = (id) => document.querySelector(`#herbSel .sel[data-id="${id}"]`);

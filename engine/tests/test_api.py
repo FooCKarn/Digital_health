@@ -158,7 +158,8 @@ def test_index_page_accessibility_markers():
     assert "--field:" in html and "var(--field)" in html and "prefers-reduced-motion" in html            # ขอบช่องกรอก 3:1 + ลดการเคลื่อนไหว
     assert "e.key === \"Home\"" in html and "e.key === \"End\"" in html                                   # แท็บ Home/End
     assert 'id="herbAddBtn"' in html and 'id="drugAddBtn"' in html and 'id="condAddBtn"' in html         # เพิ่มด้วยปุ่ม ไม่ใช่ตอนเปลี่ยนค่า
-    assert "s.onchange" not in html and "onchange" not in html                                          # dropdown ไม่เพิ่มรายการเมื่อเปลี่ยนค่า
+    assert "onchange" not in html and 'addEventListener("change"' in html and "let kb = false" in html  # เมาส์/นิ้ว: เพิ่มทันที; คีย์บอร์ด: เลื่อนดูได้โดยไม่เพิ่ม
+    assert 'id="addHint"' in html and html.count('addHint"') >= 3                                        # บอกวิธีใช้คีย์บอร์ดให้โปรแกรมอ่านหน้าจอ
     assert not re.search(r'<div[^>]*aria-label=[^>]*>', html.split("<script>")[0]) or all("role=" in m for m in re.findall(r'<div[^>]*aria-label=[^>]*>', html.split("<script>")[0]))
     assert 'aria-disabled' in html and "button:disabled" not in html and ".disabled = true" not in html  # ปุ่มกำลังทำงานใช้ aria-disabled
 
