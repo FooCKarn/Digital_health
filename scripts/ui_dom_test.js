@@ -9,17 +9,21 @@ const ok = (cond, msg) => { console.log((cond ? "  OK   " : "  FAIL ") + msg); i
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function waitFor(fn, ms = 4000) { const t = Date.now(); while (Date.now() - t < ms) { try { if (fn()) return true; } catch (e) {} await sleep(30); } return false; }
 
-async function load() {
+async function load(opts = {}) {
   const dom = await JSDOM.fromURL(BASE + "/", {
     runScripts: "dangerously", resources: "usable", pretendToBeVisual: true,
     beforeParse(w) {
       w.__calls = 0;
-      // fetch ที่ควบคุมได้: หน่วงเวลา/จำลองเครือข่ายล่ม เฉพาะ /api/analyze
+      // fetch ที่ควบคุมได้: หน่วงเวลา/จำลองเครือข่ายล่ม เฉพาะ /api/analyze (และ /api/ask ล่มได้)
       w.fetch = async (u, o) => {
         if (String(u).includes("/api/analyze")) { w.__calls++; if (w.__delay) await sleep(w.__delay); if (w.__fail) throw new Error("network down"); }
+        if (String(u).includes("/api/ask") && w.__askFail) throw new Error("network down");
         return fetch(new URL(u, BASE), o);
       };
       w.Element.prototype.scrollIntoView = () => {}; w.URL.createObjectURL = () => "blob:x"; w.URL.revokeObjectURL = () => {};
+      // storage: เติมประวัติก่อนสคริปต์ทำงาน (จำลองโหลดหน้าใหม่ในแท็บเดิม) / storageThrows: จำลองโควตาเต็มหรือโหมดส่วนตัว
+      if (opts.storage !== undefined) w.sessionStorage.setItem("hg_chat_v1", opts.storage);
+      if (opts.storageThrows) w.Storage.prototype.setItem = () => { throw new Error("quota"); };
     },
   });
   const w = dom.window, d = w.document;
@@ -220,6 +224,85 @@ function accName(e, d) {
   ok($("ageErr").textContent === "" && !$("age").hasAttribute("aria-invalid"), "แก้ค่าแล้วล้างข้อผิดพลาด");
   $("age").value = ""; await submit(d);
   ok(w.__calls === 1 && !$("out").hidden, "เว้นว่าง = ไม่ระบุ (ใช้ได้)");
+
+  console.log("== 15) แชต: ปุ่มลอย เปิด/ปิด โฟกัส Esc ==");
+  ({ w, d, $ } = await load());
+  ok($("chatHead").getAttribute("aria-label") === "เปิดผู้ช่วย AI" && $("chatPanel").hidden && $("chatHead").getAttribute("aria-expanded") === "false", "ปุ่มแชตมีชื่อ และแผงปิดอยู่");
+  $("chatHead").click();
+  ok(!$("chatPanel").hidden && d.activeElement === $("chatInput") && $("chatHead").getAttribute("aria-expanded") === "true", "เปิดแล้วโฟกัสไปที่ช่องพิมพ์");
+  ok($("chatPanel").getAttribute("role") === "dialog" && !!$("chatPanel").getAttribute("aria-label") && $("chatLog").getAttribute("role") === "log", "แผงเป็น dialog มีชื่อ และบทสนทนาเป็น log");
+  ok(/ไม่ใช่การวินิจฉัย/.test($("chatNotice").textContent) && /จาก 50 ชนิด/.test($("chatNotice").textContent), "แถบคงที่: ไม่ใช่การวินิจฉัย + ขอบเขต 50 ชนิด");
+  $("chatPanel").dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  ok($("chatPanel").hidden && d.activeElement === $("chatHead"), "Esc ปิดแผงและโฟกัสกลับปุ่มแชต");
+
+  console.log("== 16) แชต: ถาม-ตอบ ป้ายที่มา หลักฐาน ประวัติ ==");
+  ({ w, d, $ } = await load());
+  pick(w, d, "herbAdd", "ขิง"); pick(w, d, "drugAdd", "warfarin"); $("age").value = "60"; await submit(d);
+  $("chatHead").click();
+  $("chatInput").value = "ขิงกับยากันเลือดเป็นลิ่ม"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
+  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 1 && !d.querySelector("#chatLog [aria-busy]") && $("chatLog").textContent.includes("จากฐานข้อมูลนี้"));
+  const am = d.querySelector("#chatLog .msg.a");
+  ok(d.querySelectorAll("#chatLog .msg.u").length === 1 && am.querySelector(".src").textContent === "ข้อความจากฐานข้อมูล" && am.textContent.includes("ขิง"), "ฟองผู้ใช้ + ฟองผู้ช่วยพร้อมป้ายที่มา");
+  const ev = am.querySelector("details.evd");
+  ok(!!ev && !ev.open && /^ดูหลักฐาน: ขิง/.test(ev.querySelector("summary").textContent) && /หน้า \d+ \(หน้า \d+ ในไฟล์ PDF\)/.test(ev.textContent), "ปุ่มดูหลักฐานในคำตอบ (พับไว้) พร้อมหน้า");
+  const saved = JSON.parse(w.sessionStorage.getItem("hg_chat_v1"));
+  ok(saved.v === 1 && saved.msgs.length === 2 && saved.msgs[0].r === "u" && !/\b(age|profile|pregnant|breastfeeding|conditions|drugs)\b/.test(JSON.stringify(saved)), "ประวัติอยู่ใน sessionStorage (ข้อความเท่านั้น ไม่มีโปรไฟล์)");
+  ok(d.querySelectorAll("#chatChips button").length === 2, "มีชิปคำถามแนะนำ");
+  d.querySelector("#chatChips button").click();
+  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 2 && $("chatSend").getAttribute("aria-disabled") === "false");
+  ok(d.querySelectorAll("#chatLog .msg.a")[1].textContent.includes("ขิง"), "กดชิป 'ทำไมถึงขึ้นธง' ได้คำตอบจากผลตรวจปัจจุบัน");
+  const sav = w.sessionStorage.getItem("hg_chat_v1");
+  ({ w, d, $ } = await load({ storage: sav }));
+  ok(d.querySelectorAll("#chatLog .msg").length === 4, "โหลดหน้าใหม่ในแท็บเดียวกัน: ประวัติ 4 ข้อความกลับมา");
+  $("chatHead").click(); $("chatClear").click();
+  ok(d.querySelectorAll("#chatLog .msg").length === 0 && JSON.parse(w.sessionStorage.getItem("hg_chat_v1")).msgs.length === 0, "ล้างประวัติแล้วทั้งหน้าจอและ sessionStorage ว่าง");
+
+  console.log("== 17) แชต: ฉุกเฉิน การปฏิเสธ ไม่มีผลตรวจ ==");
+  ({ w, d, $ } = await load());
+  $("chatHead").click();
+  const ask = async (q, n) => { $("chatInput").value = q; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true })); await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === n && $("chatSend").getAttribute("aria-disabled") === "false"); return [...d.querySelectorAll("#chatLog .msg.a")][n - 1]; };
+  let m = await ask("หายใจไม่ออกหลังกินขิง", 1);
+  ok(m.classList.contains("emerg") && m.getAttribute("role") === "alert" && m.textContent.includes("1669") && m.querySelector(".src").textContent === "ข้อควรทราบเร่งด่วน", "ฉุกเฉิน: ข้อความเร่งด่วน (role=alert) ไม่เรียก AI");
+  m = await ask("ขิงกินวันละกี่เม็ด", 2); ok(/ไม่แนะนำขนาด/.test(m.textContent) && m.querySelector(".src").textContent === "ตอบไม่ได้ / ไม่มีข้อมูล", "ขอขนาดยา: ปฏิเสธ + ป้าย");
+  m = await ask("ทำไมถึงขึ้นธง", 3); ok(m.textContent.includes("ยังไม่มีผลตรวจ"), "ยังไม่ตรวจ: บอกให้ตรวจก่อน (แชตใช้ได้ก่อนตรวจ)");
+  m = await ask("รางจืดกับยาเบาหวาน", 4); ok(m.textContent.includes("รางจืด") && !!m.querySelector("details.evd"), "ถามเรื่องสมุนไพรที่ระบุชื่อได้แม้ยังไม่ตรวจ");
+  m = await ask("ฟุตบอลคืออะไร", 5); ok(m.textContent.includes("ไม่พบข้อมูล"), "คำถามนอกฐาน: ไม่พบข้อมูล");
+  m = await ask("ขิงกับ warfarin ปลอดภัยไหม", 6); ok(m.textContent.includes("ยังไม่มีผลตรวจ") && !/ใช้ได้|กินได้/.test(m.textContent), "ถามปลอดภัยไหมโดยยังไม่ตรวจ: ไม่ตอบใช่/ไม่ใช่");
+  const sysText = (() => { const c = d.body.cloneNode(true); c.querySelectorAll(".msg.u").forEach((u) => u.remove()); return c.textContent; })();  // ไม่นับคำที่ผู้ใช้พิมพ์เอง
+  ok(sysText.replace(/ไม่ได้(แปลว่า|หมายความว่า)ปลอดภัย/g, "").indexOf("ปลอดภัย") === -1, "ข้อความของระบบทั้งหน้าไม่มีคำว่า ปลอดภัย นอกเชิงปฏิเสธ (ไม่นับคำถามที่ผู้ใช้พิมพ์)");
+
+  console.log("== 18) แชต: storage เสีย/ใช้ไม่ได้ + ผลตรวจเปลี่ยน + ปุ่มถามเรื่องธง ==");
+  ({ w, d, $ } = await load({ storage: "{not json" }));
+  $("chatHead").click(); $("chatInput").value = "รางจืดกับยาเบาหวาน"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
+  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
+  ok(d.querySelectorAll("#chatLog .msg.a").length === 1, "sessionStorage เสีย (JSON พัง): แชตยังใช้ได้");
+  ({ w, d, $ } = await load({ storageThrows: true }));
+  $("chatHead").click(); $("chatInput").value = "รางจืดกับยาเบาหวาน"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
+  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
+  ok(d.querySelectorAll("#chatLog .msg.a").length === 1, "setItem โยน error (โควตา/โหมดส่วนตัว): แชตยังใช้ได้ ไม่มีประวัติ");
+  ({ w, d, $ } = await load());
+  pick(w, d, "herbAdd", "ขิง"); pick(w, d, "drugAdd", "warfarin"); $("age").value = "60"; await submit(d);
+  const askBtn = d.querySelector("li.flag button.askflag");
+  ok(!!askBtn && /^ถามเรื่องธงนี้/.test(askBtn.getAttribute("aria-label")) && askBtn.textContent === "ถามเรื่องธงนี้", "การ์ดธงมีปุ่ม 'ถามเรื่องธงนี้' (ชื่อขึ้นต้นด้วยคำที่เห็น)");
+  askBtn.click();
+  ok(!$("chatPanel").hidden && $("chatInput").value.startsWith("อธิบายธงของ") && d.activeElement === $("chatInput") && d.querySelectorAll("#chatLog .msg").length === 0, "กดแล้วเปิดแชตและเติมคำถามให้ (ยังไม่ส่งเอง)");
+  $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
+  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
+  d.querySelector('#drugSel [data-v="warfarin"] button').click();   // แก้ข้อมูล -> ผลเก่าถูกซ่อน
+  ok([...d.querySelectorAll("#chatLog .msg.n")].some((n) => n.textContent.includes("ผลตรวจเปลี่ยนแล้ว")), "แก้ข้อมูลหลังคุยแล้ว: แชตแจ้งว่าคำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน");
+
+  console.log("== 19) แชต: API ล้มเหลว + ปุ่มกำลังทำงาน + ความเข้าถึง ==");
+  ({ w, d, $ } = await load());
+  w.__askFail = true; $("chatHead").click(); $("chatInput").value = "รางจืดกับยาเบาหวาน"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
+  await waitFor(() => d.querySelector("#chatLog .err") && $("chatSend").getAttribute("aria-disabled") === "false");
+  ok(d.querySelector("#chatLog .err").getAttribute("role") === "alert" && d.querySelectorAll("#chatLog .msg.u").length === 1, "API ล้ม: ข้อความ role=alert และคำถามของผู้ใช้ยังอยู่ในประวัติ");
+  const names = [...d.querySelectorAll(".chat-ui button, .chat-ui input")].filter((e) => !accName(e, d));
+  ok(names.length === 0 && d.querySelectorAll("div[aria-label]:not([role])").length === 0, "ทุกปุ่ม/ช่องในแผงแชตมีชื่อ ไม่มี div ที่มี aria-label โดยไม่มี role");
+  const ids2 = [...d.querySelectorAll("[id]")].map((e) => e.id); ok(ids2.length === new Set(ids2).size, "ไม่มี id ซ้ำ");
+  ok($("chatInput").maxLength === 300, "ช่องพิมพ์จำกัด 300 ตัวอักษร");
+  const x = "<img src=x onerror=\"window.__xss=1\">"; w.__askFail = false; $("chatInput").value = x; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
+  await waitFor(() => $("chatSend").getAttribute("aria-disabled") === "false" && d.querySelectorAll("#chatLog .msg.a").length >= 1);
+  ok(w.__xss === undefined && !d.querySelector("#chatLog img") && [...d.querySelectorAll("#chatLog .msg.u")].some((u) => u.textContent === x), "คำถามฝัง HTML แสดงเป็นข้อความธรรมดา");
 
   console.log(fails ? `\nสรุป: ล้มเหลว ${fails} ข้อ` : "\nสรุป: ผ่านทุกข้อ");
   process.exit(fails ? 1 : 0);

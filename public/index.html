@@ -95,6 +95,27 @@
   footer { padding-bottom: 20px; }
   footer details { margin-top: 4px; }
   [hidden] { display: none !important; }
+  /* แชต "ผู้ช่วย AI" (โทนสุขภาพเฉพาะแผงแชต ไม่รีสกินทั้งเว็บ) */
+  #chatHead { position: fixed; right: 16px; bottom: 16px; z-index: 50; width: 56px; height: 56px; min-height: 56px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--brand); color: var(--card); border: 0; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+  #chatPanel { position: fixed; right: 16px; bottom: 84px; z-index: 50; width: min(400px, calc(100vw - 32px)); height: min(560px, calc(100vh - 110px)); display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--field); border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.3); overflow: hidden; }
+  #chatPanel header { max-width: none; margin: 0; padding: 8px 12px; background: var(--brand); color: var(--card); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  #chatPanel header h2 { margin: 0; font-size: 1rem; color: inherit; }
+  #chatPanel header button { min-height: 36px; padding: 2px 10px; background: transparent; color: var(--card); border-color: var(--card); }
+  #chatNotice { margin: 0; padding: 4px 12px; font-size: .85rem; background: var(--caution-bg); color: var(--caution); }
+  #chatLog { flex: 1; overflow-y: auto; padding: 8px 12px; }
+  .msg { margin: 8px 0; padding: 8px 10px; border-radius: 12px; max-width: 92%; white-space: pre-line; overflow-wrap: anywhere; }
+  .msg.u { margin-left: auto; background: var(--brand); color: var(--card); border-bottom-right-radius: 3px; }
+  .msg.a { background: var(--scope-bg); border: 1px solid var(--line); border-bottom-left-radius: 3px; }
+  .msg.a.emerg { background: var(--avoid-bg); border: 2px solid var(--avoid); color: var(--text); font-weight: 600; }
+  .msg.n { max-width: 100%; background: transparent; color: var(--muted); font-size: .88rem; text-align: center; }
+  .msg .src { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 2px; }
+  #chatChips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 12px; }
+  #chatChips button { min-height: 36px; padding: 2px 12px; border-radius: 999px; }
+  #chatForm { display: flex; gap: 6px; padding: 8px 12px; border-top: 1px solid var(--line); }
+  #chatForm input { flex: 1; min-width: 0; }
+  .askflag { min-height: 32px; margin-top: 6px; padding: 0 12px; font-size: .88rem; }
+  @media (max-width: 600px) { #chatPanel { inset: 0; width: auto; height: auto; border-radius: 0; } #chatHead { bottom: 12px; right: 12px; } }
+  @media print { .chat-ui { display: none !important; } }
   @media print { form, .tabs, button, .noprint, details.opt-box, footer details { display: none !important; } .card { border: 0; } }
 </style>
 </head>
@@ -181,6 +202,25 @@
   </details>
   <p class="meta" id="foot"></p>
 </footer>
+<div class="chat-ui">
+  <button type="button" id="chatHead" aria-label="เปิดผู้ช่วย AI" aria-expanded="false" aria-controls="chatPanel">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1.1-4.2A8 8 0 1 1 21 12z"/><path d="M9 11c1 2 3 2.5 6 0"/></svg>
+  </button>
+  <section id="chatPanel" role="dialog" aria-label="ผู้ช่วย AI (ต้นแบบ)" hidden>
+    <header>
+      <h2>ผู้ช่วย AI (ต้นแบบ)</h2>
+      <span><button type="button" id="chatClear" aria-label="ล้างประวัติแชต">ล้างประวัติ</button> <button type="button" id="chatClose" aria-label="ปิดผู้ช่วย AI">ปิด</button></span>
+    </header>
+    <p id="chatNotice">ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้เท่านั้น · ห้ามพิมพ์ข้อมูลส่วนตัว</p>
+    <div id="chatLog" role="log" aria-label="บทสนทนา"></div>
+    <div id="chatChips" role="group" aria-label="คำถามแนะนำ"></div>
+    <form id="chatForm" novalidate>
+      <label for="chatInput" class="sr-only">พิมพ์คำถามถึงผู้ช่วย AI</label>
+      <input type="text" id="chatInput" maxlength="300" placeholder="ถามต่อจากผลตรวจ…" autocomplete="off">
+      <button type="submit" class="primary" id="chatSend" aria-label="ส่งคำถาม">ส่ง</button>
+    </form>
+  </section>
+</div>
 
 <script>
 "use strict";
@@ -212,7 +252,7 @@ function live(m) {
 function stale() {
   gen++;
   const o = $("out");
-  if (!o.hidden) { o.hidden = true; live("ข้อมูลเปลี่ยนแล้ว ผลเดิมถูกซ่อน กด “ตรวจ” อีกครั้ง"); }
+  if (!o.hidden) { o.hidden = true; live("ข้อมูลเปลี่ยนแล้ว ผลเดิมถูกซ่อน กด “ตรวจ” อีกครั้ง"); chatNote(); }
 }
 // ปุ่มที่กำลังทำงานใช้ aria-disabled (ไม่ใช้ disabled เพราะโฟกัสจะหลุดจากปุ่ม)
 const setBusy = (b, on) => b.setAttribute("aria-disabled", on ? "true" : "false");
@@ -245,16 +285,21 @@ function evidence(f) {
 }
 
 // ดูหลักฐานในหนังสือ: วลีสั้นที่ใช้ตรวจเทียบ + หน้า (กฎข้อ 9: ไม่แสดงข้อความยาวจากหนังสือ)
-function sourceBox(f) {
+function sourceBox(f, label) {
   if (!f.evidence_quote) return null;
-  return el("details", { class: "evd" }, [el("summary", { text: "ดูหลักฐานในหนังสือ" }),
+  return el("details", { class: "evd" }, [el("summary", { text: label || "ดูหลักฐานในหนังสือ" }),
     el("blockquote", { text: "“" + f.evidence_quote + "”" }),
     el("p", { class: "meta", text: `หนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) หน้า ${f.source_page}${f.pdf_page ? ` (หน้า ${f.pdf_page} ในไฟล์ PDF)` : ""} · วลีสั้นที่คัดมาใช้ตรวจเทียบ ข้อความเต็มและบริบทอยู่ในเล่ม` })]);
 }
 
+function askButton(f) {
+  const b = el("button", { type: "button", class: "askflag noprint", text: "ถามเรื่องธงนี้", "aria-label": `ถามเรื่องธงนี้: ${herbName(f.herb_id)}` });
+  b.onclick = () => openChat(`อธิบายธงของ${herbName(f.herb_id)}`);
+  return b;
+}
 const flagItem = (f) => el("li", { class: "flag " + f.severity }, [
   el("div", { class: "sev" }, [icon(f.severity), el("span", { text: SEV[f.severity] })]),
-  el("p", { class: "msg", text: f.message_th }), evidence(f), sourceBox(f)].filter(Boolean));
+  el("p", { class: "msg", text: f.message_th }), evidence(f), sourceBox(f), askButton(f)].filter(Boolean));
 
 const aggItem = (a) => el("li", { class: "flag " + a.severity }, [
   el("div", { class: "sev" }, [icon(a.severity), el("span", { text: `ภาระความเสี่ยงรวม (${a.label_th}) · ${SEV[a.severity]}` })]),
@@ -502,6 +547,7 @@ function build() {
   wireAdder("drugAdd", META.drugs.map((n) => [n, n]), (v) => addChip("drugSel", "drugAdd", v, v));
   wireAdder("condAdd", Object.entries(META.conditions), (v) => addChip("condSel", "condAdd", v, META.conditions[v]));
   $("foot").textContent = META.disclaimer_th;
+  $("chatNotice").textContent += ` · ฐานข้อมูลครอบคลุม ${META.coverage.herbs_in_db} จาก ${META.coverage.herbs_in_book} ชนิด`;
   syncHerbs();
 }
 
@@ -534,6 +580,85 @@ $("form").addEventListener("submit", async (e) => {
     if (my === gen) showError(err.message);
   } finally { setBusy(go, false); }
 });
+
+// ---------- แชต "ผู้ช่วย AI" (สเปก docs/superpowers/specs/2026-10-06-chat-assistant-design.md) ----------
+// ประวัติเก็บใน sessionStorage ของแท็บนี้เท่านั้น (ไม่ส่งให้เซิร์ฟเวอร์/LLM, ไม่เก็บโปรไฟล์) เสียหรือใช้ไม่ได้ = ทำงานต่อโดยไม่มีประวัติ
+const CHAT_KEY = "hg_chat_v1", CHAT_MAX = 50;
+const SRC_LABEL = { database: "ข้อความจากฐานข้อมูล", llm: "AI เรียบเรียงจากข้อความที่ค้นได้", refusal: "ตอบไม่ได้ / ไม่มีข้อมูล", emergency: "ข้อควรทราบเร่งด่วน" };
+// chatDK = ชุดข้อมูลที่ตรวจตอนคุยล่าสุด เก็บในหน่วยความจำเท่านั้น (มีโปรไฟล์อยู่ จึงห้ามลง storage)
+let chatMsgs = [], chatDK = "";
+
+function okMsg(m) {
+  return m && ["u", "a", "n"].includes(m.r) && typeof m.t === "string" && m.t.length <= 4000 && (m.cites === undefined || Array.isArray(m.cites));
+}
+function loadChat() {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(CHAT_KEY) || "null");
+    if (v && v.v === 1 && Array.isArray(v.msgs)) chatMsgs = v.msgs.filter(okMsg).slice(-CHAT_MAX);
+  } catch (e) { chatMsgs = []; }
+  if (chatMsgs.length) chatDK = "reloaded";  // โหลดหน้าใหม่ = ผลตรวจเดิมหายไปแล้ว เปิดแชตครั้งแรกจะเตือนว่าคำตอบเก่าอาจไม่ตรง
+}
+function saveChat() { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify({ v: 1, msgs: chatMsgs.slice(-CHAT_MAX) })); } catch (e) { /* ใช้ไม่ได้ (โหมดส่วนตัว/เต็ม) = ไม่มีประวัติ แต่แชตยังใช้ได้ */ } }
+
+function renderMsg(m) {
+  if (m.r === "u") return el("div", { class: "msg u", text: m.t });
+  if (m.r === "n") return el("div", { class: "msg n", text: m.t });
+  const b = el("div", { class: "msg a" + (m.src === "emergency" ? " emerg" : "") }, [el("span", { class: "src", text: SRC_LABEL[m.src] || "ผู้ช่วย AI" }), txt(m.t)]);
+  if (m.src === "emergency") b.setAttribute("role", "alert");
+  (m.cites || []).slice(0, 6).forEach((c) => { const d = c && c.evidence_quote ? sourceBox(c, `ดูหลักฐาน: ${c.herb_name_th || ""}`) : null; if (d) b.append(d); });
+  return b;
+}
+function addMsg(m) {
+  chatMsgs.push(m); chatMsgs = chatMsgs.slice(-CHAT_MAX); saveChat();
+  const log = $("chatLog"); log.append(renderMsg(m)); log.scrollTop = log.scrollHeight;
+}
+function chatNote() {  // ผลตรวจเปลี่ยน: เตือนในแชต (ไม่ซ้ำ)
+  if (!chatMsgs.length || (chatMsgs[chatMsgs.length - 1].r === "n")) return;
+  addMsg({ r: "n", t: "ผลตรวจเปลี่ยนแล้ว คำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน" });
+}
+function setChips(list) {
+  const box_ = $("chatChips"); box_.replaceChildren();
+  (list || []).slice(0, 3).forEach((q) => { const b = el("button", { type: "button", text: q }); b.onclick = () => sendChat(q); box_.append(b); });
+}
+function openChat(prefill) {
+  const panel = $("chatPanel");
+  panel.hidden = false; $("chatHead").setAttribute("aria-expanded", "true");
+  const dk = LAST ? JSON.stringify(LAST) : "";
+  if (chatMsgs.length && chatDK && dk !== chatDK) chatNote();
+  chatDK = dk;
+  if (prefill) $("chatInput").value = prefill;
+  $("chatInput").focus();
+}
+function closeChat() { $("chatPanel").hidden = true; $("chatHead").setAttribute("aria-expanded", "false"); $("chatHead").focus(); }
+
+async function sendChat(q) {
+  q = (q || "").trim();
+  const btn = $("chatSend");
+  if (!q || isBusy(btn)) return;
+  setBusy(btn, true); $("chatInput").value = "";
+  addMsg({ r: "u", t: q });
+  const wait = el("div", { class: "msg a", text: "กำลังค้นข้อมูล…" }); $("chatLog").append(wait); $("chatLog").setAttribute("aria-busy", "true");
+  const lastA = [...chatMsgs].reverse().find((m) => m.r === "a");
+  const ctx = [...new Set(((lastA && lastA.cites) || []).map((c) => c.herb_id))].filter(Boolean).slice(0, 5);
+  const body = { ...(LAST || { herbs: [], drugs: [], profile: { conditions: [] } }), question: q, context_herbs: ctx };
+  try {
+    const { answer: a } = await post("/api/ask", body);
+    wait.remove();
+    const cites = (a.cites || []).map((c) => ({ item_id: c.item_id, herb_id: c.herb_id, herb_name_th: c.herb_name_th, source_page: c.source_page, pdf_page: c.pdf_page, evidence_quote: c.evidence_quote, verified: c.verified }));
+    addMsg({ r: "a", t: a.text_th, src: a.source, cites }); setChips(a.follow_ups);
+  } catch (err) {
+    wait.remove();
+    const e = box("err", "ถามไม่สำเร็จ: " + err.message); e.setAttribute("role", "alert"); $("chatLog").append(e);
+  } finally { $("chatLog").removeAttribute("aria-busy"); setBusy(btn, false); $("chatInput").focus(); }
+}
+
+$("chatHead").onclick = () => ($("chatPanel").hidden ? openChat() : closeChat());
+$("chatClose").onclick = closeChat;
+$("chatClear").onclick = () => { chatMsgs = []; saveChat(); $("chatLog").replaceChildren(); live("ล้างประวัติแชตแล้ว"); $("chatInput").focus(); };
+$("chatForm").addEventListener("submit", (e) => { e.preventDefault(); sendChat($("chatInput").value); });
+$("chatPanel").addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); closeChat(); } });
+loadChat(); chatMsgs.forEach((m) => $("chatLog").append(renderMsg(m)));
+setChips(["ทำไมถึงขึ้นธง", "ควรถามเภสัชกรว่าอะไร"]);
 
 fetch("/api/meta").then((r) => r.json()).then((m) => { META = m; build(); })
   .catch(() => { $("loadErr").hidden = false; $("loadErr").textContent = "โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรชหน้า"; });

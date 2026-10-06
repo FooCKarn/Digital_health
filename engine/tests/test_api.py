@@ -164,6 +164,16 @@ def test_index_page_accessibility_markers():
     assert 'aria-disabled' in html and "button:disabled" not in html and ".disabled = true" not in html  # ปุ่มกำลังทำงานใช้ aria-disabled
 
 
+def test_index_page_chat_widget_markers_and_privacy_rules():
+    html = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    assert 'id="chatHead"' in html and 'id="chatPanel"' in html and 'role="dialog"' in html and 'role="log"' in html
+    assert "sessionStorage" in html and "localStorage" not in html                          # ประวัติเฉพาะแท็บนี้ (ข ที่ทีมเลือก)
+    assert '"/api/ask"' in html and "context_herbs" in html
+    assert "history" not in html.split("async function sendChat")[1].split("}\n")[0].lower()  # ไม่ส่งประวัติให้เซิร์ฟเวอร์/LLM
+    assert "innerHTML" not in html and "ผู้ช่วย AI" in html and "ไม่ใช่การวินิจฉัย" in html.split('id="chatPanel"')[1][:1500]
+    assert "ปลอดภัย" not in html.replace("ไม่ได้แปลว่าปลอดภัย", "")
+
+
 def test_robots_txt_and_header_block_indexing_consistently(base):
     with urllib.request.urlopen(base + "/robots.txt") as r:
         assert "Disallow: /" in r.read().decode()
