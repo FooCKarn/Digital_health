@@ -48,8 +48,9 @@ def test_faithful_llm_answer_is_used_and_cites_are_only_retrieved_items():
     ("reassurance", lambda o: {**o, "answer_th": o["answer_th"] + " ไม่ต้องกังวล"}, "คำต้องห้าม"),
     ("says safe", lambda o: {**o, "answer_th": o["answer_th"] + " ใช้ร่วมกันได้ปลอดภัย"}, "คำต้องห้าม"),
     ("too long", lambda o: {**o, "answer_th": o["answer_th"] + " ก" * 600}, "ยาว"),
-    # อ้างรายการข้อห้าม (contraindications.0 "ไม่แนะนำ...") แล้วตอบกลับด้าน; ตัวตรวจกลับความหมายดูเฉพาะรายการที่อ้าง
-    ("flipped meaning", lambda o: {"answer_th": "รางจืดเหมาะกับผู้ที่สงสัยว่าเป็นไข้เลือดออก", "cites": ["rangchuet.contraindications.0"]}, "กลับ"),
+    # อ้างรายการคำเตือนที่ค้นได้ (drug_cautions.0 "ควรระวัง...") แล้วตอบกลับด้าน; ตัวตรวจกลับความหมายดูเฉพาะรายการที่อ้าง
+    # (เดิมอ้าง contraindications.0 ซึ่งค้นเจอได้เพราะคะแนนจากชื่อสมุนไพรล้วน หลังตัดชื่อออกจากคะแนนจึงไม่อยู่ในรายการที่ค้นได้ของคำถามเรื่องยาเบาหวาน)
+    ("flipped meaning", lambda o: {"answer_th": "รางจืดเหมาะกับผู้ป่วยเบาหวานที่ใช้ยาลดระดับน้ำตาลในเลือด", "cites": ["rangchuet.drug_cautions.0"]}, "กลับ"),
     ("extra keys only / wrong types", lambda o: {"answer_th": 5, "cites": "x"}, "schema"),
 ])
 def test_hostile_llm_output_falls_back_to_extractive_answer(name, mutate, reason):

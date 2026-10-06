@@ -96,8 +96,14 @@ def resolve_scope(question: str, index: dict, checked: list, context: list) -> s
 
 
 def retrieve(query: str, index: dict, scope: set, top_k: int, min_score: float) -> list:
-    """คะแนน = (น้ำหนัก idf ของ gram ในคำถามที่พบในรายการ) / (น้ำหนักรวมของ gram ทั้งหมดในคำถาม) เรียงคะแนนมาก->น้อย เท่ากันเรียงตามรหัส"""
-    qg = grams(query)
+    """คะแนน = (น้ำหนัก idf ของ gram ในคำถามที่พบในรายการ) / (น้ำหนักรวมของ gram ทั้งหมดในคำถาม) เรียงคะแนนมาก->น้อย เท่ากันเรียงตามรหัส
+    ชื่อสมุนไพรถูกตัดออกจากคำถามก่อนคิดคะแนน: ชื่อกำหนดขอบเขตแล้ว (resolve_scope) จึงไม่นับเป็นหลักฐานความเกี่ยวข้อง
+    (ไม่งั้น 'ขิงรสอะไร' ได้คะแนนจากคำว่า 'ขิง' ล้วน ๆ)"""
+    q = norm(query)
+    for name, _ in index["herb_by_name"]:  # ชื่อยาวก่อน เหมือน named_herbs
+        if name:
+            q = q.replace(name, "\x00")
+    qg = set().union(*(grams(part) for part in q.split("\x00")))
     if not qg or not scope:
         return []
     idf, unseen = index["idf"], index["unseen"]
