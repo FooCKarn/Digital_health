@@ -14,6 +14,18 @@ def test_every_item_has_source_page_and_stays_unverified_until_human_checks():
                 assert isinstance(i["source_page"], int) and i["verified"] is False
 
 
+MAX_QUOTE = 250  # กฎข้อ 9: ไม่คัดลอกข้อความยาวจากหนังสือ วลีหลักฐานต้องเป็นวลีสั้น (ปัจจุบันยาวสุด 155)
+
+
+def test_evidence_quotes_are_short_nonempty_and_have_pdf_page():
+    for h in HERBS:
+        for k in ("contraindications", "age_limits", "drug_cautions", "condition_cautions", "duration_limits", "notes"):
+            for i in h.get(k, []):
+                q = i["evidence_quote"]
+                assert isinstance(q, str) and 0 < len(q) <= MAX_QUOTE, f"{h['id']}.{k}: {len(q)} ตัวอักษร"
+                assert isinstance(i["pdf_page"], int) and i["pdf_page"] - i["source_page"] == 8  # หน้าพิมพ์ + 8 = หน้า PDF
+
+
 def test_every_condition_code_has_ui_label():
     labels = L("data/conditions.json")["conditions"]
     codes = {i["condition"] for h in HERBS for k in ("contraindications", "condition_cautions") for i in h[k]}

@@ -80,6 +80,9 @@
   .flag.avoid .sev { color: var(--avoid); } .flag.caution .sev { color: var(--caution); } .flag.info .sev { color: var(--info); }
   .flag .msg { margin: 2px 0 4px; }
   .ev { display: flex; flex-wrap: wrap; gap: 4px; }
+  details.evd { margin-top: 4px; }
+  details.evd > summary { min-height: 32px; font-weight: 600; font-size: .92rem; }
+  details.evd blockquote { margin: 4px 0; padding: 4px 10px; border-left: 3px solid var(--field); background: var(--card); }
   .chip { display: inline-block; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 999px; padding: 0 9px; font-size: .85rem; }
   .chip.draft { border-color: var(--caution); color: var(--caution); font-weight: 600; }
   .note { background: var(--info-bg); border-radius: 8px; padding: 6px 10px; margin: 6px 0; }
@@ -241,9 +244,17 @@ function evidence(f) {
     el("span", { class: "chip", text: `กฎ ${f.rule_id}` })]);
 }
 
+// ดูหลักฐานในหนังสือ: วลีสั้นที่ใช้ตรวจเทียบ + หน้า (กฎข้อ 9: ไม่แสดงข้อความยาวจากหนังสือ)
+function sourceBox(f) {
+  if (!f.evidence_quote) return null;
+  return el("details", { class: "evd" }, [el("summary", { text: "ดูหลักฐานในหนังสือ" }),
+    el("blockquote", { text: "“" + f.evidence_quote + "”" }),
+    el("p", { class: "meta", text: `หนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) หน้า ${f.source_page}${f.pdf_page ? ` (หน้า ${f.pdf_page} ในไฟล์ PDF)` : ""} · วลีสั้นที่คัดมาใช้ตรวจเทียบ ข้อความเต็มและบริบทอยู่ในเล่ม` })]);
+}
+
 const flagItem = (f) => el("li", { class: "flag " + f.severity }, [
   el("div", { class: "sev" }, [icon(f.severity), el("span", { text: SEV[f.severity] })]),
-  el("p", { class: "msg", text: f.message_th }), evidence(f)]);
+  el("p", { class: "msg", text: f.message_th }), evidence(f), sourceBox(f)].filter(Boolean));
 
 const aggItem = (a) => el("li", { class: "flag " + a.severity }, [
   el("div", { class: "sev" }, [icon(a.severity), el("span", { text: `ภาระความเสี่ยงรวม (${a.label_th}) · ${SEV[a.severity]}` })]),
@@ -295,8 +306,8 @@ function profileText(pf) {
 }
 
 function summaryTable(flags) {
-  const head = ["ความรุนแรง", "ข้อความ", "ชั้นหลักฐาน", "หน้า", "สถานะข้อมูล", "กฎ"];
-  const body = flags.map((f) => el("tr", {}, [SEV[f.severity], f.message_th, f.evidence_tier, String(f.source_page), f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจ", f.rule_id].map((t) => el("td", { text: t }))));
+  const head = ["ความรุนแรง", "ข้อความ", "ชั้นหลักฐาน", "หน้า", "สถานะข้อมูล", "กฎ", "วลีหลักฐาน (ไว้ตรวจเทียบ)"];
+  const body = flags.map((f) => el("tr", {}, [SEV[f.severity], f.message_th, f.evidence_tier, `${f.source_page}${f.pdf_page ? ` (PDF ${f.pdf_page})` : ""}`, f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจ", f.rule_id, f.evidence_quote ? "“" + f.evidence_quote + "”" : "-"].map((t) => el("td", { text: t }))));
   return el("div", { class: "tablewrap" }, [el("table", {}, [el("caption", { class: "sr-only", text: "ธงเตือนทั้งหมดเรียงตามความรุนแรง" }),
     el("thead", {}, [el("tr", {}, head.map((h) => el("th", { text: h, scope: "col" })))]), el("tbody", {}, body)])]);
 }

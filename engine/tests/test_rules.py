@@ -136,6 +136,12 @@ def test_r3_different_tags_do_not_merge():
 
 
 # --- ทั่วไป ---
+def test_flag_carries_evidence_quote_and_pdf_page_when_data_has_them():
+    herbs = {"herbs": [_herb("h_q", contraindications=[_item(condition="pregnancy", evidence_quote="วลีสั้นจากเล่ม", pdf_page=99)])]}
+    [f] = check({"herbs": [{"id": "h_q"}], "profile": {"pregnant": True}}, herbs, DRUGS, CONFIG)["flags"]
+    assert f["evidence_quote"] == "วลีสั้นจากเล่ม" and f["pdf_page"] == 99
+
+
 def test_flags_have_required_fields_and_deterministic():
     inp = dict(herbs=[{"id": "h_drug"}, {"id": "h_drug"}, {"id": "h_preg"}], drugs=["warfarin"],
                profile={"pregnant": True, "age": 3})

@@ -28,6 +28,8 @@ def _flag(rule_id, item, herb, evidence_tier="A", **extra):
         "herb_id": herb["id"],
         "message_th": f"เล่มแนวทางฯ ระบุ ({herb['name_th']}): {item['text']}",
         "source_page": item["source_page"],
+        "pdf_page": item.get("pdf_page"),  # หน้าในไฟล์ PDF (หน้าพิมพ์ + 8) ไว้ให้ผู้ตรวจเปิดหาในเล่ม
+        "evidence_quote": item.get("evidence_quote"),  # วลีสั้นจากหนังสือ ไว้ตรวจเทียบ (กฎข้อ 9: ห้ามยาว ดู test_data)
         "verified": item["verified"],
         **extra,
     }

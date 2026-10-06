@@ -108,6 +108,9 @@ function accName(e, d) {
   ok($("p1").querySelector("ul.flags").getAttribute("aria-label") === "ธงเตือน" && items.length >= 3 && items.every((f) => f.querySelector("svg[aria-hidden]") && f.querySelector(".sev span").textContent.length > 2), `ธงเป็นรายการ (ul/li) ${items.length} ข้อ ทุกข้อมีไอคอน+คำ`);
   const chips = [...items.find((f) => f.querySelector(".ev")).querySelectorAll(".chip")].map((c) => c.textContent);
   ok(chips.some((c) => /^ชั้นหลักฐาน [AC]$/.test(c)) && chips.some((c) => /^หน้า \d+$/.test(c)) && chips.some((c) => c.startsWith("ร่าง")) && chips.some((c) => /^กฎ R\d$/.test(c)), `แถวหลักฐานครบ: ${chips.join(" | ")}`);
+  const evd = [...$("p1").querySelectorAll("li.flag details.evd")];
+  ok(evd.length >= 2 && evd.every((x) => !x.open && x.querySelector("summary").textContent === "ดูหลักฐานในหนังสือ"), `ธงที่มีหลักฐานต้นทางมีปุ่ม 'ดูหลักฐานในหนังสือ' (พับไว้) ${evd.length} ใบ`);
+  ok(evd.every((x) => /^“.{2,250}”$/.test(x.querySelector("blockquote").textContent) && /หน้า \d+ \(หน้า \d+ ในไฟล์ PDF\)/.test(x.textContent) && /ข้อความเต็มและบริบทอยู่ในเล่ม/.test(x.textContent)), "แสดงวลีสั้น (<=250 ตัวอักษร) + หน้าพิมพ์/หน้า PDF + ข้อความว่าฉบับเต็มอยู่ในเล่ม");
   const more = [...$("p1").querySelectorAll("details")].find((x) => x.textContent.includes("ชั้นหลักฐาน A/B/C"));
   ok(!!more && !more.open && !!more.querySelector("h3"), "'เพิ่มเติม' พับไว้ และใช้หัวข้อ h3");
   ok(/ไม่ได้ตรวจเงื่อนไข \(ไม่ได้กรอก\): การตั้งครรภ์/.test($("p1").textContent), "ไม่ได้ตอบตั้งครรภ์ + ขิงมีกฎตั้งครรภ์ -> แจ้ง ไม่ได้ตรวจ");
@@ -120,7 +123,7 @@ function accName(e, d) {
   key("Home"); ok(!$("p1").hidden && $("t1").tabIndex === 0, "Home -> แท็บ 2");
   key("End"); ok(!$("p2").hidden, "End -> แท็บ 3");
   const th = [...$("p2").querySelectorAll("th")].map((x) => x.textContent);
-  ok(["ความรุนแรง", "ชั้นหลักฐาน", "หน้า", "สถานะข้อมูล", "กฎ"].every((h) => th.includes(h)) && !!$("p2").querySelector("table caption") && $("p2").querySelectorAll("h3").length >= 2, "ตารางมีคอลัมน์บังคับ + caption + หัวข้อ h3");
+  ok(["ความรุนแรง", "ชั้นหลักฐาน", "หน้า", "สถานะข้อมูล", "กฎ", "วลีหลักฐาน (ไว้ตรวจเทียบ)"].every((h) => th.includes(h)) && !!$("p2").querySelector("table caption") && $("p2").querySelectorAll("h3").length >= 2, "ตารางมีคอลัมน์บังคับ + caption + หัวข้อ h3");
   ok(!/\[(avoid|caution|info)\]|verified/.test($("p2").textContent) && $("p2").textContent.includes("อายุ: 60 ปี"), "ใบสรุปเป็นภาษาไทย + โปรไฟล์");
 
   console.log("== 5) แก้ข้อมูลหลังได้ผล ==");
