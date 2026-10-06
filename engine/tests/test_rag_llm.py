@@ -102,7 +102,7 @@ def test_history_is_not_part_of_the_llm_prompt():
 
 def test_user_typed_number_or_drug_echo_is_rejected():
     obj, _ = good()
-    for q, extra, why in (("รางจืดกับยาเบาหวาน 30 วัน", " ติดตามอาการ 30 วัน", "ตัวเลข"), ("รางจืดกับยาเบาหวาน metformin", " และ metformin", "อังกฤษ")):
+    for q, extra, why in (("รางจืดกับยาเบาหวาน 30 วัน", " ติดตามอาการ 30 วัน", "ตัวเลข"), ("รางจืดกับยาเบาหวาน ketoconazole", " และ ketoconazole", "อังกฤษ")):
         base = ask(None, q=q, use_llm=False)
         assert base["cites"], q
         a = ask(fake({**obj, "answer_th": obj["answer_th"] + extra}), q=q)
