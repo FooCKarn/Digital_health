@@ -3,9 +3,11 @@
 meta() -> ข้อมูลให้หน้าเว็บสร้างฟอร์ม; run(payload) -> {"result", "summary"}; ข้อมูลไม่ถูกต้อง -> ValueError
 """
 import json
+import re
 from pathlib import Path
 
 import llm
+import rag
 from check import check
 from summary import pharmacist_summary
 
@@ -14,6 +16,7 @@ _load = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E7
 HERBS, DRUGS, CONFIG = _load("data/herbs.json"), _load("data/drug_class_map.json"), _load("data/config.json")
 CONDS = _load("data/conditions.json")["conditions"]
 TAGS = _load("data/mechanism_tags.json")["tags"]
+RAG = rag.build_index(HERBS, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"])
 HERB_IDS = {h["id"] for h in HERBS["herbs"]}
 
 
@@ -34,13 +37,13 @@ def _int(v, lo, hi, name):
     return v
 
 
-def validate(payload) -> dict:
+def validate(payload, min_herbs: int = 1) -> dict:
     """คืน input ที่สะอาดสำหรับ engine หรือโยน ValueError (ห้ามส่ง input ดิบเข้า engine)"""
     if not isinstance(payload, dict):
         raise ValueError("ข้อมูลต้องเป็น JSON object")
-    herbs, drugs, prof = payload.get("herbs"), payload.get("drugs", []), payload.get("profile", {})
-    if not isinstance(herbs, list) or not 1 <= len(herbs) <= 50:
-        raise ValueError("herbs ต้องมี 1-50 รายการ")
+    herbs, drugs, prof = payload.get("herbs", [] if min_herbs == 0 else None), payload.get("drugs", []), payload.get("profile", {})
+    if not isinstance(herbs, list) or not min_herbs <= len(herbs) <= 50:
+        raise ValueError(f"herbs ต้องมี {min_herbs}-50 รายการ")
     if not isinstance(drugs, list) or len(drugs) > 30 or not all(isinstance(d, str) and 0 < len(d.strip()) <= 100 for d in drugs):
         raise ValueError("drugs ต้องเป็นรายการข้อความ (ไม่เกิน 30 รายการ รายการละไม่เกิน 100 ตัวอักษร)")
     if not isinstance(prof, dict):
@@ -127,3 +130,20 @@ def explain(payload) -> dict:
     inp = validate(payload)
     result = check(inp, HERBS, DRUGS, CONFIG, TAGS)
     return {"explanation": llm.explain(inp, result, HERBS, DRUGS, CONFIG)}
+
+
+def ask(payload) -> dict:
+    """แชต: ค้นจากฐานข้อมูลก่อนเสมอ (ตอบแบบสกัดข้อความ) แล้วให้ LLM เรียบเรียงเป็นตัวเลือก
+    คำนวณผลตรวจใหม่ฝั่งเซิร์ฟเวอร์ (ไม่เชื่อค่าจากไคลเอนต์) ไม่รับ/ไม่ใช้ประวัติแชต ไม่บันทึกคำถาม"""
+    if not isinstance(payload, dict):
+        raise ValueError("ข้อมูลต้องเป็น JSON object")
+    q = payload.get("question")
+    if not isinstance(q, str) or not 1 <= len(q.strip()) <= 300 or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", q):
+        raise ValueError("question ต้องเป็นข้อความ 1-300 ตัวอักษร")
+    ctx = payload.get("context_herbs", [])
+    if not isinstance(ctx, list) or len(ctx) > 5 or not all(isinstance(c, str) and c in HERB_IDS for c in ctx):
+        raise ValueError("context_herbs ไม่ถูกต้อง")
+    inp = validate({k: payload[k] for k in ("herbs", "drugs", "profile") if k in payload}, min_herbs=0)
+    result = check(inp, HERBS, DRUGS, CONFIG, TAGS) if inp["herbs"] else None
+    answer = rag.answer(q.strip(), result, ctx, [h["id"] for h in inp["herbs"]], RAG, CONFIG)
+    return {"answer": answer}

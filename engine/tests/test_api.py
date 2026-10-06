@@ -177,3 +177,69 @@ def test_index_page_respects_ui_rule_5_and_has_no_reassurance_glyphs():
     assert not any(g in html for g in "✓✔✅☑👍")                              # ไม่มีสัญลักษณ์ติ๊ก/ปลอบใจในผลตรวจ
     assert "scopeBox(cov, r.disclaimer_th)" in html and "evidence(f)" in html  # ขอบเขต+disclaimer และแถวหลักฐานถูกเรียกใช้
     assert "aria-selected" in html and "aria-controls" in html               # แท็บมี aria ครบ
+
+
+# ---------- /api/ask ----------
+ASK = {"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}, "question": "ขิงกับยากันเลือดเป็นลิ่ม"}
+
+
+def _no_keys(monkeypatch):
+    for k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "LLM_PROVIDER"):
+        monkeypatch.delenv(k, raising=False)
+
+
+def test_ask_answers_from_database_without_any_llm_key(monkeypatch):
+    _no_keys(monkeypatch)
+    a = service.ask(ASK)["answer"]
+    assert a["source"] == "database" and a["cites"] and a["cites"][0]["item_id"].startswith("khing.") and a["follow_ups"]
+
+
+def test_ask_works_before_any_check_with_no_herbs(monkeypatch):
+    _no_keys(monkeypatch)
+    a = service.ask({"question": "รางจืดกับยาเบาหวาน"})["answer"]
+    assert a["source"] == "database" and a["cites"][0]["herb_id"] == "rangchuet"
+    assert service.ask({"question": "ทำไมถึงขึ้นธง"})["answer"]["source"] == "refusal"   # ยังไม่มีผลตรวจ
+
+
+def test_ask_emergency_and_refusals(monkeypatch):
+    _no_keys(monkeypatch)
+    assert service.ask({**ASK, "question": "หายใจไม่ออกหลังกินขิง"})["answer"]["source"] == "emergency"
+    assert service.ask({**ASK, "question": "ขิงกินวันละกี่เม็ด"})["answer"]["source"] == "refusal"
+
+
+@pytest.mark.parametrize("patch", [
+    {"question": ""}, {"question": "   "}, {"question": "x" * 301}, {"question": 5}, {"question": "ขิง\x00"}, {"question": "a\x1bb"},
+    {"context_herbs": ["nope"]}, {"context_herbs": "khing"}, {"context_herbs": ["khing"] * 6}, {"herbs": "x"}, {"herbs": [{"id": 1}]},
+    {"profile": {"age": "60"}}, {"drugs": [5]},
+])
+def test_ask_rejects_bad_input(patch):
+    with pytest.raises(ValueError):
+        service.ask({**ASK, **patch})
+
+
+def test_ask_accepts_punctuation_only_question_and_answers_with_fixed_refusal(monkeypatch):
+    _no_keys(monkeypatch)
+    a = service.ask({**ASK, "question": "?!..."})["answer"]
+    assert a["source"] == "refusal" and a["cites"] == []
+
+
+def test_ask_recomputes_result_server_side_and_ignores_client_supplied_result(monkeypatch):
+    _no_keys(monkeypatch)
+    forged = {**ASK, "question": "ทำไมถึงขึ้นธง", "result": {"flags": []}}
+    a = service.ask(forged)["answer"]
+    assert a["cites"] and a["source"] == "database"   # ธงมาจากการคำนวณใหม่ ไม่ใช่ค่าที่ไคลเอนต์ส่ง
+
+
+def test_ask_never_logs_the_question(monkeypatch, capsys):
+    _no_keys(monkeypatch)
+    service.ask({**ASK, "question": "คำถามลับ-ห้ามโผล่ใน-log ขิง"})
+    out = capsys.readouterr()
+    assert "คำถามลับ" not in out.out and "คำถามลับ" not in out.err
+
+
+def test_http_ask_roundtrip_and_400(base, monkeypatch):
+    _no_keys(monkeypatch)
+    s, body = call(base + "/api/ask", ASK)
+    assert s == 200 and body["answer"]["source"] == "database" and "_grams" not in json.dumps(body)
+    assert call(base + "/api/ask", {**ASK, "question": ""})[0] == 400
+    assert call(base + "/api/ask", b"{not json")[0] == 400
