@@ -1,0 +1,1 @@
+ไฟล์ JSON ที่นี่สร้างจาก engine จริง ห้ามแก้ด้วยมือ: `PYTHONUTF8=1 python web/scripts/gen_fixtures.py` (รันจาก root ของ repo; แต่ละไฟล์ = `{payload, response: engine.service.run(payload)}`, `meta.json` = `service.meta()`) สร้างใหม่ทุกครั้งที่ข้อมูลใน `data/` หรือกฎเปลี่ยน

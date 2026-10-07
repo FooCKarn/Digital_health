@@ -39,16 +39,30 @@ export function App() {
     return () => { live = false; };
   }, [attempt]);
 
+  // header/footer ข้อความเดิมจาก public/index.html (สถานการณ์เดิม 0)
   return (
-    <main>
-      <h1>HerbGuard TTM</h1>
-      {meta ? <Home store={store} meta={meta} today={todayISO()} /> : error ? (
-        <div class="err" role="alert">
-          <span>{`โหลดข้อมูลไม่สำเร็จ: ${error}`}</span>{" "}
-          <button type="button" onClick={() => setAttempt((n) => n + 1)}>ลองใหม่</button>
-        </div>
-      ) : <p>กำลังโหลด…</p>}
-    </main>
+    <>
+      <header>
+        <h1>HerbGuard TTM</h1>
+        <p class="meta">ตรวจธงเตือนการใช้สมุนไพรร่วมกับยา จากหนังสือ TTM first · <strong>ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง</strong></p>
+      </header>
+      <main>
+        {meta ? <Home store={store} meta={meta} today={todayISO()} /> : error ? (
+          <div class="err" role="alert">
+            <span>{`โหลดข้อมูลไม่สำเร็จ: ${error}`}</span>{" "}
+            <button type="button" onClick={() => setAttempt((n) => n + 1)}>ลองใหม่</button>
+          </div>
+        ) : <p>กำลังโหลด…</p>}
+      </main>
+      <footer>
+        <details class="opt-box noprint">
+          <summary>เกี่ยวกับเครื่องมือนี้</summary>
+          <p>HerbGuard TTM เป็นต้นแบบเครื่องมือสนับสนุนการตัดสินใจ ตรวจธงเตือนเมื่อใช้สมุนไพรไทยร่วมกับยาแผนปัจจุบัน โดยใช้กฎที่เขียนเป็นโค้ด AI ไม่ได้เป็นผู้ตัดสินว่ามีธงหรือไม่</p>
+          <p>แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ)</p>
+          <p>ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบธงเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร</p>
+        </details>
+      </footer>
+    </>
   );
 }
 

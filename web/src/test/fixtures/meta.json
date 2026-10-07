@@ -1,0 +1,205 @@
+{
+ "herbs": [
+  {
+   "id": "garlic",
+   "name_th": "กระเทียม",
+   "parts": [
+    "หัว"
+   ]
+  },
+  {
+   "id": "khing",
+   "name_th": "ขิง",
+   "parts": [
+    "เหง้า"
+   ]
+  },
+  {
+   "id": "khilek",
+   "name_th": "ขี้เหล็ก",
+   "parts": [
+    "ใบ",
+    "เรือนช่อดอก"
+   ]
+  },
+  {
+   "id": "makham",
+   "name_th": "มะขาม",
+   "parts": [
+    "เนื้อในฝักแก่"
+   ]
+  },
+  {
+   "id": "rangchuet",
+   "name_th": "รางจืด",
+   "parts": [
+    "ใบ (เพสลาด)"
+   ]
+  },
+  {
+   "id": "chumhet_thet",
+   "name_th": "ชุมเห็ดเทศ",
+   "parts": [
+    "ดอก",
+    "ใบ"
+   ]
+  },
+  {
+   "id": "krachai",
+   "name_th": "กระชาย",
+   "parts": [
+    "ราก",
+    "เหง้า"
+   ]
+  },
+  {
+   "id": "kluai_namwa",
+   "name_th": "กล้วยน้ำว้า",
+   "parts": [
+    "ผลแก่จัด (ที่ปอกเปลือกออกแล้ว)"
+   ]
+  },
+  {
+   "id": "khamin_chan",
+   "name_th": "ขมิ้นชัน",
+   "parts": [
+    "เหง้า"
+   ]
+  },
+  {
+   "id": "khun",
+   "name_th": "คูน",
+   "parts": [
+    "เนื้อในฝักแก่"
+   ]
+  },
+  {
+   "id": "thao_wan_priang",
+   "name_th": "เถาวัลย์เปรียง",
+   "parts": [
+    "เถา"
+   ]
+  },
+  {
+   "id": "thapthim",
+   "name_th": "ทับทิม",
+   "parts": [
+    "เปลือกผล"
+   ]
+  },
+  {
+   "id": "bua_bok",
+   "name_th": "บัวบก",
+   "parts": [
+    "ทั้งต้น"
+   ]
+  },
+  {
+   "id": "phaya_yo",
+   "name_th": "พญายอ",
+   "parts": [
+    "ใบ"
+   ]
+  },
+  {
+   "id": "phlu_khao",
+   "name_th": "พลูคาว",
+   "parts": [
+    "ใบ",
+    "ทั้งต้น"
+   ]
+  },
+  {
+   "id": "phlai",
+   "name_th": "ไพล",
+   "parts": [
+    "เหง้า"
+   ]
+  },
+  {
+   "id": "fak_thong",
+   "name_th": "ฟักทอง",
+   "parts": [
+    "เมล็ดแก่"
+   ]
+  },
+  {
+   "id": "fa_thalai_jone",
+   "name_th": "ฟ้าทะลายโจร",
+   "parts": [
+    "ใบและทั้งต้น"
+   ]
+  },
+  {
+   "id": "makham_pom",
+   "name_th": "มะขามป้อม",
+   "parts": [
+    "ผลแก่สด"
+   ]
+  },
+  {
+   "id": "mara_khi_nok",
+   "name_th": "มะระขี้นก",
+   "parts": [
+    "ผลอ่อน"
+   ]
+  },
+  {
+   "id": "maweang_khruea",
+   "name_th": "มะแว้งเครือ",
+   "parts": [
+    "ผลแก่จัด"
+   ]
+  }
+ ],
+ "drugs": [
+  "warfarin",
+  "aspirin",
+  "ibuprofen",
+  "metformin",
+  "cyclosporin",
+  "insulin",
+  "saquinavir"
+ ],
+ "conditions": {
+  "allergy_to_herb": "มีประวัติแพ้สมุนไพรที่เลือก",
+  "eye_inflammation": "ตาบวมหรือตาอักเสบ",
+  "liver_disease": "โรคตับ",
+  "peptic_ulcer": "โรคแผลเปบติก / แผลทางเดินอาหาร",
+  "suspected_dengue": "สงสัยว่าเป็นไข้เลือดออก",
+  "gi_obstruction": "ภาวะทางเดินอาหารอุดตัน",
+  "diarrhea_or_abdominal_symptoms": "ท้องร่วง ท้องเสีย ปวดท้อง คลื่นไส้ อาเจียน",
+  "bleeding_disorder": "ความผิดปกติเกี่ยวกับการแข็งตัวของเลือด",
+  "gallstones": "นิ่วในถุงน้ำดี",
+  "surgery_planned": "กำลังจะผ่าตัดหรือทำฟัน",
+  "diabetes": "เบาหวาน",
+  "long_term_medication": "ต้องใช้ยารักษาโรคต่อเนื่อง",
+  "inflammatory_bowel_disease": "โรคลำไส้อักเสบ",
+  "constipation": "ท้องผูก",
+  "diarrhea": "ท้องเดิน/ท้องร่วง",
+  "easy_diarrhea": "ท้องเสียง่าย",
+  "biliary_obstruction": "การอุดตันของท่อน้ำดี",
+  "asthma": "โรคหืด",
+  "hypertension": "ความดันโลหิตสูง",
+  "hypotension": "ความดันโลหิตต่ำ",
+  "hyperlipidemia": "ภาวะเลือดมีไขมันสูง",
+  "allergy_to_apiaceae": "แพ้พืชในวงศ์ผักชี (เช่น ผักชี ยี่หร่า)",
+  "peanut_hazelnut_allergy": "แพ้ถั่วลิสงหรือถั่วเฮเซล",
+  "frail_body": "ร่างกายอ่อนแอ",
+  "uncontrolled_diabetes": "เบาหวานที่ควบคุมน้ำตาลไม่ได้",
+  "strep_group_a_sore_throat": "เจ็บคอจากเชื้อ Streptococcus group A",
+  "post_strep_nephritis": "เคยเป็นไตอักเสบจากเชื้อ Streptococcus group A",
+  "rheumatic_heart_disease": "โรคหัวใจรูห์มาติค",
+  "severe_bacterial_throat_infection": "เจ็บคอจากแบคทีเรียอาการรุนแรง (ตุ่มหนอง ไข้สูง หนาวสั่น)"
+ },
+ "coverage": {
+  "herbs_in_db": 21,
+  "herbs_in_book": 50,
+  "drug_classes_in_db": 7
+ },
+ "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม",
+ "chat_followups_th": [
+  "ทำไมถึงขึ้นธง",
+  "ควรถามเภสัชกรว่าอะไร"
+ ]
+}

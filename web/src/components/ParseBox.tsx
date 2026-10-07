@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { parseText } from "../api";
 import { useBusy } from "../hooks/useBusy";
 import { startForDay } from "../model/dates";
@@ -17,6 +17,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [errs, setErrs] = useState<string[]>([]);
   const parse = useBusy();
+  const box = useRef<HTMLTextAreaElement>(null);
   // ป้องกันซ้อน: รหัสสมุนไพรที่ไม่อยู่ใน meta ไม่ถูกแสดง/เพิ่ม และนับรวมใน "ตัดทิ้ง"
   const okHerbs = prop ? prop.herbs.filter((h) => meta.herbs.some((x) => x.id === h.id)) : [];
   const dropped = prop ? prop.dropped + (prop.herbs.length - okHerbs.length) : 0;
@@ -28,7 +29,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
 
   const send = () => parse.run(async () => {
     setProp(null); setTicked({}); setErrs([]);
-    if (!text.trim()) return setMsg("พิมพ์ข้อความก่อน");
+    if (!text.trim()) { setMsg("พิมพ์ข้อความก่อน"); box.current?.focus(); return; }
     setMsg("กำลังแปลง…");
     try {
       setProp(await parseText(text.trim()));
@@ -56,7 +57,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
     <section class="parse-box" aria-labelledby="parse-h">
       <h3 id="parse-h">ตัวเลือก: ให้ AI แยกรายการจากข้อความ</h3>
       <label for="parse-text">พิมพ์ข้อความ เช่น ใช้ขิงมา 3 วัน และกินยา warfarin</label>
-      <textarea id="parse-text" rows={3} maxLength={2000} value={text} onInput={(e) => setText(e.currentTarget.value)} />
+      <textarea ref={box} id="parse-text" rows={3} maxLength={2000} value={text} onInput={(e) => setText(e.currentTarget.value)} />
       <button type="button" aria-disabled={parse.busy} onClick={send}>แยกรายการด้วย AI</button>
       {msg && <p role="status">{msg}</p>}
       {prop && (

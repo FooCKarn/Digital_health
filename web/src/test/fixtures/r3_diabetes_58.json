@@ -1,0 +1,229 @@
+{
+ "payload": {
+  "herbs": [
+   {
+    "id": "rangchuet",
+    "days_in_use": 1
+   },
+   {
+    "id": "maweang_khruea",
+    "days_in_use": 1
+   }
+  ],
+  "drugs": [
+   "metformin"
+  ],
+  "profile": {
+   "conditions": [
+    "diabetes"
+   ],
+   "age": 58
+  }
+ },
+ "response": {
+  "result": {
+   "flags": [
+    {
+     "rule_id": "R1",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "hypoglycemia",
+     "herb_id": "maweang_khruea",
+     "message_th": "เล่มแนวทางฯ ระบุ (มะแว้งเครือ): ผลมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด ควรระวังในผู้ป่วยเบาหวาน",
+     "source_page": 172,
+     "pdf_page": 180,
+     "evidence_quote": "ผลมะแว้งเครือมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด จึงควรระวังในการใช้ในผู้ป่วยโรคเบาหวาน",
+     "verified": false,
+     "condition": "diabetes",
+     "flag_id": "f1"
+    },
+    {
+     "rule_id": "R2",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "hypoglycemia",
+     "herb_id": "maweang_khruea",
+     "message_th": "เล่มแนวทางฯ ระบุ (มะแว้งเครือ): ควรระวังการใช้ร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยเบาหวาน",
+     "source_page": 172,
+     "pdf_page": 180,
+     "evidence_quote": "ควรระวังการใช้มะแว้งเครือร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
+     "verified": false,
+     "drug_class": "antidiabetic",
+     "flag_id": "f2"
+    },
+    {
+     "rule_id": "R1",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "hypoglycemia",
+     "herb_id": "rangchuet",
+     "message_th": "เล่มแนวทางฯ ระบุ (รางจืด): ใบมีฤทธิ์ลดระดับน้ำตาลในเลือด ควรระวังในผู้ป่วยเบาหวาน",
+     "source_page": 183,
+     "pdf_page": 191,
+     "evidence_quote": "ใบรางจืดมีฤทธิ์ลดระดับน้ำตาลในเลือด จึงควรระวังการใช้ในผู้ป่วยโรคเบาหวาน",
+     "verified": false,
+     "condition": "diabetes",
+     "flag_id": "f3"
+    },
+    {
+     "rule_id": "R2",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "hypoglycemia",
+     "herb_id": "rangchuet",
+     "message_th": "เล่มแนวทางฯ ระบุ (รางจืด): ควรระวังการใช้ร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยเบาหวาน",
+     "source_page": 184,
+     "pdf_page": 192,
+     "evidence_quote": "ควรระวังการใช้ใบรางจืดร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
+     "verified": false,
+     "drug_class": "antidiabetic",
+     "flag_id": "f4"
+    }
+   ],
+   "aggregates": [
+    {
+     "mechanism_tag": "hypoglycemia",
+     "label_th": "เสี่ยงน้ำตาลในเลือดต่ำ/ผลต่อยาเบาหวาน",
+     "sources": [
+      "antidiabetic",
+      "maweang_khruea",
+      "rangchuet"
+     ],
+     "count": 3,
+     "severity": "caution",
+     "flag_ids": [
+      "f1",
+      "f2",
+      "f3",
+      "f4"
+     ],
+     "message_th": "สรุปรวมโดยระบบ จากธงที่มีแหล่งอ้างอิงแต่ละใบ: มี 3 แหล่งที่เกี่ยวกับ \"เสี่ยงน้ำตาลในเลือดต่ำ/ผลต่อยาเบาหวาน\" (antidiabetic, maweang_khruea, rangchuet) ดูรายละเอียดที่ธงแต่ละใบ"
+    }
+   ],
+   "swaps": [],
+   "pharmacist_review_required": false,
+   "coverage": {
+    "herbs_in_db": 21,
+    "drug_classes_in_db": 7,
+    "unknown_inputs": [],
+    "not_checked": []
+   },
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+  },
+  "summary": {
+   "herbs": [
+    {
+     "id": "rangchuet",
+     "name_th": "รางจืด",
+     "part": null,
+     "days_in_use": 1
+    },
+    {
+     "id": "maweang_khruea",
+     "name_th": "มะแว้งเครือ",
+     "part": null,
+     "days_in_use": 1
+    }
+   ],
+   "drugs_as_entered": [
+    "metformin"
+   ],
+   "flags": [
+    {
+     "rule_id": "R1",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "hypoglycemia",
+     "herb_id": "maweang_khruea",
+     "message_th": "เล่มแนวทางฯ ระบุ (มะแว้งเครือ): ผลมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด ควรระวังในผู้ป่วยเบาหวาน",
+     "source_page": 172,
+     "pdf_page": 180,
+     "evidence_quote": "ผลมะแว้งเครือมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด จึงควรระวังในการใช้ในผู้ป่วยโรคเบาหวาน",
+     "verified": false,
+     "condition": "diabetes",
+     "flag_id": "f1"
+    },
+    {
+     "rule_id": "R2",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "hypoglycemia",
+     "herb_id": "maweang_khruea",
+     "message_th": "เล่มแนวทางฯ ระบุ (มะแว้งเครือ): ควรระวังการใช้ร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยเบาหวาน",
+     "source_page": 172,
+     "pdf_page": 180,
+     "evidence_quote": "ควรระวังการใช้มะแว้งเครือร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
+     "verified": false,
+     "drug_class": "antidiabetic",
+     "flag_id": "f2"
+    },
+    {
+     "rule_id": "R1",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "hypoglycemia",
+     "herb_id": "rangchuet",
+     "message_th": "เล่มแนวทางฯ ระบุ (รางจืด): ใบมีฤทธิ์ลดระดับน้ำตาลในเลือด ควรระวังในผู้ป่วยเบาหวาน",
+     "source_page": 183,
+     "pdf_page": 191,
+     "evidence_quote": "ใบรางจืดมีฤทธิ์ลดระดับน้ำตาลในเลือด จึงควรระวังการใช้ในผู้ป่วยโรคเบาหวาน",
+     "verified": false,
+     "condition": "diabetes",
+     "flag_id": "f3"
+    },
+    {
+     "rule_id": "R2",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "hypoglycemia",
+     "herb_id": "rangchuet",
+     "message_th": "เล่มแนวทางฯ ระบุ (รางจืด): ควรระวังการใช้ร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยเบาหวาน",
+     "source_page": 184,
+     "pdf_page": 192,
+     "evidence_quote": "ควรระวังการใช้ใบรางจืดร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
+     "verified": false,
+     "drug_class": "antidiabetic",
+     "flag_id": "f4"
+    }
+   ],
+   "aggregates": [
+    {
+     "mechanism_tag": "hypoglycemia",
+     "label_th": "เสี่ยงน้ำตาลในเลือดต่ำ/ผลต่อยาเบาหวาน",
+     "sources": [
+      "antidiabetic",
+      "maweang_khruea",
+      "rangchuet"
+     ],
+     "count": 3,
+     "severity": "caution",
+     "flag_ids": [
+      "f1",
+      "f2",
+      "f3",
+      "f4"
+     ],
+     "message_th": "สรุปรวมโดยระบบ จากธงที่มีแหล่งอ้างอิงแต่ละใบ: มี 3 แหล่งที่เกี่ยวกับ \"เสี่ยงน้ำตาลในเลือดต่ำ/ผลต่อยาเบาหวาน\" (antidiabetic, maweang_khruea, rangchuet) ดูรายละเอียดที่ธงแต่ละใบ"
+    }
+   ],
+   "pharmacist_review_required": false,
+   "unknown_inputs": [],
+   "not_checked": [],
+   "coverage": {
+    "herbs_in_db": 21,
+    "drug_classes_in_db": 7,
+    "unknown_inputs": [],
+    "not_checked": []
+   },
+   "follow_up_questions_th": [
+    "ขนาดและความถี่ที่ใช้",
+    "ระยะเวลาที่ใช้",
+    "อาการผิดปกติที่เกิดขึ้นหลังใช้",
+    "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่"
+   ],
+   "headline_th": "พบธงเตือน 4 รายการจากฐานข้อมูลนี้",
+   "draft_notice_th": "ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (สถานะ: ร่าง)",
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+  }
+ }
+}

@@ -1,3 +1,4 @@
+import { useRef } from "preact/hooks";
 import type { Analysis } from "../hooks/useAnalysis";
 import { dayNumber } from "../model/dates";
 import { rowView, unsentRefs } from "../model/panel";
@@ -8,9 +9,12 @@ export function ActiveList({ store, today, analysis: a }: { store: TrackerStore;
   const items = store.active();
   const unsent = unsentRefs(items);
   const view = { result: a.result, summary: a.summary, current: a.current, loading: a.status === "loading" };
+  // แถวที่หยุดใช้/ลบหายไปพร้อมปุ่มที่มีโฟกัส: ย้ายโฟกัสไปหัวข้อรายการ ไม่ให้หลุดไปที่ body
+  const head = useRef<HTMLHeadingElement>(null);
+  const done = (fn: () => unknown) => { fn(); head.current?.focus(); };
   return (
     <section class="active-list" aria-labelledby="active-h">
-      <h2 id="active-h">กำลังใช้อยู่</h2>
+      <h2 id="active-h" ref={head} tabIndex={-1}>กำลังใช้อยู่</h2>
       {items.length === 0 ? <p>ยังไม่มีรายการ</p> : (
         <ul>
           {items.map((i) => {
@@ -25,8 +29,8 @@ export function ActiveList({ store, today, analysis: a }: { store: TrackerStore;
                   : v === "see_panel" ? <span class="see-panel">ดูธงในแผงด้านบน</span>
                   : <SeverityBadge kind={v} />}
                 <div class="row-actions">
-                  <button type="button" aria-label={`หยุดใช้ ${i.label}`} onClick={() => store.stopItem(i.id)}>หยุดใช้</button>
-                  <button type="button" aria-label={`ลบ ${i.label}`} onClick={() => confirm(`ลบ ${i.label} ออกถาวร (รวมประวัติ)?`) && store.removeItem(i.id)}>ลบ</button>
+                  <button type="button" aria-label={`หยุดใช้ ${i.label}`} onClick={() => done(() => store.stopItem(i.id))}>หยุดใช้</button>
+                  <button type="button" aria-label={`ลบ ${i.label}`} onClick={() => confirm(`ลบ ${i.label} ออกถาวร (รวมประวัติ)?`) && done(() => store.removeItem(i.id))}>ลบ</button>
                 </div>
               </li>
             );

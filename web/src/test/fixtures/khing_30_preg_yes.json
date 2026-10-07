@@ -1,0 +1,92 @@
+{
+ "payload": {
+  "herbs": [
+   {
+    "id": "khing",
+    "days_in_use": 1
+   }
+  ],
+  "drugs": [],
+  "profile": {
+   "conditions": [],
+   "age": 30,
+   "pregnant": true
+  }
+ },
+ "response": {
+  "result": {
+   "flags": [
+    {
+     "rule_id": "R1",
+     "severity": "avoid",
+     "evidence_tier": "A",
+     "mechanism_tag": null,
+     "herb_id": "khing",
+     "message_th": "เล่มแนวทางฯ ระบุ (ขิง): ไม่แนะนำให้ใช้ขิงบรรเทาคลื่นไส้อาเจียนในสตรีมีครรภ์ (เฉพาะการใช้เพื่อบรรเทาคลื่นไส้อาเจียน)",
+     "source_page": 80,
+     "pdf_page": 88,
+     "evidence_quote": "ไม่แนะนำให้ใช้ขิงในการบรรเทาอาการคลื่นไส้อาเจียนในสตรีมีครรภ์",
+     "verified": false,
+     "condition": "pregnancy",
+     "flag_id": "f1"
+    }
+   ],
+   "aggregates": [],
+   "swaps": [],
+   "pharmacist_review_required": false,
+   "coverage": {
+    "herbs_in_db": 21,
+    "drug_classes_in_db": 7,
+    "unknown_inputs": [],
+    "not_checked": []
+   },
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+  },
+  "summary": {
+   "herbs": [
+    {
+     "id": "khing",
+     "name_th": "ขิง",
+     "part": null,
+     "days_in_use": 1
+    }
+   ],
+   "drugs_as_entered": [],
+   "flags": [
+    {
+     "rule_id": "R1",
+     "severity": "avoid",
+     "evidence_tier": "A",
+     "mechanism_tag": null,
+     "herb_id": "khing",
+     "message_th": "เล่มแนวทางฯ ระบุ (ขิง): ไม่แนะนำให้ใช้ขิงบรรเทาคลื่นไส้อาเจียนในสตรีมีครรภ์ (เฉพาะการใช้เพื่อบรรเทาคลื่นไส้อาเจียน)",
+     "source_page": 80,
+     "pdf_page": 88,
+     "evidence_quote": "ไม่แนะนำให้ใช้ขิงในการบรรเทาอาการคลื่นไส้อาเจียนในสตรีมีครรภ์",
+     "verified": false,
+     "condition": "pregnancy",
+     "flag_id": "f1"
+    }
+   ],
+   "aggregates": [],
+   "pharmacist_review_required": false,
+   "unknown_inputs": [],
+   "not_checked": [],
+   "coverage": {
+    "herbs_in_db": 21,
+    "drug_classes_in_db": 7,
+    "unknown_inputs": [],
+    "not_checked": []
+   },
+   "follow_up_questions_th": [
+    "ขนาดและความถี่ที่ใช้",
+    "ระยะเวลาที่ใช้",
+    "อาการผิดปกติที่เกิดขึ้นหลังใช้",
+    "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่"
+   ],
+   "headline_th": "พบธงเตือน 1 รายการจากฐานข้อมูลนี้",
+   "draft_notice_th": "ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (สถานะ: ร่าง)",
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+  }
+ }
+}

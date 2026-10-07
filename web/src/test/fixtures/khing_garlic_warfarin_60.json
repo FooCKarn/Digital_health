@@ -1,0 +1,173 @@
+{
+ "payload": {
+  "herbs": [
+   {
+    "id": "khing",
+    "days_in_use": 1
+   },
+   {
+    "id": "garlic",
+    "days_in_use": 1
+   }
+  ],
+  "drugs": [
+   "warfarin"
+  ],
+  "profile": {
+   "conditions": [],
+   "age": 60
+  }
+ },
+ "response": {
+  "result": {
+   "flags": [
+    {
+     "rule_id": "R2",
+     "severity": "avoid",
+     "evidence_tier": "A",
+     "mechanism_tag": "bleeding_risk",
+     "herb_id": "khing",
+     "message_th": "เล่มแนวทางฯ ระบุ (ขิง): ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือดไม่ควรรับประทาน",
+     "source_page": 80,
+     "pdf_page": 88,
+     "evidence_quote": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือด ไม่ควรรับประทาน",
+     "verified": false,
+     "drug_class": "anticoagulant",
+     "flag_id": "f1"
+    },
+    {
+     "rule_id": "R2",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "bleeding_risk",
+     "herb_id": "garlic",
+     "message_th": "เล่มแนวทางฯ ระบุ (กระเทียม): ควรระมัดระวังในผู้ที่ใช้ยาที่ทำให้เลือดใส เช่น ยากันเลือดเป็นลิ่ม",
+     "source_page": 42,
+     "pdf_page": 50,
+     "evidence_quote": "ยากันเลือดเป็นลิ่ม (anticoagulant)",
+     "verified": false,
+     "drug_class": "anticoagulant",
+     "flag_id": "f2"
+    }
+   ],
+   "aggregates": [
+    {
+     "mechanism_tag": "bleeding_risk",
+     "label_th": "เสี่ยงเลือดออก",
+     "sources": [
+      "anticoagulant",
+      "garlic",
+      "khing"
+     ],
+     "count": 3,
+     "severity": "avoid",
+     "flag_ids": [
+      "f1",
+      "f2"
+     ],
+     "message_th": "สรุปรวมโดยระบบ จากธงที่มีแหล่งอ้างอิงแต่ละใบ: มี 3 แหล่งที่เกี่ยวกับ \"เสี่ยงเลือดออก\" (anticoagulant, garlic, khing) ดูรายละเอียดที่ธงแต่ละใบ"
+    }
+   ],
+   "swaps": [],
+   "pharmacist_review_required": true,
+   "coverage": {
+    "herbs_in_db": 21,
+    "drug_classes_in_db": 7,
+    "unknown_inputs": [],
+    "not_checked": [
+     "pregnancy"
+    ]
+   },
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+  },
+  "summary": {
+   "herbs": [
+    {
+     "id": "khing",
+     "name_th": "ขิง",
+     "part": null,
+     "days_in_use": 1
+    },
+    {
+     "id": "garlic",
+     "name_th": "กระเทียม",
+     "part": null,
+     "days_in_use": 1
+    }
+   ],
+   "drugs_as_entered": [
+    "warfarin"
+   ],
+   "flags": [
+    {
+     "rule_id": "R2",
+     "severity": "avoid",
+     "evidence_tier": "A",
+     "mechanism_tag": "bleeding_risk",
+     "herb_id": "khing",
+     "message_th": "เล่มแนวทางฯ ระบุ (ขิง): ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือดไม่ควรรับประทาน",
+     "source_page": 80,
+     "pdf_page": 88,
+     "evidence_quote": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือด ไม่ควรรับประทาน",
+     "verified": false,
+     "drug_class": "anticoagulant",
+     "flag_id": "f1"
+    },
+    {
+     "rule_id": "R2",
+     "severity": "caution",
+     "evidence_tier": "A",
+     "mechanism_tag": "bleeding_risk",
+     "herb_id": "garlic",
+     "message_th": "เล่มแนวทางฯ ระบุ (กระเทียม): ควรระมัดระวังในผู้ที่ใช้ยาที่ทำให้เลือดใส เช่น ยากันเลือดเป็นลิ่ม",
+     "source_page": 42,
+     "pdf_page": 50,
+     "evidence_quote": "ยากันเลือดเป็นลิ่ม (anticoagulant)",
+     "verified": false,
+     "drug_class": "anticoagulant",
+     "flag_id": "f2"
+    }
+   ],
+   "aggregates": [
+    {
+     "mechanism_tag": "bleeding_risk",
+     "label_th": "เสี่ยงเลือดออก",
+     "sources": [
+      "anticoagulant",
+      "garlic",
+      "khing"
+     ],
+     "count": 3,
+     "severity": "avoid",
+     "flag_ids": [
+      "f1",
+      "f2"
+     ],
+     "message_th": "สรุปรวมโดยระบบ จากธงที่มีแหล่งอ้างอิงแต่ละใบ: มี 3 แหล่งที่เกี่ยวกับ \"เสี่ยงเลือดออก\" (anticoagulant, garlic, khing) ดูรายละเอียดที่ธงแต่ละใบ"
+    }
+   ],
+   "pharmacist_review_required": true,
+   "unknown_inputs": [],
+   "not_checked": [
+    "pregnancy"
+   ],
+   "coverage": {
+    "herbs_in_db": 21,
+    "drug_classes_in_db": 7,
+    "unknown_inputs": [],
+    "not_checked": [
+     "pregnancy"
+    ]
+   },
+   "follow_up_questions_th": [
+    "ขนาดและความถี่ที่ใช้",
+    "ระยะเวลาที่ใช้",
+    "อาการผิดปกติที่เกิดขึ้นหลังใช้",
+    "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่"
+   ],
+   "headline_th": "พบธงเตือน 2 รายการจากฐานข้อมูลนี้",
+   "draft_notice_th": "ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (สถานะ: ร่าง)",
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+  }
+ }
+}

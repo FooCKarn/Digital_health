@@ -1,0 +1,79 @@
+{
+ "payload": {
+  "herbs": [
+   {
+    "id": "khing",
+    "days_in_use": 1
+   }
+  ],
+  "drugs": [
+   "<img src=x onerror=\"window.__xss=1\"><script>window.__xss=2</script>"
+  ],
+  "profile": {
+   "conditions": []
+  }
+ },
+ "response": {
+  "result": {
+   "flags": [],
+   "aggregates": [],
+   "swaps": [],
+   "pharmacist_review_required": false,
+   "coverage": {
+    "herbs_in_db": 21,
+    "drug_classes_in_db": 7,
+    "unknown_inputs": [
+     "<img src=x onerror=\"window.__xss=1\"><script>window.__xss=2</script>"
+    ],
+    "not_checked": [
+     "age",
+     "pregnancy"
+    ]
+   },
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+  },
+  "summary": {
+   "herbs": [
+    {
+     "id": "khing",
+     "name_th": "ขิง",
+     "part": null,
+     "days_in_use": 1
+    }
+   ],
+   "drugs_as_entered": [
+    "<img src=x onerror=\"window.__xss=1\"><script>window.__xss=2</script>"
+   ],
+   "flags": [],
+   "aggregates": [],
+   "pharmacist_review_required": false,
+   "unknown_inputs": [
+    "<img src=x onerror=\"window.__xss=1\"><script>window.__xss=2</script>"
+   ],
+   "not_checked": [
+    "age",
+    "pregnancy"
+   ],
+   "coverage": {
+    "herbs_in_db": 21,
+    "drug_classes_in_db": 7,
+    "unknown_inputs": [
+     "<img src=x onerror=\"window.__xss=1\"><script>window.__xss=2</script>"
+    ],
+    "not_checked": [
+     "age",
+     "pregnancy"
+    ]
+   },
+   "follow_up_questions_th": [
+    "ขนาดและความถี่ที่ใช้",
+    "ระยะเวลาที่ใช้",
+    "อาการผิดปกติที่เกิดขึ้นหลังใช้",
+    "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่"
+   ],
+   "headline_th": "ไม่พบธงเตือนในฐานข้อมูลนี้ (ดูขอบเขตความครอบคลุมด้านล่าง)",
+   "draft_notice_th": null,
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบธงเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+  }
+ }
+}

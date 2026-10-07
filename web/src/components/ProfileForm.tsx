@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import type { Profile, TrackerStore } from "../model/tracker";
 
 type YN = Profile["pregnant"];
@@ -37,12 +37,13 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
   const [ageErr, setAgeErr] = useState("");
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState("");
+  const ageRef = useRef<HTMLInputElement>(null);
 
   const submit = (e: Event) => {
     e.preventDefault();
     setAgeErr(""); setErr(""); setSaved("");
     const a = parseAge(age);
-    if (a === undefined) return setAgeErr(AGE_ERR);
+    if (a === undefined) { setAgeErr(AGE_ERR); ageRef.current?.focus(); return; }
     const r = store.setProfile({ age: a, pregnant, breastfeeding, conditions: conds });
     if (r.ok) setSaved("บันทึกแล้ว ระบบจะตรวจใหม่ในหน้า ช่วงนี้"); else setErr(r.message);
   };
@@ -54,8 +55,8 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
       <p class="meta">ไม่ระบุ = ระบบจะแจ้งว่าไม่ได้ตรวจเงื่อนไขนั้น (ไม่ถือว่า ไม่ใช่)</p>
       <div class="field">
         <label for="pf-age">อายุ (ปี)</label>
-        <input id="pf-age" type="text" inputMode="numeric" autoComplete="off" value={age} aria-invalid={!!ageErr}
-          aria-describedby={ageErr ? "pf-age-err" : undefined} onInput={(e) => setAge(e.currentTarget.value)} />
+        <input ref={ageRef} id="pf-age" type="text" inputMode="numeric" autoComplete="off" value={age} aria-invalid={!!ageErr}
+          aria-describedby={ageErr ? "pf-age-err" : undefined} onInput={(e) => { setAge(e.currentTarget.value); setAgeErr(""); }} />
         {ageErr && <p class="err" role="alert" id="pf-age-err">{ageErr}</p>}
       </div>
       <YesNo id="pf-preg" label="ตั้งครรภ์" value={pregnant} onChange={setPregnant} />
