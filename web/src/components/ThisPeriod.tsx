@@ -1,7 +1,8 @@
 import { useRef, useState } from "preact/hooks";
 import { AddSheet } from "./AddSheet";
 import { ExplainBox } from "./ExplainBox";
-import { useAnalysis } from "../hooks/useAnalysis";
+import { useAnalysis, type Analysis } from "../hooks/useAnalysis";
+import { NO_FLAG, NO_FLAG_NOTE, NOT_CHECKED, PHARMACIST } from "../texts";
 import { groupFlags, isKnownSeverity, notCheckedLabels, unknownConditions, type PanelGroups } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Aggregate, Meta } from "../types";
@@ -11,22 +12,25 @@ import { AggCard, FlagCard } from "./FlagCard";
 import { ScopeChip } from "./ScopeChip";
 import { GROUP_TITLE, SummaryStrip } from "./SummaryStrip";
 
-// ข้อความตายตัว (กฎข้อ 5: ห้ามสื่อว่าไม่มีความเสี่ยง)
-const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้";
-const NO_FLAG_NOTE = "นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร";
 const NO_HERBS = "ยังไม่มีสมุนไพรให้ตรวจ";
 const STALE = "ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)";
-const NOT_CHECKED: Record<string, string> = { pregnancy: "การตั้งครรภ์", breastfeeding: "การให้นมบุตร", age: "อายุ" };
-const PHARMACIST = "แนะนำให้ปรึกษาเภสัชกรก่อนใช้ (มียากลุ่มที่ทีมกำหนดให้เภสัชกรทบทวน) · ดูแท็บใบสรุปเภสัชกร";
 
 const aggBucket = (a: Aggregate): keyof PanelGroups => (isKnownSeverity(a.severity) ? a.severity : "other");
 
-export function ThisPeriod({ store, meta, today }: { store: TrackerStore; meta: Meta; today: string }) {
+type Props = { store: TrackerStore; meta: Meta; today: string };
+
+/** ใช้เดี่ยว ๆ (ตรวจเอง) */
+export function ThisPeriod(p: Props) {
+  const a = useAnalysis(p.store, p.today, Object.keys(p.meta.conditions));
+  return <ThisPeriodView {...p} analysis={a} />;
+}
+
+/** ใช้ใน App: ผลตรวจชุดเดียวแบ่งกับใบสรุปเภสัชกร (ไม่เรียก API ซ้ำ) */
+export function ThisPeriodView({ store, meta, today, analysis: a }: Props & { analysis: Analysis }) {
   const [adding, setAdding] = useState(false);
   const opener = useRef<HTMLButtonElement>(null);
   const close = () => { setAdding(false); opener.current?.focus(); };
   const known = Object.keys(meta.conditions);
-  const a = useAnalysis(store, today, known);
   const { result: r, summary: s } = a;
   const none = !!r && r.flags.length === 0 && r.aggregates.length === 0;
   const groups = r ? groupFlags(r) : null;

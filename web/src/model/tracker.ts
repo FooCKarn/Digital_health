@@ -7,7 +7,7 @@ export interface TrackerState { v: 1; items: TrackerItem[]; profile: Profile }
 export interface KeyValueStorage { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem(k: string): void }
 
 export const STORAGE_KEY = "hg_tracker_v1";
-const MAX_IMPORT_BYTES = 256 * 1024;
+export const MAX_IMPORT_BYTES = 256 * 1024;
 const MAX_HERBS = 50;
 const MAX_DRUGS = 30;
 const MAX_COND = 50;
@@ -62,7 +62,7 @@ function parseState(raw: unknown, today: string, known: string[] | null): Tracke
   return { v: 1, items, profile: { age: p.age, pregnant: p.pregnant, breastfeeding: p.breastfeeding, conditions: [...p.conditions] } };
 }
 
-function newId(): string {
+export function newId(): string {
   const c = globalThis.crypto;
   if (c?.randomUUID) return c.randomUUID();
   return Array.from(c.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");

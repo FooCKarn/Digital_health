@@ -1,10 +1,19 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { ApiError, getMeta } from "./api";
-import { ThisPeriod } from "./components/ThisPeriod";
+import { History } from "./components/History";
+import { MyData } from "./components/MyData";
+import { ThisPeriodView } from "./components/ThisPeriod";
+import { useAnalysis } from "./hooks/useAnalysis";
 import { todayISO } from "./model/dates";
 import { getLocalStorage } from "./model/storage";
 import { TrackerStore } from "./model/tracker";
 import type { Meta } from "./types";
+
+const VIEWS = [
+  { id: "now", label: "ช่วงนี้" },
+  { id: "history", label: "ที่เคยใช้" },
+  { id: "mine", label: "ข้อมูลของฉัน" },
+] as const;
 
 export function App() {
   const store = useMemo(() => new TrackerStore(getLocalStorage(), () => todayISO()), []);
@@ -30,12 +39,50 @@ export function App() {
   return (
     <main>
       <h1>HerbGuard TTM</h1>
-      {meta ? <ThisPeriod store={store} meta={meta} today={todayISO()} /> : error ? (
+      {meta ? <Home store={store} meta={meta} today={todayISO()} /> : error ? (
         <div class="err" role="alert">
           <span>{`โหลดข้อมูลไม่สำเร็จ: ${error}`}</span>{" "}
           <button type="button" onClick={() => setAttempt((n) => n + 1)}>ลองใหม่</button>
         </div>
       ) : <p>กำลังโหลด…</p>}
     </main>
+  );
+}
+
+/** สามมุมมองใช้ผลตรวจชุดเดียว (เรียก /api/analyze ที่เดียว) */
+function Home({ store, meta, today }: { store: TrackerStore; meta: Meta; today: string }) {
+  const a = useAnalysis(store, today, Object.keys(meta.conditions));
+  const [tab, setTab] = useState(0);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // แท็บแบบ roving tabindex: ลูกศรซ้าย/ขวา (วน), Home, End เหมือนหน้าเดิม
+  const onKey = (e: KeyboardEvent) => {
+    const n = VIEWS.length;
+    const next = e.key === "ArrowRight" ? (tab + 1) % n : e.key === "ArrowLeft" ? (tab + n - 1) % n
+      : e.key === "Home" ? 0 : e.key === "End" ? n - 1 : null;
+    if (next === null) return;
+    e.preventDefault();
+    setTab(next);
+    tabs.current[next]?.focus();
+  };
+
+  const v = VIEWS[tab];
+  return (
+    <>
+      <div class="tabs noprint" role="tablist" aria-label="มุมมอง" onKeyDown={onKey}>
+        {VIEWS.map((x, i) => (
+          <button key={x.id} ref={(el) => { tabs.current[i] = el; }} type="button" role="tab" id={`tab-${x.id}`}
+            aria-selected={i === tab} aria-controls={i === tab ? `panel-${x.id}` : undefined} tabIndex={i === tab ? 0 : -1} onClick={() => setTab(i)}>
+            {x.label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
+        {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} />
+          : v.id === "history" ? <History store={store} />
+          : <MyData store={store} meta={meta} today={today} analysis={a} />}
+      </div>
+      {/* Task 10: ติดตั้งแชตตรงนี้ (ระดับ App นอกแผงแท็บ ใช้ store/meta/analysis ชุดเดียวกัน) */}
+    </>
   );
 }
