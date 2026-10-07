@@ -18,8 +18,48 @@ const rows: Row[] = table.split(/\r?\n/) // checkout บน Windows (autocrlf) �
 const refs = (cover: string) => [...cover.matchAll(/`([^`:]+)::([^`]+)`/g)].map((m) => ({ file: m[1], name: m[2] }));
 
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-// ตัดเฉพาะคอมเมนต์ที่ขึ้นต้นบรรทัด/JSX (glob อย่าง "*.json" ในสตริงไม่ถูกตัด) คอมเมนต์ท้ายบรรทัดที่เหลือทำให้เข้มขึ้นเท่านั้น
-const stripJs = (s: string) => s.replace(/^\s*\/\*[\s\S]*?\*\//gm, "").replace(/\{\/\*[\s\S]*?\*\/\}/g, "").replace(/^\s*\/\/.*$/gm, "");
+/**
+ * ตัดคอมเมนต์ // และ /* *\/ ของ JS/TS โดยไม่แตะเนื้อในสตริง ' " ` (รวม ${...} ใน template) และ regex literal
+ * ponytail: ตัวแยกคำแบบย่อ แยก regex กับเครื่องหมายหารจากอักขระก่อนหน้า พอสำหรับไฟล์เทสต์ ไม่ใช่ parser เต็ม
+ */
+function stripJs(s: string): string {
+  let out = "";
+  const tpl: number[] = []; // ความลึกวงเล็บปีกกาของ ${ ที่เปิดอยู่ (ซ้อนได้)
+  let i = 0;
+  const str = (q: string) => { // คัดลอกสตริงจนถึง q ที่ไม่ถูก escape
+    const start = i++;
+    while (i < s.length && s[i] !== q) { if (s[i] === "\\") i++; i++; }
+    out += s.slice(start, ++i);
+  };
+  const template = () => { // อยู่ในเนื้อ template ต่อจนจบ ` หรือเจอ ${
+    const start = i;
+    while (i < s.length && s[i] !== "`" && !(s[i] === "$" && s[i + 1] === "{")) { if (s[i] === "\\") i++; i++; }
+    if (s[i] === "`") { out += s.slice(start, ++i); return; }
+    out += s.slice(start, (i += 2));
+    tpl.push(0);
+  };
+  while (i < s.length) {
+    const c = s[i], n = s[i + 1];
+    if (c === "/" && n === "/") { while (i < s.length && s[i] !== "\n") i++; continue; }
+    if (c === "/" && n === "*") { const e = s.indexOf("*/", i + 2); i = e < 0 ? s.length : e + 2; out += " "; continue; }
+    if (c === "'" || c === '"') { str(c); continue; }
+    if (c === "`") { out += c; i++; template(); continue; }
+    if (tpl.length && c === "{") tpl[tpl.length - 1]++;
+    if (tpl.length && c === "}") {
+      if (tpl[tpl.length - 1] === 0) { tpl.pop(); out += c; i++; template(); continue; }
+      tpl[tpl.length - 1]--;
+    }
+    if (c === "/" && /(^|[(,=:[!&|?{};+\-*%~^]|\breturn)\s*$/.test(out.slice(-12))) { // regex literal
+      const start = i++;
+      let cls = false;
+      while (i < s.length && s[i] !== "\n" && (cls || s[i] !== "/")) { if (s[i] === "\\") i++; else if (s[i] === "[") cls = true; else if (s[i] === "]") cls = false; i++; }
+      out += s.slice(start, ++i);
+      continue;
+    }
+    out += c; i++;
+  }
+  return out;
+}
 const stripPy = (s: string) => s.replace(/#.*$/gm, "");
 
 /**
@@ -30,13 +70,13 @@ const stripPy = (s: string) => s.replace(/#.*$/gm, "");
 function checkRef(file: string, name: string, raw: string): string | null {
   if (file.endsWith(".py")) {
     const src = stripPy(raw);
-    const py = /pytest\.mark\.(skip|skipif|xfail)\b|pytest\.(skip|xfail|importorskip)\(|@unittest\.(skip\w*|expectedFailure)|^pytestmark\s*=.*\b(skip\w*|xfail)\b|parametrize\([^)]*,\s*\[\s*\]\s*[,)]/m;
+    const py = /pytest\.mark\.(skip|skipif|xfail)\b|pytest\.(skip|xfail|importorskip)\(|@unittest\.(skip\w*|expectedFailure)|^pytestmark\s*=.*\b(skip\w*|xfail)\b|parametrize\([^)]*,\s*\[\s*\]\s*[,)]|^\s*@skip\w*\b|from (unittest|pytest) import[^\n]*\bskip/m;
     if (py.test(src)) return "ไฟล์มี pytest skip/xfail";
     return new RegExp(`^def ${esc(name)}\\(`, "m").test(src) ? null : `ไม่มี def ${name}(`;
   }
   const src = stripJs(raw);
-  // skipIf/runIf/fails/only/todo, x*, ตัวเลือก { skip: true } และ ({ skip }) => skip()
-  if (/\.(skip\w*|only|todo|runIf|fails)\b|\bx(it|test|describe)\(|\{\s*skip\s*:|\bskip\s*\(/.test(src)) return "ไฟล์มี skip/only/todo/x*";
+  // skipIf/runIf/fails/only/todo, x*, ตัวเลือก { ..., skip: true } / { skip } และ ({ skip }) => skip()
+  if (/\.(skip\w*|only|todo|runIf|fails)\b|\bx(it|test|describe)\(|[{,]\s*skip\b\s*[:,}]|\bskip\s*\(/.test(src)) return "ไฟล์มี skip/only/todo/x*";
   const q = "[\"'`]";
   // เนื้อใน .each(...) ห้ามข้ามไปถึงการเรียก test/it/describe ตัวอื่น (ผูกกับการเรียกเดียวกัน)
   // และห้ามเลยจุดปิดตาราง ])( ของ .each นั้น
@@ -102,6 +142,10 @@ describe("ตัวตรวจ checkRef จับการข้ามเทส
     ["test.fails", `test.fails("${N}", () => {});`],
     ["ตัวเลือก { skip: true }", `test("${N}", { skip: true }, () => {});`],
     ["({ skip }) => skip()", `test("${N}", ({ skip }) => { skip(); });`],
+    ["ตัวเลือก { retry: 1, skip: true }", `test("${N}", { retry: 1, skip: true }, () => {});`],
+    ["ตัวเลือกแบบย่อ { skip }", `const skip = true;\ntest("${N}", { skip }, () => {});`],
+    ["ชื่ออยู่ในคอมเมนต์ /* */ กลางบรรทัด", `foo(); /* test("${N}", () => {}) */\ntest("อื่น", () => {});`],
+    ["ชื่ออยู่ในคอมเมนต์ // กลางบรรทัด", `foo(); // test("${N}", () => {})\ntest("อื่น", () => {});`],
     ["ชื่ออยู่หลัง each ของเทสต์อื่น ไม่ใช่การเรียกเดียวกัน", `test.each([[1]])("อื่น %s", () => {});\nconst x = [["${N}"]];\ntest("ข", () => {});`],
     ["ชื่ออยู่แค่ในคอมเมนต์", `// test("${N}")\ntest("อื่น", () => {});`],
     ["ชื่ออยู่ในสตริงทั่วไป ไม่ใช่ชื่อเทสต์", `const s = "${N}";\ntest("อื่น", () => {});`],
@@ -119,11 +163,29 @@ describe("ตัวตรวจ checkRef จับการข้ามเทส
     ["importorskip", "np = pytest.importorskip('numpy')\ndef test_a():\n    pass\n"],
     ["pytestmark skip", "pytestmark = pytest.mark.skip\ndef test_a():\n    pass\n"],
     ["parametrize ว่าง", "@pytest.mark.parametrize('x', [])\ndef test_a(x):\n    pass\n"],
+    ["from unittest import skip + @skip", "from unittest import skip\n\n@skip('x')\ndef test_a():\n    pass\n"],
+    ["@skip อย่างเดียว", "@skip('x')\ndef test_a():\n    pass\n"],
+    ["from pytest import skip", "from pytest import mark, skip\ndef test_a():\n    pass\n"],
   ])("pytest จับได้: %s", (_n, src) => {
     expect(checkRef("t.py", "test_a", src)).not.toBeNull();
   });
 
   test("pytest ผ่าน: def ปกติ (คอมเมนต์ที่มีคำว่า skip ไม่นับ)", () => {
     expect(checkRef("t.py", "test_a", "# pytest.mark.skip ไม่ใช้\ndef test_a():\n    pass\n")).toBeNull();
+  });
+});
+
+describe("stripJs ตัดคอมเมนต์โดยไม่แตะสตริง/template/regex", () => {
+  test.each([
+    ["/* */ กลางบรรทัด", 'a(); /* ซ่อน */ b();', "a();   b();"],
+    ["// กลางบรรทัด", 'a(); // ซ่อน\nb();', "a(); \nb();"],
+    ["glob ในสตริงไม่ใช่คอมเมนต์", 'g("../x/*.json"); /* c */ h("*/");', 'g("../x/*.json");   h("*/");'],
+    ["เครื่องหมายคำพูดซ้อน", `a("it's // no"); b('say "hi" /* no */'); // c`, `a("it's // no"); b('say "hi" /* no */'); `],
+    ["template มี \${} ที่มีเครื่องหมายคำพูด", "t(`x ${f('a//b', \"}\")} /* in tpl */ y`); // c", "t(`x ${f('a//b', \"}\")} /* in tpl */ y`); "],
+    ["template ซ้อนใน \${}", "t(`a ${`b ${1} //`} c`); /* c */", "t(`a ${`b ${1} //`} c`);  "],
+    ["regex literal ที่มี // และเครื่องหมายคำพูด", String.raw`x = /"\/\/"[/]/g; // c`, String.raw`x = /"\/\/"[/]/g; `],
+    ["การหารไม่ใช่ regex", "y = a / b; // c\nz = 1;", "y = a / b; \nz = 1;"],
+  ])("%s", (_n, src, want) => {
+    expect(stripJs(src)).toBe(want);
   });
 });
