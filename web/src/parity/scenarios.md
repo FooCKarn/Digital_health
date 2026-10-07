@@ -24,7 +24,7 @@
 | 1.7 | กดเพิ่มโดยไม่เลือก → ข้อความให้เลือกก่อน | GAP | `web/src/parity/legacy.test.tsx::1.7 กดเพิ่มโดยยังไม่เลือก` |
 | 1.8 | คำอธิบายวิธีใช้คีย์บอร์ดผูกกับ dropdown ทั้ง 3 | N/A | ไม่มี dropdown ที่มีพฤติกรรมพิเศษ (ช่องค้นหา + ปุ่มมาตรฐาน) จึงไม่ต้องมีคำอธิบายวิธีใช้คีย์บอร์ด |
 | 1.9 | เลือกแล้วขึ้นแถว: ชื่อ + ส่วนที่ใช้ + วัน + ลบ | mapped | `web/src/components/ThisPeriod.test.tsx::แถวแสดงชนิดและวันที่ N` `web/src/components/ThisPeriod.test.tsx::หยุดใช้: แถวหายจากรายการทันที` (ส่วนที่ใช้: ตัวติดตามไม่เก็บ part ตามสเปก §6) |
-| 1.10 | ประกาศการเพิ่มในพื้นที่ประกาศ | N/A | หน้าใหม่ไม่ประกาศ "เพิ่ม X แล้ว": แผ่นเพิ่มปิด โฟกัสกลับปุ่ม + เพิ่ม แถวใหม่ขึ้นในรายการ และผลตรวจใหม่ถูกประกาศ (`web/src/parity/legacy.test.tsx::5) หยุดใช้ยาหลังได้ผล`) ดูข้อกังวลในรายงานงาน 11 |
+| 1.10 | ประกาศการเพิ่มในพื้นที่ประกาศ | GAP+FIX | `web/src/parity/legacy.test.tsx::1.10 เพิ่มแล้วประกาศ` (เดิมไม่ประกาศ: เพิ่มพื้นที่ประกาศ "เพิ่ม X แล้ว" แยกจากพื้นที่ประกาศผลตรวจ ทั้งเพิ่มเองและเพิ่มจากข้อเสนอ AI) |
 | 1.11 | ตัวเลือกที่เลือกแล้วถูกปิด | mapped | `web/src/components/AddSheet.test.tsx::ซ้ำ -> ข้อความผิดพลาดจาก store` `web/src/model/tracker.test.ts::duplicate active kind+ref rejected` |
 | 1.12 | ลบแล้วตัวเลือกกลับมา + ประกาศ + โฟกัสกลับ | GAP+FIX | `web/src/parity/legacy.test.tsx::1.12 หยุดใช้/ลบแถวแล้วโฟกัส` `web/src/model/tracker.test.ts::duplicate active kind+ref rejected; other kind ok; re-add right after stop ok` (เดิมโฟกัสหลุดไป body หลังกดหยุดใช้/ลบ) |
 | 2.1 | ตรวจโดยไม่เลือกอะไร → ข้อความไทย ไม่ส่งคำขอ | GAP | `web/src/parity/legacy.test.tsx::2) ไม่มีรายการเลย` `web/src/components/ThisPeriod.test.tsx::มีแต่ยา: ยังไม่มีสมุนไพรให้ตรวจ` `web/src/hooks/useAnalysis.test.tsx::(ข) ไม่มีสมุนไพร` |

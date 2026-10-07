@@ -27,6 +27,8 @@ CASES = {
     "khing_garlic_60": {"herbs": herbs("khing", "garlic"), "drugs": [], "profile": {"conditions": [], "age": 60}},
     # สถานการณ์เดิม 2/14: ขิงอย่างเดียว ไม่กรอกโปรไฟล์
     "khing_only": {"herbs": herbs("khing"), "drugs": [], "profile": {"conditions": []}},
+    # ประกาศการเพิ่มจากข้อเสนอ AI (เพิ่ม warfarin ต่อจากขิง)
+    "khing_warfarin": {"herbs": herbs("khing"), "drugs": ["warfarin"], "profile": {"conditions": []}},
     # สถานการณ์เดิม 6: กระชาย อายุ 30 ไม่พบธง
     "krachai_30": {"herbs": herbs("krachai"), "drugs": [], "profile": {"conditions": [], "age": 30}},
     # สถานการณ์เดิม 9: R3 ภาระความเสี่ยงรวม + โรค

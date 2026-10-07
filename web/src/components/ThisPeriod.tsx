@@ -28,6 +28,7 @@ export function ThisPeriod(p: Props) {
 /** ใช้ใน App: ผลตรวจชุดเดียวแบ่งกับใบสรุปเภสัชกร (ไม่เรียก API ซ้ำ) */
 export function ThisPeriodView({ store, meta, today, analysis: a }: Props & { analysis: Analysis }) {
   const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(""); // ประกาศการเพิ่ม แยกจากพื้นที่ประกาศผลตรวจ
   const opener = useRef<HTMLButtonElement>(null);
   const close = () => { setAdding(false); opener.current?.focus(); };
   const known = Object.keys(meta.conditions);
@@ -92,8 +93,9 @@ export function ThisPeriodView({ store, meta, today, analysis: a }: Props & { an
 
       <ExplainBox store={store} today={today} known={known} analysis={a} />
 
-      <button ref={opener} type="button" class="primary" onClick={() => setAdding(true)}>+ เพิ่ม</button>
-      {adding && <AddSheet meta={meta} store={store} today={today} onClose={close} />}
+      <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>+ เพิ่ม</button>
+      <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
+      {adding && <AddSheet meta={meta} store={store} today={today} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
 
       <ActiveList store={store} today={today} analysis={a} />
     </section>

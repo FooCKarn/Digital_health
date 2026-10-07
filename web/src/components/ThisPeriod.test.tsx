@@ -25,6 +25,8 @@ async function show(b: ReturnType<typeof body>) {
 }
 
 const row = (label: string) => screen.getByText(label, { selector: "strong" }).closest("li") as HTMLElement;
+// พื้นที่ประกาศผลตรวจ (แยกจากพื้นที่ประกาศการเพิ่ม .added-status)
+const resultStatus = () => document.querySelector<HTMLElement>(".this-period > [role=status]:not(.added-status)")!;
 const hasRow = (label: string) => screen.queryByText(label, { selector: "strong" }) !== null;
 
 test("(จ) ไม่มีธง + ไม่ได้กรอกอายุ: เห็นทั้งสถานะและรายการที่ไม่ได้ตรวจ พร้อมขอบเขตและ disclaimer", async () => {
@@ -35,7 +37,7 @@ test("(จ) ไม่มีธง + ไม่ได้กรอกอายุ: 
   expect(screen.getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา")).toBeInTheDocument();
   expect(screen.getByRole("note")).toHaveTextContent(META.disclaimer_th);
   expect(within(row("ขิง")).getByText(NO_FLAG)).toBeInTheDocument();
-  expect(screen.getByRole("status")).toHaveTextContent(NO_FLAG);
+  expect(resultStatus()).toHaveTextContent(NO_FLAG);
 });
 
 test("(ฉ) ยาที่อยู่ใน unknown_inputs ได้ 'ยังไม่มีข้อมูลตรวจ'; ยาที่รู้จักไม่ได้ป้ายไม่พบธง", async () => {
@@ -252,6 +254,6 @@ describe("ผลเก่าห้ามแสดงเป็นผลปัจ�
     act(() => void add("drug", "warfarin"));
     await flush();
     expect(document.body.textContent).not.toContain(NO_FLAG);
-    expect(screen.getByRole("status")).toHaveTextContent("");
+    expect(resultStatus()).toHaveTextContent("");
   });
 });

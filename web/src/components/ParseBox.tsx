@@ -10,7 +10,7 @@ const FIXED = "ใช้ AI ไม่ได้ในขณะนี้ กรอ
 type Row = { key: string; kind: "herb" | "drug"; ref: string; label: string; day?: number };
 
 /** ข้อความอิสระ → ข้อเสนอจาก AI → ผู้ใช้ติ๊กยืนยันก่อนจึงเพิ่ม (CLAUDE.md ข้อ 4a) ไม่เพิ่มเองเด็ดขาด */
-export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: TrackerStore; today: string; onDone: () => void }) {
+export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: TrackerStore; today: string; onDone: (labels: string[]) => void }) {
   const [text, setText] = useState("");
   const [msg, setMsg] = useState("");
   const [prop, setProp] = useState<ParseProposal | null>(null);
@@ -50,7 +50,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
     }
     setTicked(left); // รายการที่เพิ่มสำเร็จแล้วไม่ถูกส่งซ้ำเมื่อลองใหม่
     setErrs(bad);
-    if (!bad.length) onDone();
+    if (!bad.length) onDone(chosen.map((r) => r.label));
   };
 
   return (

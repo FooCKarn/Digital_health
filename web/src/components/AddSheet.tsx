@@ -6,7 +6,8 @@ import { ParseBox } from "./ParseBox";
 
 type Pick = { kind: "herb" | "drug"; ref: string; label: string };
 
-export function AddSheet({ meta, store, today, onClose }: { meta: Meta; store: TrackerStore; today: string; onClose: () => void }) {
+/** onAdded: ชื่อรายการที่เพิ่มสำเร็จ (ให้หน้าแม่ประกาศ) */
+export function AddSheet({ meta, store, today, onClose, onAdded }: { meta: Meta; store: TrackerStore; today: string; onClose: () => void; onAdded?: (labels: string[]) => void }) {
   const [q, setQ] = useState("");
   const [pick, setPick] = useState<Pick | null>(null);
   const [date, setDate] = useState(today);
@@ -28,7 +29,7 @@ export function AddSheet({ meta, store, today, onClose }: { meta: Meta; store: T
     const de = validateStart(date, today);
     if (de) return setDateErr(de);
     const r = store.addItem({ ...pick, start_date: date });
-    if (r.ok) onClose(); else setItemErr(r.message);
+    if (r.ok) { onAdded?.([pick.label]); onClose(); } else setItemErr(r.message);
   };
 
   return (
@@ -54,7 +55,7 @@ export function AddSheet({ meta, store, today, onClose }: { meta: Meta; store: T
           <button type="button" onClick={onClose}>ปิด</button>
         </div>
       </form>
-      <ParseBox meta={meta} store={store} today={today} onDone={onClose} />
+      <ParseBox meta={meta} store={store} today={today} onDone={(labels) => { onAdded?.(labels); onClose(); }} />
     </div>
   );
 }

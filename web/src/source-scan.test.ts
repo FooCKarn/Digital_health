@@ -16,6 +16,10 @@ test("พบไฟล์ซอร์สจริง (กันการสแก
   expect(Object.keys(src).some((p) => p.includes(".test."))).toBe(false);
 });
 
+test("โค้ดแอปไม่ import โมดูลของ node (node:*) — ใช้ได้เฉพาะเทสต์และ src/test/node-fs.d.ts", () => {
+  expect(hits(/from\s+["']node:|require\(\s*["']node:|import\(\s*["']node:/)).toEqual([]);
+});
+
 test("ไม่มี API ที่แปลงข้อความเป็น HTML/โค้ด", () => {
   expect(hits(/dangerouslySetInnerHTML|innerHTML|insertAdjacentHTML|outerHTML|document\.write|\beval\(|new Function\(/)).toEqual([]);
 });

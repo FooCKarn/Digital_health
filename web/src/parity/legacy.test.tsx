@@ -37,10 +37,11 @@ function serve(...names: string[]) {
     if (url !== "/api/analyze") throw new Error(`unexpected ${url}`);
     const p = JSON.parse(String(init!.body));
     analyzeCalls.push(p);
-    if (gate) await gate;
-    if (fail) return respond({ error: "server_error", detail: "KeyError: boom" }, 500);
+    // ตรวจ payload ก่อนเสมอ (รวมทางที่จำลองล้มเหลว) หน้าเว็บต้องส่งค่าที่มี fixture จาก engine จริง
     const hit = cases.find((c) => canon(c.payload) === canon(p));
     if (!hit) { unmatched.push(p); return respond({ error: "no fixture" }, 500); }
+    if (gate) await gate;
+    if (fail) return respond({ error: "server_error", detail: "KeyError: boom" }, 500);
     return respond(hit.response);
   }));
 }
@@ -64,7 +65,7 @@ const headline = (name: string) => {
 const result = (name: string) => screen.findByRole("heading", { level: 2, name: headline(name) }, SLOW);
 const tab = (name: string) => fireEvent.click(screen.getByRole("tab", { name }));
 const view = () => document.querySelector<HTMLElement>(".this-period")!;
-const status = () => view().querySelector<HTMLElement>("[role=status]")!;
+const status = () => view().querySelector<HTMLElement>("[role=status]:not(.added-status)")!;
 const activeRow = (label: string) => screen.getByText(label, { selector: ".active-list strong" }).closest("li") as HTMLElement;
 const pharm = () => screen.getByRole("region", { name: "ใบสรุปสำหรับเภสัชกร" });
 const sysText = () => document.body.textContent!.replace(/ไม่ได้(แปลว่า|หมายความว่า)ปลอดภัย/g, "");
@@ -88,6 +89,9 @@ describe("0) โครงหน้า", () => {
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
     expect(screen.getByRole("banner")).toHaveTextContent("ห้ามกรอกข้อมูลผู้ป่วยจริง");
+    // footer มี disclaimer จาก meta เหมือน #foot ของหน้าเดิม
+    await waitFor(() => expect(screen.getByRole("contentinfo")).toHaveTextContent(META.disclaimer_th));
+    expect(within(screen.getByRole("contentinfo")).getByText("เกี่ยวกับเครื่องมือนี้")).toBeInTheDocument();
   });
 
   test("0.5 ผลจริงจาก engine: ข้อความทั้งหน้า (ทุกแท็บ) ไม่มีคำว่า ปลอดภัย นอกเชิงปฏิเสธ", async () => {
@@ -125,6 +129,34 @@ describe("1) เลือกรายการ", () => {
     fireEvent.click(within(d).getByRole("button", { name: "เพิ่ม" }));
     expect(within(d).getByRole("alert")).toHaveTextContent("เลือกสมุนไพรหรือยาก่อน");
     expect(screen.getByText("ยังไม่มีรายการ")).toBeInTheDocument();
+  });
+
+  test("1.10 เพิ่มแล้วประกาศ เพิ่ม X แล้ว ในพื้นที่ประกาศแยกจากผลตรวจ (เพิ่มเองและเพิ่มจากข้อเสนอ AI)", async () => {
+    serve("khing_only", "khing_warfarin");
+    await mount();
+    fireEvent.click(screen.getByRole("button", { name: "+ เพิ่ม" }));
+    const d = screen.getByRole("dialog", { name: "เพิ่มสมุนไพรหรือยา" });
+    fireEvent.click(within(d).getByRole("button", { name: "ขิง (สมุนไพร)" }));
+    fireEvent.click(within(d).getByRole("button", { name: "เพิ่ม" }));
+    const added = view().querySelector<HTMLElement>(".added-status")!;
+    expect(added).toHaveAttribute("role", "status");
+    expect(added).toHaveTextContent("เพิ่ม ขิง แล้ว");
+    expect(added).not.toBe(status());
+    expect(screen.getByRole("button", { name: "+ เพิ่ม" })).toHaveFocus();
+    await result("khing_only");
+    expect(status()).toHaveTextContent(NO_FLAG); // ผลตรวจประกาศแยกกัน
+    expect(added).toHaveTextContent("เพิ่ม ขิง แล้ว");
+    // เปิดแผ่นเพิ่มใหม่: ล้างข้อความเดิม (ไม่ประกาศซ้ำ)
+    fireEvent.click(screen.getByRole("button", { name: "+ เพิ่ม" }));
+    expect(added).toHaveTextContent("");
+    // เพิ่มจากข้อเสนอ AI ที่ผู้ใช้ติ๊กยืนยัน
+    vi.mocked(fetch).mockImplementationOnce(async () => respond({ herbs: [], drugs: ["warfarin"], unmatched: [], dropped: 0 }));
+    fireEvent.input(screen.getByLabelText(/พิมพ์ข้อความ เช่น/), { target: { value: "กิน warfarin" } });
+    fireEvent.click(screen.getByRole("button", { name: "แยกรายการด้วย AI" }));
+    fireEvent.click(await screen.findByRole("checkbox", { name: /warfarin/ }));
+    fireEvent.click(screen.getByRole("button", { name: "ยืนยันเพิ่ม 1 รายการ" }));
+    expect(added).toHaveTextContent("เพิ่ม warfarin แล้ว");
+    await result("khing_warfarin");
   });
 
   test("1.12 หยุดใช้/ลบแถวแล้วโฟกัสไปหัวข้อ กำลังใช้อยู่ (ไม่หลุดไปที่ body)", async () => {
