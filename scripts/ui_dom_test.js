@@ -143,7 +143,7 @@ function accName(e, d) {
   ({ w, d, $ } = await load());
   pick(w, d, "herbAdd", "กระชาย"); $("age").value = "30"; await submit(d);
   ok($("resHead").textContent === "ไม่พบธงเตือนในฐานข้อมูลนี้" && !$("p1").querySelector("ul.flags"), `หัวข้อ: "${$("resHead").textContent}" ไม่มีรายการธง`);
-  ok($("p1").querySelector(".nonote").textContent === "นี่ไม่ได้แปลว่าปลอดภัย โปรดปรึกษาเภสัชกร" && !!$("p1").querySelector(".scope"), "มีบรรทัด 'ไม่ได้แปลว่าปลอดภัย' + ขอบเขต");
+  ok($("p1").querySelector(".nonote").textContent === "นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร" && !!$("p1").querySelector(".scope"), "มีบรรทัด 'ไม่ได้แปลว่าปลอดภัย' + ขอบเขต");
   ok(!$("p1").querySelector("[class*=ok],[class*=success],[class*=green]") && !/ไม่ได้ตรวจเงื่อนไข/.test($("p1").textContent), "ไม่มีสไตล์ ผ่าน/เขียว และไม่เตือนเงื่อนไขที่กระชายไม่มีกฎ");
 
   console.log("== 7) ข้อความฝัง HTML (XSS) ==");
