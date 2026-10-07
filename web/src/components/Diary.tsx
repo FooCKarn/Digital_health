@@ -6,6 +6,7 @@ import type { TrackerStore } from "../model/tracker";
 import { downloadJSON } from "../download";
 import { groupFlags } from "../model/panel";
 import { Trend } from "./Trend";
+import { openPolicy } from "./Policy";
 import { useDiary } from "../hooks/useDiary";
 
 const num = (s: string): number | null => (s.trim() === "" ? null : Number(s));
@@ -49,6 +50,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
           <li>เมื่อกดตรวจ ระบบส่งชื่อสมุนไพร/ยา และข้อมูลโปรไฟล์ไปคำนวณที่เซิร์ฟเวอร์ ส่วนค่าสุขภาพและอาการที่จดไม่ถูกส่ง ช่องแชตและช่อง AI แปลงข้อความจะส่งข้อความที่คุณพิมพ์</li>
           <li>ถ้าใช้เครื่องร่วมกับคนอื่น ควรลบบันทึกหลังใช้ ต้นแบบนี้ให้กรอกเฉพาะข้อมูลสมมติ</li>
         </ul>
+        <p><a href="#policy" onClick={openPolicy}>อ่านเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัวฉบับเต็ม</a></p>
       </details>
 
       <form class="card" onSubmit={save} noValidate>

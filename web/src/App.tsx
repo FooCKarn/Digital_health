@@ -5,6 +5,7 @@ import { ChatPanel, type OpenRequest } from "./chat/ChatPanel";
 import { AskFlag, ChatStore, getSessionStorage } from "./chat/chatStore";
 import { Diary } from "./components/Diary";
 import { History } from "./components/History";
+import { Policy } from "./components/Policy";
 import { MyData } from "./components/MyData";
 import { ThisPeriodView } from "./components/ThisPeriod";
 import { useAnalysis } from "./hooks/useAnalysis";
@@ -71,6 +72,7 @@ export function App() {
           <p>แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ)</p>
           <p>ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบธงเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร</p>
         </details>
+        <Policy />
         {meta && <p class="meta">{meta.disclaimer_th}</p>}
       </footer>
     </>

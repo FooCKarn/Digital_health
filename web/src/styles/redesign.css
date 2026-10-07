@@ -75,3 +75,13 @@ button.wide { width: 100%; margin-top: var(--sp-3); }
 @media print { .appbar .meta, .proto-banner { display: none; } }
 .check-btn[aria-pressed="true"]::before { content: "✓ "; }
 .this-period { padding-left: 0; padding-right: 0; }
+
+/* ตารางนโยบายบนจอเล็ก: เรียงซ้อนเป็นบล็อก */
+@media (max-width: 600px) {
+  .policy table, .policy tbody, .policy tr, .policy th, .policy td { display: block; width: 100%; box-sizing: border-box; }
+  .policy thead { position: absolute; left: -9999px; }
+  .policy tr { margin: var(--sp-3) 0; padding: var(--sp-3); border: 1px solid var(--c-line); border-radius: 12px; }
+  .policy th, .policy td { border: 0; padding: var(--sp-1) 0; }
+  .policy td::before { content: attr(data-label); display: block; font-weight: 700; color: var(--c-muted); font-size: .85rem; }
+}
+.policy h3 { margin: var(--sp-4) 0 var(--sp-2); font-size: 1.05rem; }
