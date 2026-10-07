@@ -85,6 +85,11 @@ export function groupFlags(result: AnalyzeResult): PanelGroups {
   return g;
 }
 
+/** โรคในโปรไฟล์ที่ไม่อยู่ในรหัสของระบบ ไม่ถูกส่งไปตรวจ (ต้องบอกผู้ใช้ว่าไม่ได้ตรวจ) */
+export function unknownConditions(profile: Profile, knownConditions: string[]): string[] {
+  return profile.conditions.filter((c) => !knownConditions.includes(c));
+}
+
 export function notCheckedLabels(result: AnalyzeResult, labels: Record<string, string>): string[] {
   return result.coverage.not_checked.map((c) => labels[c] ?? c);
 }

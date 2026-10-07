@@ -62,7 +62,7 @@ export interface Summary {
 export interface Meta {
   herbs: { id: string; name_th: string; parts: string[] }[];
   drugs: string[];
-  conditions: string[];
+  conditions: Record<string, string>; // รหัส -> ชื่อไทย (data/conditions.json)
   coverage: { herbs_in_db: number; herbs_in_book: number; drug_classes_in_db: number };
   disclaimer_th: string;
   chat_followups_th: string[];

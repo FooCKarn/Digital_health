@@ -11,11 +11,11 @@ export const SEVERITY_TEXT: Record<BadgeKind, string> = {
   no_data: "ยังไม่มีข้อมูลตรวจ",
 };
 
-export function SeverityBadge({ kind }: { kind: BadgeKind }) {
+export function SeverityBadge({ kind, prefix = "" }: { kind: BadgeKind; prefix?: string }) {
   return (
     <span class="badge" data-kind={kind}>
       <Icon name={kind} />
-      <span>{SEVERITY_TEXT[kind]}</span>
+      <span>{prefix + SEVERITY_TEXT[kind]}</span>
     </span>
   );
 }
