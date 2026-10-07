@@ -18,3 +18,10 @@ test("start date validation: future and >365 days ago rejected", () => {
 test("todayISO uses local calendar date, zero padded", () => {
   expect(todayISO(new Date(2026, 0, 5, 23, 59))).toBe("2026-01-05");
 });
+
+test("leap days and year boundaries", () => {
+  expect(validateStart("2026-02-29", "2026-10-07")).toMatch(/วันที่/);
+  expect(validateStart("2024-02-29", "2024-10-07")).toBeNull();
+  expect(dayNumber("2024-02-28", "2024-03-01")).toBe(3);
+  expect(dayNumber("2025-12-31", "2026-01-01")).toBe(2);
+});

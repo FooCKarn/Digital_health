@@ -7,10 +7,15 @@ export interface TrackerState { v: 1; items: TrackerItem[]; profile: Profile }
 export interface KeyValueStorage { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem(k: string): void }
 
 export const STORAGE_KEY = "hg_tracker_v1";
-const MAX_IMPORT_BYTES = 100 * 1024;
+const MAX_IMPORT_BYTES = 256 * 1024;
+const MAX_HERBS = 50;
+const MAX_DRUGS = 30;
+const MAX_COND = 50;
+const bytes = (t: string) => new TextEncoder().encode(t).length;
 const MAX_ITEMS = 200;
 const MAX_TEXT = 100;
 const MAX_CONDITIONS = 50;
+const refMax = (k: ItemKind) => (k === "herb" ? 50 : MAX_TEXT);
 
 const emptyProfile = (): Profile => ({ age: null, pregnant: null, breastfeeding: null, conditions: [] });
 const emptyState = (): TrackerState => ({ v: 1, items: [], profile: emptyProfile() });
@@ -19,29 +24,48 @@ const isObj = (x: unknown): x is Record<string, unknown> => typeof x === "object
 const str = (x: unknown, max: number): x is string => typeof x === "string" && x.trim().length > 0 && x.length <= max;
 const yn = (x: unknown): x is "yes" | "no" | null => x === null || x === "yes" || x === "no";
 
+/** ตรวจโปรไฟล์ คืนข้อความผิดพลาดหรือ null (known = รหัสโรคที่เซิร์ฟเวอร์รู้จัก ถ้ามี) */
+function profileError(p: unknown, known: string[] | null): string | null {
+  const BAD = "ข้อมูลโปรไฟล์ไม่ถูกต้อง";
+  if (!isObj(p)) return BAD;
+  const { age, pregnant, breastfeeding, conditions } = p;
+  if (!(age === null || (typeof age === "number" && Number.isInteger(age) && age >= 0 && age <= 120))) return BAD;
+  if (!yn(pregnant) || !yn(breastfeeding)) return BAD;
+  if (!Array.isArray(conditions) || conditions.length > MAX_CONDITIONS || !conditions.every((c) => str(c, MAX_COND))) return BAD;
+  if (known && !conditions.every((c) => known.includes(c as string))) return "มีโรคประจำตัวที่ระบบไม่รู้จัก";
+  return null;
+}
+
 /** ตรวจทีละฟิลด์ แล้วสร้างอ็อบเจ็กต์ใหม่จากฟิลด์ที่อนุญาตเท่านั้น (กัน __proto__/ฟิลด์แปลก) */
-function parseState(raw: unknown): TrackerState | string {
+function parseState(raw: unknown, today: string, known: string[] | null): TrackerState | string {
   const BAD = "ไฟล์ไม่ถูกต้อง";
   if (!isObj(raw) || raw.v !== 1) return "ไฟล์ไม่ถูกต้องหรือเป็นเวอร์ชันที่ไม่รองรับ";
   if (!Array.isArray(raw.items) || raw.items.length > MAX_ITEMS) return "จำนวนรายการไม่ถูกต้อง";
   const ids = new Set<string>();
   const items: TrackerItem[] = [];
+  let herbs = 0, drugs = 0;
   for (const it of raw.items) {
     if (!isObj(it)) return BAD;
     const { id, kind, ref, label, start_date, end_date } = it;
-    if (!str(id, 64) || ids.has(id) || (kind !== "herb" && kind !== "drug") || !str(ref, MAX_TEXT) || !str(label, MAX_TEXT)) return BAD;
+    if (!str(id, 64) || ids.has(id) || (kind !== "herb" && kind !== "drug") || !str(ref, refMax(kind)) || !str(label, MAX_TEXT)) return BAD;
     if (!isValidISODate(start_date) || !(end_date === null || isValidISODate(end_date))) return "วันที่ในไฟล์ไม่ถูกต้อง";
-    if (end_date !== null && end_date < start_date) return "วันที่ในไฟล์ไม่ถูกต้อง";
+    // ไม่ปฏิเสธวันเริ่มเก่า (สำรองข้อมูลอายุเกินปีต้องกู้ได้) แต่ปฏิเสธอนาคต
+    if (start_date > today || (end_date !== null && (end_date < start_date || end_date > today))) return "วันที่ในไฟล์ไม่ถูกต้อง";
+    if (end_date === null) { if (kind === "herb") herbs++; else drugs++; }
     ids.add(id);
     items.push({ id, kind, ref, label, start_date, end_date });
   }
-  const p = raw.profile;
-  if (!isObj(p)) return BAD;
-  const { age, pregnant, breastfeeding, conditions } = p;
-  if (!(age === null || (typeof age === "number" && Number.isInteger(age) && age >= 0 && age <= 120))) return BAD;
-  if (!yn(pregnant) || !yn(breastfeeding)) return BAD;
-  if (!Array.isArray(conditions) || conditions.length > MAX_CONDITIONS || !conditions.every((c) => str(c, MAX_TEXT))) return BAD;
-  return { v: 1, items, profile: { age, pregnant, breastfeeding, conditions: [...(conditions as string[])] } };
+  if (herbs > MAX_HERBS || drugs > MAX_DRUGS) return "จำนวนรายการที่ใช้อยู่เกินกำหนด";
+  const perr = profileError(raw.profile, known);
+  if (perr) return perr;
+  const p = raw.profile as Profile;
+  return { v: 1, items, profile: { age: p.age, pregnant: p.pregnant, breastfeeding: p.breastfeeding, conditions: [...p.conditions] } };
+}
+
+function newId(): string {
+  const c = globalThis.crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  return Array.from(c.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export class TrackerStore {
@@ -50,19 +74,25 @@ export class TrackerStore {
   private _state: TrackerState = emptyState();
   private subs = new Set<() => void>();
 
-  constructor(private storage: KeyValueStorage | null, private today: () => string) {
+  private known: string[] | null;
+
+  constructor(private storage: KeyValueStorage | null, private today: () => string, opts?: { knownConditions?: string[] }) {
+    this.known = opts?.knownConditions ?? null;
     this.persistent = storage !== null;
     if (!storage) return;
+    let text: string | null;
+    try { text = storage.getItem(STORAGE_KEY); } catch { this.persistent = false; return; }
+    if (text === null) return;
     try {
-      const text = storage.getItem(STORAGE_KEY);
-      if (text === null) return;
-      const r = text.length > MAX_IMPORT_BYTES ? "big" : parseState(JSON.parse(text));
+      const r = bytes(text) > MAX_IMPORT_BYTES ? "big" : parseState(JSON.parse(text), today(), this.known);
       if (typeof r === "string") this.recovered = true;
       else this._state = r;
     } catch {
       this.recovered = true;
     }
   }
+
+  setKnownConditions(known: string[] | null): void { this.known = known; }
 
   get state(): TrackerState { return this._state; }
 
@@ -82,12 +112,15 @@ export class TrackerStore {
   addItem(input: { kind: ItemKind; ref: string; label: string; start_date: string }): { ok: true; item: TrackerItem } | { ok: false; message: string } {
     const label = input.label.trim();
     if (!label || label.length > MAX_TEXT) return { ok: false, message: "ชื่อต้องไม่ว่างและไม่เกิน 100 ตัวอักษร" };
-    if (!str(input.ref, MAX_TEXT)) return { ok: false, message: "รายการไม่ถูกต้อง" };
+    if (!str(input.ref, refMax(input.kind))) return { ok: false, message: "รายการไม่ถูกต้อง" };
     const dateErr = validateStart(input.start_date, this.today());
     if (dateErr) return { ok: false, message: dateErr };
-    if (this.active().some((i) => i.kind === input.kind && i.ref === input.ref)) return { ok: false, message: "มีรายการนี้อยู่แล้ว" };
+    const act = this.active();
+    if (act.some((i) => i.kind === input.kind && i.ref === input.ref)) return { ok: false, message: "มีรายการนี้อยู่แล้ว" };
+    if (act.filter((i) => i.kind === input.kind).length >= (input.kind === "herb" ? MAX_HERBS : MAX_DRUGS))
+      return { ok: false, message: input.kind === "herb" ? "ใช้สมุนไพรพร้อมกันได้ไม่เกิน 50 ชนิด" : "ใช้ยาพร้อมกันได้ไม่เกิน 30 รายการ" };
     if (this._state.items.length >= MAX_ITEMS) return { ok: false, message: "จำนวนรายการเต็มแล้ว" };
-    const item: TrackerItem = { id: crypto.randomUUID(), kind: input.kind, ref: input.ref, label, start_date: input.start_date, end_date: null };
+    const item: TrackerItem = { id: newId(), kind: input.kind, ref: input.ref, label, start_date: input.start_date, end_date: null };
     this.commit({ ...this._state, items: [...this._state.items, item] });
     return { ok: true, item };
   }
@@ -101,27 +134,25 @@ export class TrackerStore {
     this.commit({ ...this._state, items: this._state.items.filter((i) => i.id !== id) });
   }
 
-  setProfile(p: Profile): void {
+  setProfile(p: Profile): { ok: true } | { ok: false; message: string } {
+    const err = profileError(p, this.known);
+    if (err) return { ok: false, message: err };
     this.commit({ ...this._state, profile: { ...p, conditions: [...p.conditions] } });
+    return { ok: true };
   }
 
-  active(): TrackerItem[] {
-    const t = this.today();
-    return this._state.items.filter((i) => i.end_date === null || i.end_date >= t);
-  }
+  // end_date ใช้แสดงผลเท่านั้น: หยุดแล้ว = ประวัติทันที
+  active(): TrackerItem[] { return this._state.items.filter((i) => i.end_date === null); }
 
-  history(): TrackerItem[] {
-    const t = this.today();
-    return this._state.items.filter((i) => i.end_date !== null && i.end_date < t);
-  }
+  history(): TrackerItem[] { return this._state.items.filter((i) => i.end_date !== null); }
 
-  exportJSON(): string { return JSON.stringify(this._state, null, 2); }
+  exportJSON(): string { return JSON.stringify(this._state); }
 
   importJSON(text: string): { ok: true } | { ok: false; message: string } {
-    if (typeof text !== "string" || new Blob([text]).size > MAX_IMPORT_BYTES) return { ok: false, message: "ไฟล์ใหญ่เกิน 100 KB" };
+    if (typeof text !== "string" || bytes(text) > MAX_IMPORT_BYTES) return { ok: false, message: "ไฟล์ใหญ่เกิน 256 KB" };
     let raw: unknown;
     try { raw = JSON.parse(text); } catch { return { ok: false, message: "ไฟล์ไม่ใช่ JSON ที่อ่านได้" }; }
-    const r = parseState(raw);
+    const r = parseState(raw, this.today(), this.known);
     if (typeof r === "string") return { ok: false, message: r };
     this.commit(r);
     return { ok: true };

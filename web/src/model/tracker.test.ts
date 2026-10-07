@@ -27,14 +27,25 @@ test("add, stop, remove", () => {
   expect(s.state.items).toHaveLength(0);
 });
 
-test("duplicate active kind+ref rejected; allowed again after stop; other kind ok", () => {
+test("duplicate active kind+ref rejected; other kind ok; re-add right after stop ok", () => {
   const s = new TrackerStore(memStorage(), today);
   const a = s.addItem(herb());
   expect(s.addItem(herb()).ok).toBe(false);
   expect(s.addItem({ ...herb(), kind: "drug" }).ok).toBe(true);
-  if (a.ok) s.stopItem(a.item.id);
-  // หยุดวันนี้ ยังนับ active (end_date >= วันนี้) จึงยังซ้ำ
-  expect(s.addItem(herb()).ok).toBe(false);
+  if (!a.ok) throw new Error("setup");
+  s.stopItem(a.item.id);
+  expect(s.active().map((i) => i.id)).not.toContain(a.item.id);
+  expect(s.history().map((i) => i.id)).toContain(a.item.id);
+  expect(s.addItem(herb()).ok).toBe(true);
+});
+
+test("active herbs capped at 50, drugs at 30", () => {
+  const s = new TrackerStore(memStorage(), today);
+  for (let i = 0; i < 50; i++) expect(s.addItem(herb("h" + i)).ok).toBe(true);
+  expect(s.addItem(herb("h50")).ok).toBe(false);
+  for (let i = 0; i < 30; i++) expect(s.addItem({ ...herb("d" + i), kind: "drug" }).ok).toBe(true);
+  expect(s.addItem({ ...herb("d30"), kind: "drug" }).ok).toBe(false);
+  expect(s.addItem(herb("x".repeat(51), "2026-10-01")).ok).toBe(false);
 });
 
 test("validation: bad label, future start, too old start", () => {
@@ -48,16 +59,11 @@ test("validation: bad label, future start, too old start", () => {
 });
 
 test("active/history split", () => {
-  const st = memStorage();
-  const s = new TrackerStore(st, today);
+  const s = new TrackerStore(memStorage(), today);
   const a = s.addItem(herb("a"));
-  const b = s.addItem(herb("b"));
-  if (!a.ok || !b.ok) throw new Error("setup");
+  s.addItem(herb("b"));
+  if (!a.ok) throw new Error("setup");
   s.stopItem(a.item.id);
-  // ย้อน end_date ของ a เป็นเมื่อวานผ่าน import เพื่อให้เป็นประวัติ
-  const exp = JSON.parse(s.exportJSON());
-  exp.items[0].end_date = "2026-10-06";
-  expect(s.importJSON(JSON.stringify(exp)).ok).toBe(true);
   expect(s.active().map((i) => i.ref)).toEqual(["b"]);
   expect(s.history().map((i) => i.ref)).toEqual(["a"]);
 });
@@ -127,6 +133,11 @@ describe("import rejects and leaves state unchanged", () => {
     ["bad profile age", () => JSON.stringify({ ...base(), profile: { ...base().profile, age: "x" } })],
     ["items not array", () => JSON.stringify({ ...base(), items: {} })],
     ["array root", () => "[]"],
+    ["future end date", () => JSON.stringify({ ...base(), items: [{ ...base().items[0], end_date: "2026-10-08" }] })],
+    ["future start date", () => JSON.stringify({ ...base(), items: [{ ...base().items[0], start_date: "2026-10-08" }] })],
+    ["51 active herbs", () => JSON.stringify({ ...base(), items: Array.from({ length: 51 }, (_, i) => ({ ...base().items[0], id: "i" + i, ref: "r" + i })) })],
+    ["long herb ref", () => JSON.stringify({ ...base(), items: [{ ...base().items[0], ref: "x".repeat(51) }] })],
+    ["long condition", () => JSON.stringify({ ...base(), profile: { ...base().profile, conditions: ["x".repeat(51)] } })],
   ];
   test.each(bad)("%s", (_n, make) => {
     const s = good();
@@ -167,4 +178,76 @@ test("subscribers called on change; unsubscribe works", () => {
   off();
   s.clearAll();
   expect(fn).toHaveBeenCalledTimes(2);
+});
+
+test("old start date imports fine (year-old backup)", () => {
+  const s = new TrackerStore(memStorage(), today);
+  const it = { id: "a", kind: "herb", ref: "khing", label: "ขิง", start_date: "2020-01-01", end_date: null };
+  const p = { age: null, pregnant: null, breastfeeding: null, conditions: [] };
+  expect(s.importJSON(JSON.stringify({ v: 1, items: [it], profile: p })).ok).toBe(true);
+});
+
+test("stored future date is treated as corrupted", () => {
+  const it = { id: "a", kind: "herb", ref: "k", label: "ขิง", start_date: "2026-10-01", end_date: "2026-12-01" };
+  const st = { v: 1, items: [it], profile: { age: null, pregnant: null, breastfeeding: null, conditions: [] } };
+  const s = new TrackerStore(memStorage({ [STORAGE_KEY]: JSON.stringify(st) }), today);
+  expect(s.recovered).toBe(true);
+  expect(s.state.items).toEqual([]);
+});
+
+test("setProfile validates; bad profile never saved", () => {
+  const st = memStorage();
+  const s = new TrackerStore(st, today);
+  s.addItem(herb());
+  const before = st.data[STORAGE_KEY];
+  const bads = [
+    { age: 121, pregnant: null, breastfeeding: null, conditions: [] },
+    { age: 1.5, pregnant: null, breastfeeding: null, conditions: [] },
+    { age: null, pregnant: "maybe", breastfeeding: null, conditions: [] },
+    { age: null, pregnant: null, breastfeeding: null, conditions: [""] },
+    { age: null, pregnant: null, breastfeeding: null, conditions: ["x".repeat(51)] },
+  ];
+  for (const b of bads) expect(s.setProfile(b as never).ok).toBe(false);
+  expect(st.data[STORAGE_KEY]).toBe(before);
+  expect(s.state.profile.age).toBeNull();
+  expect(new TrackerStore(st, today).state.items).toHaveLength(1);
+});
+
+test("knownConditions rejects unknown codes in setProfile and import", () => {
+  const s = new TrackerStore(memStorage(), today, { knownConditions: ["htn"] });
+  const p = { age: null, pregnant: null, breastfeeding: null, conditions: ["htn"] };
+  expect(s.setProfile(p).ok).toBe(true);
+  expect(s.setProfile({ ...p, conditions: ["zzz"] }).ok).toBe(false);
+  expect(s.importJSON(JSON.stringify({ v: 1, items: [], profile: { ...p, conditions: ["zzz"] } })).ok).toBe(false);
+  expect(s.state.profile.conditions).toEqual(["htn"]);
+});
+
+test("id fallback when crypto.randomUUID is unavailable", () => {
+  vi.stubGlobal("crypto", { getRandomValues: (a: Uint8Array) => a.fill(171) });
+  const s = new TrackerStore(memStorage(), today);
+  const r = s.addItem(herb());
+  vi.unstubAllGlobals();
+  expect(r.ok && r.item.id).toMatch(/^[0-9a-f]{32}$/);
+});
+
+test("getItem throwing: persistent=false, not recovered", () => {
+  const st = memStorage();
+  st.getItem = () => {
+    throw new Error("denied");
+  };
+  const s = new TrackerStore(st, today);
+  expect(s.persistent).toBe(false);
+  expect(s.recovered).toBe(false);
+});
+
+test("maximal export (200 stopped items, 100-char Thai text) re-imports; export is compact", () => {
+  const th = "ก".repeat(100);
+  const items = Array.from({ length: 200 }, (_, i) => ({ id: "id" + i, kind: "drug", ref: th, label: th, start_date: "2026-01-01", end_date: "2026-02-01" }));
+  const p = { age: 40, pregnant: null, breastfeeding: null, conditions: Array.from({ length: 50 }, () => "x".repeat(50)) };
+  const a = new TrackerStore(memStorage(), today);
+  expect(a.importJSON(JSON.stringify({ v: 1, items, profile: p })).ok).toBe(true);
+  const text = a.exportJSON();
+  expect(text).not.toContain("\n");
+  expect(new TextEncoder().encode(text).length).toBeLessThanOrEqual(256 * 1024);
+  expect(new TrackerStore(memStorage(), today).importJSON(text).ok).toBe(true);
 });
