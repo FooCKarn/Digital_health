@@ -162,9 +162,18 @@ test("clearAll removes key and empties state", () => {
   const st = memStorage();
   const s = new TrackerStore(st, today);
   s.addItem(herb());
-  s.clearAll();
+  expect(s.clearAll()).toBe(true);
   expect(st.data[STORAGE_KEY]).toBeUndefined();
   expect(s.state.items).toEqual([]);
+});
+
+test("clearAll reports failure when storage removal throws", () => {
+  const st = memStorage();
+  st.removeItem = () => { throw new Error("blocked"); };
+  const s = new TrackerStore(st, today);
+  s.addItem(herb());
+  expect(s.clearAll()).toBe(false);
+  expect(new TrackerStore(null, today).clearAll()).toBe(true); // ไม่มีที่เก็บ = ไม่มีอะไรค้าง
 });
 
 test("subscribers called on change; unsubscribe works", () => {

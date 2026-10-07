@@ -27,7 +27,9 @@ export function MyData({ store, meta, today, analysis: a }: { store: TrackerStor
     if (f.size > MAX_IMPORT_BYTES) return fail("ไฟล์ใหญ่เกิน 256 KB");
     let text: string;
     try { text = await f.text(); } catch { return fail("อ่านไฟล์ไม่ได้"); }
-    if (store.state.items.length > 0 && !confirm("นำเข้าจะแทนที่ข้อมูลเดิมทั้งหมด ดำเนินการต่อ?")) return;
+    const p = store.state.profile;
+    const hasData = store.state.items.length > 0 || p.age !== null || p.pregnant !== null || p.breastfeeding !== null || p.conditions.length > 0;
+    if (hasData && !confirm("นำเข้าจะแทนที่ข้อมูลเดิมทั้งหมด ดำเนินการต่อ?")) return;
     const r = store.importJSON(text);
     if (!r.ok) return fail(r.message);
     setFormKey((k) => k + 1);
@@ -35,10 +37,12 @@ export function MyData({ store, meta, today, analysis: a }: { store: TrackerStor
   };
 
   const clear = () => {
-    store.clearAll();
+    // Task 10: ลบข้อมูลทั้งหมดต้องล้างประวัติแชต sessionStorage hg_chat_v1 ด้วย
+    const ok = store.clearAll();
     setConfirming(false);
     setFormKey((k) => k + 1);
-    setMsg({ ok: true, text: "ลบข้อมูลทั้งหมดแล้ว" });
+    setMsg(ok ? { ok: true, text: "ลบข้อมูลทั้งหมดแล้ว" }
+      : { ok: false, text: "ลบในเครื่องไม่สำเร็จ ข้อมูลเดิมอาจกลับมาเมื่อเปิดหน้านี้ใหม่ ลองอีกครั้งหรือล้างข้อมูลเว็บไซต์ในเบราว์เซอร์" });
   };
 
   return (
@@ -46,8 +50,6 @@ export function MyData({ store, meta, today, analysis: a }: { store: TrackerStor
       <h2 id="mydata-h" class="noprint">ข้อมูลของฉัน</h2>
       <div class="noprint">
         <p class="meta">ข้อมูลอยู่ในเครื่องของคุณเท่านั้น ไม่ถูกส่งไปเก็บที่เซิร์ฟเวอร์ (ส่งไปตรวจแล้วไม่เก็บ)</p>
-        {!store.persistent && <p class="warn">ข้อมูลจะหายเมื่อปิดหน้านี้ (เบราว์เซอร์ไม่อนุญาตให้บันทึก) ส่งออกไฟล์ไว้ถ้าต้องการเก็บ</p>}
-        {store.recovered && <p class="warn">ข้อมูลที่บันทึกไว้เสียหาย เริ่มใหม่ให้แล้ว</p>}
         <p class="meta">กรอกเท่าที่จำเป็นต่อการตรวจ ห้ามใส่ชื่อจริง เลขประจำตัว หรือข้อมูลที่ระบุตัวตนได้</p>
         <ProfileForm key={formKey} store={store} conditions={meta.conditions} />
       </div>
@@ -79,7 +81,8 @@ export function MyData({ store, meta, today, analysis: a }: { store: TrackerStor
       <details class="opt-box noprint">
         <summary>เพิ่มเติม: อธิบายชั้นหลักฐาน · ช่วยเราปรับปรุง</summary>
         <Glossary />
-        <FeedbackCard flags={flags} herbName={herbName} />
+        {/* ผลเปลี่ยน = การ์ดใหม่ (คำตอบเก่าห้ามติดไปกับธงอื่นที่ใช้ flag_id ซ้ำ) */}
+        <FeedbackCard key={JSON.stringify(flags.map((f) => [f.flag_id, f.rule_id, f.herb_id, f.message_th]))} flags={flags} herbName={herbName} />
       </details>
     </section>
   );

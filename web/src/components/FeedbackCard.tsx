@@ -1,4 +1,4 @@
-import { useRef, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { ApiError, sendFeedback } from "../api";
 import { downloadJSON } from "../download";
 import { useBusy } from "../hooks/useBusy";
@@ -7,6 +7,7 @@ import type { FeedbackPayload, Flag } from "../types";
 
 // สุ่มใหม่ทุกครั้งที่โหลดหน้า ไม่ผูกกับตัวตน
 const SID = newId();
+const T0 = Date.now(); // เวลาเริ่มต่อการโหลดหน้า (สลับแท็บไม่เริ่มนับใหม่)
 type Role = FeedbackPayload["reviewer_role"];
 type Answer = "" | "true" | "false" | "unsure";
 
@@ -15,7 +16,6 @@ type Answer = "" | "true" | "false" | "unsure";
  * ห้ามแนบรายการสมุนไพร/ยา/โปรไฟล์ของผู้ใช้
  */
 export function FeedbackCard({ flags, herbName }: { flags: Flag[]; herbName: (id: string) => string }) {
-  const t0 = useRef(Date.now());
   const [role, setRole] = useState<Role>("citizen");
   const [caseId, setCaseId] = useState("");
   const [comment, setComment] = useState("");
@@ -28,7 +28,7 @@ export function FeedbackCard({ flags, herbName }: { flags: Flag[]; herbName: (id
     case_id: caseId.trim(),
     reviewer_role: role,
     comment,
-    time_spent_sec: Math.min(86400, Math.round((Date.now() - t0.current) / 1000)),
+    time_spent_sec: Math.min(86400, Math.round((Date.now() - T0) / 1000)),
     entries: flags.filter((f) => answers[f.flag_id]).map((f) => {
       const v = answers[f.flag_id];
       return { flag_id: f.flag_id, agree: v === "unsure" ? "unsure" : v === "true" };

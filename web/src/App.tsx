@@ -53,6 +53,7 @@ export function App() {
 function Home({ store, meta, today }: { store: TrackerStore; meta: Meta; today: string }) {
   const a = useAnalysis(store, today, Object.keys(meta.conditions));
   const [tab, setTab] = useState(0);
+  const [hideRecovered, setHideRecovered] = useState(false);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // แท็บแบบ roving tabindex: ลูกศรซ้าย/ขวา (วน), Home, End เหมือนหน้าเดิม
@@ -69,6 +70,16 @@ function Home({ store, meta, today }: { store: TrackerStore; meta: Meta; today: 
   const v = VIEWS[tab];
   return (
     <>
+      {/* สเปก §9: แจ้งทุกหน้า ไม่ใช่เฉพาะหน้า ข้อมูลของฉัน */}
+      {!store.persistent && (
+        <p class="warn" role="status">ข้อมูลจะหายเมื่อปิดหน้านี้ (เบราว์เซอร์ไม่อนุญาตให้บันทึก) ส่งออกไฟล์ในหน้า ข้อมูลของฉัน ถ้าต้องการเก็บ</p>
+      )}
+      {store.recovered && !hideRecovered && (
+        <p class="warn row-actions" role="alert">
+          <span>ข้อมูลที่บันทึกไว้เสียหาย เริ่มใหม่ให้แล้ว</span>
+          <button type="button" aria-label="ปิดข้อความ ข้อมูลเสียหาย" onClick={() => setHideRecovered(true)}>ปิด</button>
+        </p>
+      )}
       <div class="tabs noprint" role="tablist" aria-label="มุมมอง" onKeyDown={onKey}>
         {VIEWS.map((x, i) => (
           <button key={x.id} ref={(el) => { tabs.current[i] = el; }} type="button" role="tab" id={`tab-${x.id}`}

@@ -71,6 +71,27 @@ describe("แท็บ ช่วงนี้ · ที่เคยใช้ · �
     expect(analyzeBodies()[1].profile.pregnant).toBe(false);
   });
 
+  test("ที่เก็บใช้ไม่ได้: แจ้ง ข้อมูลจะหายเมื่อปิดหน้านี้ ในทุกหน้า", async () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("blocked"); });
+    try {
+      const tabs = await mount();
+      for (const t of tabs) {
+        fireEvent.click(t);
+        expect(screen.getAllByText(/ข้อมูลจะหายเมื่อปิดหน้านี้/)).toHaveLength(1);
+      }
+      expect(screen.queryByText(/เสียหาย/)).toBeNull();
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  test("ข้อมูลที่บันทึกไว้เสีย: แจ้งในหน้า ช่วงนี้ ปิดได้; ที่เก็บปกติไม่มีแบนเนอร์หาย", async () => {
+    localStorage.setItem("hg_tracker_v1", "{broken");
+    await mount();
+    expect(screen.getByText("ข้อมูลที่บันทึกไว้เสียหาย เริ่มใหม่ให้แล้ว")).toBeInTheDocument();
+    expect(screen.queryByText(/ข้อมูลจะหายเมื่อปิดหน้านี้/)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "ปิดข้อความ ข้อมูลเสียหาย" }));
+    expect(screen.queryByText(/เสียหาย/)).toBeNull();
+  });
+
   test("ข้อความแนะนำเภสัชกรชี้ไปหน้า ข้อมูลของฉัน (ไม่ใช่แท็บที่ไม่มีแล้ว)", async () => {
     localStorage.setItem("hg_tracker_v1", JSON.stringify({
       v: 1, items: [{ id: "a", kind: "herb", ref: "khing", label: "ขิง", start_date: "2020-01-01", end_date: null }],

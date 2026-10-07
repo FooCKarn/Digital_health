@@ -49,7 +49,7 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
   const toggle = (c: string, on: boolean) => setConds((xs) => (on ? [...xs, c] : xs.filter((x) => x !== c)));
 
   return (
-    <form class="profile-form" onSubmit={submit} noValidate aria-labelledby="profile-h">
+    <form class="profile-form" onSubmit={submit} onInput={() => setSaved("")} onChange={() => setSaved("")} noValidate aria-labelledby="profile-h">
       <h3 id="profile-h">ข้อมูลสุขภาพที่ใช้ตรวจ</h3>
       <p class="meta">ไม่ระบุ = ระบบจะแจ้งว่าไม่ได้ตรวจเงื่อนไขนั้น (ไม่ถือว่า ไม่ใช่)</p>
       <div class="field">

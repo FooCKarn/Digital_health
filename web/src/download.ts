@@ -4,6 +4,8 @@ export function downloadJSON(name: string, text: string): void {
   const a = document.createElement("a");
   a.href = url;
   a.download = name;
+  document.body.append(a); // บางเบราว์เซอร์ (Firefox) ต้องมีลิงก์ในหน้าก่อนคลิก
   a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 0); // ให้เบราว์เซอร์เริ่มดาวน์โหลดก่อนคืนหน่วยความจำ
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000); // ให้เบราว์เซอร์เริ่มดาวน์โหลดก่อนคืนหน่วยความจำ
 }

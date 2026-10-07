@@ -72,6 +72,34 @@ describe("โปรไฟล์", () => {
     await user.click(screen.getByRole("button", { name: "บันทึกข้อมูลสุขภาพ" }));
     expect(store.state.profile.age).toBeNull();
   });
+
+  test("ข้อความ บันทึกแล้ว หายเมื่อแก้ฟิลด์ใดก็ได้", async () => {
+    const user = userEvent.setup();
+    show();
+    const save = () => user.click(screen.getByRole("button", { name: "บันทึกข้อมูลสุขภาพ" }));
+    const saved = () => screen.queryByText(/บันทึกแล้ว/);
+    await save();
+    expect(saved()).not.toBeNull();
+    await user.type(screen.getByLabelText("อายุ (ปี)"), "4");
+    expect(saved()).toBeNull();
+    await save();
+    await user.selectOptions(screen.getByLabelText("ให้นมบุตร"), "ใช่");
+    expect(saved()).toBeNull();
+    await save();
+    await user.click(screen.getByLabelText("ความดันโลหิตสูง"));
+    expect(saved()).toBeNull();
+  });
+
+  test("โรคที่บันทึกไว้แต่ระบบไม่รู้จัก: เตือนก่อน และบันทึกแล้วถูกนำออก", async () => {
+    const user = userEvent.setup();
+    const s = new TrackerStore(null, () => T); // ยังไม่รู้รหัสโรค จึงมีรหัสแปลกค้างได้
+    s.setProfile({ age: null, pregnant: null, breastfeeding: null, conditions: ["htn", "zzz"] });
+    show(ana(), s);
+    expect(screen.getByText(/ระบบไม่รู้จัก.*zzz/)).toBeInTheDocument();
+    expect(screen.getByLabelText("ความดันโลหิตสูง")).toBeChecked();
+    await user.click(screen.getByRole("button", { name: "บันทึกข้อมูลสุขภาพ" }));
+    expect(s.state.profile.conditions).toEqual(["htn"]);
+  });
 });
 
 describe("ส่งออก/นำเข้า/ลบ", () => {
@@ -82,11 +110,20 @@ describe("ส่งออก/นำเข้า/ลบ", () => {
     const create = vi.fn((b: Blob) => { blob = b; return "blob:x"; });
     const revoke = vi.fn();
     Object.assign(URL, { createObjectURL: create, revokeObjectURL: revoke }); // jsdom ไม่มีสองฟังก์ชันนี้
-    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    let inDom = false;
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) { inDom = this.isConnected; });
     const first = show();
-    fireEvent.click(screen.getByRole("button", { name: "ส่งออกข้อมูล (JSON)" }));
-    expect(click).toHaveBeenCalled();
-    await waitFor(() => expect(revoke).toHaveBeenCalledWith("blob:x"));
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByRole("button", { name: "ส่งออกข้อมูล (JSON)" }));
+      expect(click).toHaveBeenCalled();
+      expect(inDom).toBe(true); // บางเบราว์เซอร์ต้องมีลิงก์ในหน้าก่อนคลิก
+      expect(document.querySelector("a[download]")).toBeNull(); // แล้วถูกเอาออก
+      vi.advanceTimersByTime(500);
+      expect(revoke).not.toHaveBeenCalled(); // ไม่ revoke ก่อนเบราว์เซอร์เริ่มดาวน์โหลด
+      vi.advanceTimersByTime(10000);
+      expect(revoke).toHaveBeenCalledWith("blob:x");
+    } finally { vi.useRealTimers(); }
     const text = await blob!.text();
     first.unmount();
 
@@ -111,15 +148,45 @@ describe("ส่งออก/นำเข้า/ลบ", () => {
     expect(mem.data.get(STORAGE_KEY)).toBe(before);
   });
 
-  test("นำเข้าทับข้อมูลที่มีอยู่ต้องยืนยัน; ยกเลิก = ไม่เปลี่ยน", async () => {
-    herb();
+  const good = JSON.stringify({ v: 1, items: [], profile: { age: null, pregnant: null, breastfeeding: null, conditions: [] } });
+  const importCancelled = async () => {
     const before = JSON.stringify(store.state);
     show();
-    vi.stubGlobal("confirm", () => false);
-    const good = JSON.stringify({ v: 1, items: [], profile: { age: null, pregnant: null, breastfeeding: null, conditions: [] } });
+    const confirm = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirm);
     fireEvent.change(screen.getByLabelText("นำเข้าข้อมูลจากไฟล์ JSON"), { target: { files: [new File([good], "x.json")] } });
-    await new Promise((r) => setTimeout(r, 20));
+    await waitFor(() => expect(confirm).toHaveBeenCalled());
     expect(JSON.stringify(store.state)).toBe(before);
+  };
+
+  test("นำเข้าทับรายการที่มีอยู่ต้องยืนยัน; ยกเลิก = ไม่เปลี่ยน", async () => {
+    herb();
+    await importCancelled();
+  });
+
+  test("นำเข้าทับโปรไฟล์ที่กรอกไว้ (ไม่มีรายการ) ต้องยืนยันเช่นกัน", async () => {
+    store.setProfile({ age: 30, pregnant: null, breastfeeding: null, conditions: [] });
+    await importCancelled();
+  });
+
+  test("ไม่มีข้อมูลเลย: นำเข้าได้โดยไม่ต้องถาม", async () => {
+    show();
+    const confirm = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirm);
+    fireEvent.change(screen.getByLabelText("นำเข้าข้อมูลจากไฟล์ JSON"), { target: { files: [new File([good], "x.json")] } });
+    await screen.findByText("นำเข้าข้อมูลแล้ว");
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  test("ลบในเครื่องไม่สำเร็จ: ไม่แจ้งว่าลบแล้ว", async () => {
+    const user = userEvent.setup();
+    mem.removeItem = () => { throw new Error("blocked"); };
+    herb();
+    show();
+    await user.click(screen.getByRole("button", { name: "ลบข้อมูลทั้งหมด" }));
+    await user.click(screen.getByRole("button", { name: "ยืนยันลบข้อมูลทั้งหมด" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("ลบในเครื่องไม่สำเร็จ");
+    expect(screen.queryByText("ลบข้อมูลทั้งหมดแล้ว")).toBeNull();
   });
 
   test("ลบข้อมูลทั้งหมดต้องกดยืนยัน แล้วล้างรายการ โปรไฟล์ และ localStorage", async () => {
@@ -144,20 +211,11 @@ describe("ส่งออก/นำเข้า/ลบ", () => {
 });
 
 describe("ข้อความแจ้ง", () => {
-  test("ข้อมูลอยู่ในเครื่องเสมอ; localStorage ใช้ได้ -> ไม่มีแบนเนอร์หาย/เสียหาย", () => {
+  // แบนเนอร์ที่เก็บไม่ได้/ข้อมูลเสีย อยู่ระดับ App (เห็นทุกหน้า) ดู App.test.tsx
+  test("ข้อมูลอยู่ในเครื่องเสมอ และเตือนไม่ให้ใส่ข้อมูลระบุตัวตน", () => {
     show();
     expect(screen.getByText(/ข้อมูลอยู่ในเครื่องของคุณเท่านั้น/)).toBeInTheDocument();
-    expect(screen.queryByText(/ข้อมูลจะหายเมื่อปิดหน้านี้/)).toBeNull();
-    expect(screen.queryByText(/เสียหาย/)).toBeNull();
     expect(screen.getByText(/ห้ามใส่ชื่อจริง/)).toBeInTheDocument();
-  });
-
-  test("persistent=false -> ข้อมูลจะหายเมื่อปิดหน้านี้; ข้อมูลเสีย -> แจ้งว่าเริ่มใหม่แล้ว", () => {
-    show(ana(), new TrackerStore(null, () => T));
-    expect(screen.getByText(/ข้อมูลจะหายเมื่อปิดหน้านี้/)).toBeInTheDocument();
-    const bad = new TrackerStore(memStorage({ [STORAGE_KEY]: "{broken" }), () => T);
-    show(ana(), bad);
-    expect(screen.getByText("ข้อมูลที่บันทึกไว้เสียหาย เริ่มใหม่ให้แล้ว")).toBeInTheDocument();
   });
 });
 
@@ -252,6 +310,25 @@ describe("ข้อเสนอแนะ", () => {
     expect(p.comment).toBe("ทดสอบ");
     const s = JSON.stringify(p);
     for (const w of ["warfarin", "htn", "khing", "ขิง", "pregnant", "profile", "age"]) expect(s).not.toContain(w);
+  });
+
+  test("ผลเปลี่ยนจน flag_id เดิมเป็นธงอื่น: คำตอบเก่าถูกล้าง ไม่ส่งไปผิดธง", async () => {
+    const user = userEvent.setup();
+    herb();
+    const calls: any[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (_u: string, init?: RequestInit) => { calls.push(JSON.parse(String(init!.body))); return respond({ ok: true }); }));
+    const view = show(okA(body([flag({ flag_id: "f0", rule_id: "R1", message_th: "ธงเดิม" })])));
+    await user.click(screen.getByText(/ช่วยเราปรับปรุง/, { selector: "summary" }));
+    await user.selectOptions(screen.getByLabelText(/ความเห็นต่อธงที่ 1/), "ไม่เห็นด้วย");
+    // ควรไม่ล้าง: render ซ้ำด้วยผลเดิม คำตอบยังอยู่
+    view.rerender(<MyData store={store} meta={META} today={T} analysis={okA(body([flag({ flag_id: "f0", rule_id: "R1", message_th: "ธงเดิม" })]))} />);
+    expect(screen.getByLabelText(/ความเห็นต่อธงที่ 1/)).toHaveValue("false");
+    // ควรล้าง: f0 กลายเป็นธงอื่น
+    view.rerender(<MyData store={store} meta={META} today={T} analysis={okA(body([flag({ flag_id: "f0", rule_id: "R2", message_th: "ธงใหม่" })]))} />);
+    expect(screen.getByLabelText(/ความเห็นต่อธงที่ 1/)).toHaveValue("");
+    await user.click(screen.getByRole("button", { name: "ส่งความเห็น" }));
+    await screen.findByText("ขอบคุณ ส่งแล้ว");
+    expect(calls[0].entries).toEqual([]);
   });
 });
 

@@ -158,9 +158,12 @@ export class TrackerStore {
     return { ok: true };
   }
 
-  clearAll(): void {
-    try { this.storage?.removeItem(STORAGE_KEY); } catch { /* ใช้งานต่อในหน่วยความจำ */ }
+  /** false = ล้างในหน่วยความจำแล้ว แต่ลบจากที่เก็บในเครื่องไม่สำเร็จ (ข้อมูลอาจกลับมาเมื่อเปิดหน้าใหม่) */
+  clearAll(): boolean {
+    let ok = true;
+    try { this.storage?.removeItem(STORAGE_KEY); } catch { ok = false; }
     this._state = emptyState();
     this.subs.forEach((f) => f());
+    return ok;
   }
 }
