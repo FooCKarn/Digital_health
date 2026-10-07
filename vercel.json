@@ -4,7 +4,7 @@
   "buildCommand": "npm run build --prefix web",
   "outputDirectory": "web/dist",
   "functions": {
-    "api/*.py": { "includeFiles": "{api,engine,data}/**", "maxDuration": 60 }
+    "api/*.py": { "includeFiles": "{api,engine,data}/**", "excludeFiles": "{web,work,docs,app,public,scripts,.claude,.superpowers}/**", "maxDuration": 60 }
   },
   "headers": [
     {

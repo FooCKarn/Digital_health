@@ -190,6 +190,24 @@ def _lookup(question: str, scope: set, index: dict, config: dict, extra_stop: li
     return [c for c, _ in hits if c["drug_class"] in classes or c["condition"] in codes or c["kind"] in kinds][:config["rag_top_k"]["value"]]
 
 
+def _covered(c: dict, flags: list) -> bool:
+    """รายการในฐานมีธงครอบคลุมแล้วหรือไม่ ดูจากฟิลด์ที่ check.py ใส่ในธงเท่านั้น (สมุนไพรเดียวกัน + กฎ + condition/drug_class)
+    notes ไม่มีกฎใดสร้างธง = ไม่ครอบคลุมเสมอ"""
+    def hit(f):
+        if f["herb_id"] != c["herb_id"]:
+            return False
+        if c["kind"] == "age_limits":
+            return f["rule_id"] == "R1" and f.get("condition") == "age"
+        if c["kind"] in ("contraindications", "condition_cautions"):
+            return f["rule_id"] == "R1" and f.get("condition") == c["condition"]
+        if c["kind"] == "drug_cautions":
+            return f["rule_id"] == "R2" and f.get("drug_class") == c["drug_class"]
+        if c["kind"] == "duration_limits":
+            return f["rule_id"] == "R4"
+        return False
+    return any(hit(f) for f in flags)
+
+
 def answer(question: str, result, context_herbs: list, checked_herbs: list, index: dict, config: dict, complete=None, use_llm: bool = True) -> dict:
     """ตอบคำถาม: ข้อความตายตัว/แบบสกัดข้อความเสมอ ถ้า use_llm จะให้ LLM เรียบเรียงจากรายการที่ค้นได้ (ไม่ผ่านตัวตรวจ = กลับแบบสกัดข้อความ)
     result=None หมายถึงยังไม่มีผลตรวจ"""
@@ -214,14 +232,15 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
             return out("refusal", msgs["no_check"])
         flags = result["flags"]
         named = named_herbs(norm(question), index)
-        classes, codes, _ = anchors(question, index)
+        classes, codes, kinds = anchors(question, index)
         # กฎข้อ 5: คำถามเอ่ยถึงสมุนไพรที่ไม่ได้ตรวจ หรือยา/โรคที่ไม่มีธงใดครอบคลุม -> ห้ามตอบ 'ไม่พบธง' ผลตรวจไม่ได้ตอบเรื่องนั้น
         unchecked = [h for h in named if h not in checked_herbs]
         phrases = config["chat_safety_yesno_phrases"]["value"] + config["chat_explain_phrases"]["value"]
         chunks = _lookup(question, set(named) or set(checked_herbs), index, config, phrases)
         # ไม่มีธงแต่ฐานมีรายการตรงหลักของคำถาม (เช่น 'เด็ก' 'คนท้อง' ที่ผู้ใช้ไม่ได้กรอก) = ผลตรวจไม่ได้ตอบเรื่องนั้นเช่นกัน
+        # มีธงอื่นอยู่แล้วแต่หัวข้อที่ถาม (เช่น 'เด็ก') ไม่มีธงใดครอบคลุม = ไม่ครอบคลุมเช่นกัน
         uncovered = (unchecked or classes - {f.get("drug_class") for f in flags} or codes - {f.get("condition") for f in flags}
-                     or (not flags and chunks))
+                     or (not flags and chunks) or any(c["kind"] in kinds and not _covered(c, flags) for c in chunks))
         if intent == "explain_flags":
             flags = [f for f in flags if f["herb_id"] in named] or flags   # สมุนไพรที่ระบุไม่มีธง = แสดงธงทั้งหมด
         head = msgs["safety_prefix"] + "\n" if intent == "safety_yesno" else ""

@@ -170,6 +170,23 @@ def test_same_question_without_topic_word_keeps_standard_no_flag_text():
     assert a["text_th"] == MSG["safety_no_flag"] and a["cites"] == []
 
 
+def test_topic_word_not_covered_by_existing_flags_still_shows_database_item():
+    # กฎข้อ 5: มีธงอื่นอยู่แล้ว (ขิง+วาร์ฟาริน) แต่ถามเรื่องเด็กซึ่งไม่มีธงใดครอบคลุม ต้องแสดงทั้งธงเดิมและรายการเด็กจากฐานข้อมูล
+    res = check({"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 30}}, HERBS, DRUGS, CONFIG, TAGS)
+    assert res["flags"] and not any(f.get("condition") == "age" for f in res["flags"])
+    a = ask("ขิงให้เด็กกินได้ไหม", result=res, checked=("khing",))
+    assert "khing.age_limits.0" in ids(a) and any(i.startswith("flag:") for i in ids(a))
+    assert MSG["asked_unchecked"] in a["text_th"] and a["source"] == "database" and no_claim_of_safety(a["text_th"])
+
+
+def test_topic_word_covered_by_existing_flag_does_not_add_unchecked_block():
+    # ไม่ควรเตือนซ้ำ: อายุ 5 ปี มีธงอายุของขิงอยู่แล้ว ถามเรื่องเด็ก = แสดงธงตามปกติ ไม่เพิ่มบล็อก 'อาจยังไม่อยู่ในข้อมูลที่ตรวจ'
+    res = check({"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 5}}, HERBS, DRUGS, CONFIG, TAGS)
+    assert any(f.get("condition") == "age" for f in res["flags"])
+    a = ask("ขิงให้เด็กกินได้ไหม", result=res, checked=("khing",))
+    assert MSG["asked_unchecked"] not in a["text_th"] and all(i.startswith("flag:") for i in ids(a)) and ids(a)
+
+
 def test_chest_tightness_is_emergency():
     assert ask("ขิงกินได้ไหม มีอาการแน่นหน้าอก", result=KHING_ONLY, checked=("khing",))["source"] == "emergency"
 

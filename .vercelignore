@@ -3,3 +3,7 @@ work/
 .pytest_cache/
 web/node_modules/
 web/dist/
+.env
+.env.*
+.claude/
+.superpowers/

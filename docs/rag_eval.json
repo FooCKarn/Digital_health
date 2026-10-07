@@ -37,6 +37,7 @@
     {"id": "S04", "question": "กระชายกินได้ไหม", "check": {"herbs": [{"id": "krachai"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "database", "item_ids_any": [], "text_includes": "ไม่พบธงเตือนในฐานข้อมูลนี้"}},
     {"id": "S05", "question": "ขิงให้เด็กกินได้ไหม", "check": {"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "database", "item_ids_any": ["khing.age_limits.0"], "text_excludes": "ไม่พบธงเตือน"}},
     {"id": "S06", "question": "ขิงกินได้ไหม", "check": {"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "database", "item_ids_any": [], "text_includes": "ไม่พบธงเตือนในฐานข้อมูลนี้"}},
+    {"id": "S07", "question": "ขิงให้เด็กกินได้ไหม", "check": {"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 30}}, "expect": {"source": "database", "item_ids_any": ["khing.age_limits.0"], "text_includes": "อาจยังไม่อยู่ในข้อมูลที่ตรวจ"}},
     {"id": "K01", "question": "โสมกับ warfarin", "check": null, "expect": {"source": "refusal", "item_ids_any": []}, "known_limit": true}
   ]
 }
