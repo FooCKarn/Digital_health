@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { buildPayload, groupFlags, itemStatus, notCheckedLabels } from "./panel";
+import { buildPayload, groupFlags, itemStatus, notCheckedLabels, unsentRefs } from "./panel";
 
 const item = (o: Partial<any>): any => ({ id: "i1", kind: "herb", ref: "khing", label: "ขิง", start_date: "2026-10-05", end_date: null, ...o });
 const profile: any = { age: null, pregnant: null, breastfeeding: null, conditions: [] };
@@ -75,4 +75,47 @@ test("itemStatus: flagged vs no_flag vs no_data (unknown input is never 'no_flag
 test("notCheckedLabels maps codes, unknown falls back to the code", () => {
   const r: any = { coverage: { not_checked: ["pregnancy", "mystery"] } };
   expect(notCheckedLabels(r, { pregnancy: "การตั้งครรภ์" })).toEqual(["การตั้งครรภ์", "mystery"]);
+});
+
+describe("review fixes", () => {
+  const r: any = { flags: [{ herb_id: "khing" }, { herb_id: "bad" }], coverage: { unknown_inputs: ["bad"] } };
+  const herbs = Array.from({ length: 51 }, (_, i) => item({ id: `h${i}`, ref: `herb${i}` }));
+  const drugs = [
+    ...Array.from({ length: 31 }, (_, i) => item({ id: `d${i}`, kind: "drug", ref: `d${i}` })),
+    item({ id: "long", kind: "drug", ref: "x".repeat(101) }),
+    item({ id: "ok100", kind: "drug", ref: "y".repeat(100) }),
+  ];
+  const all = [...herbs, ...drugs];
+
+  test("unsent items are no_data, included items unaffected", () => {
+    const u = unsentRefs(all);
+    expect(itemStatus(herbs[50], r, u)).toBe("no_data");
+    expect(itemStatus(herbs[0], r, u)).toBe("no_flag");
+    expect(itemStatus(drugs[30], r, u)).toBe("no_data"); // d30 = ตัวที่ 31
+    expect(itemStatus(drugs[0], r, u)).toBe("no_flag");
+    expect(itemStatus(drugs[31], r, u)).toBe("no_data"); // 101 ตัวอักษร
+  });
+
+  test("herb ref over 50 chars is dropped and unsent", () => {
+    const long = item({ id: "lh", ref: "z".repeat(51) });
+    expect(buildPayload([item({}), long], profile, T)!.herbs).toHaveLength(1);
+    expect(unsentRefs([item({}), long]).has(`herb:${"z".repeat(51)}`)).toBe(true);
+  });
+
+  test("100-char drug kept; empty array -> null; invalid start date -> 1", () => {
+    expect(buildPayload([item({}), item({ id: "k", kind: "drug", ref: "y".repeat(100) })], profile, T)!.drugs).toHaveLength(1);
+    expect(buildPayload([], profile, T)).toBeNull();
+    expect(buildPayload([item({ start_date: "bad" })], profile, T)!.herbs[0].days_in_use).toBe(1);
+  });
+
+  test("herb no_data next to a flagged herb", () => {
+    expect(itemStatus(item({}), r)).toBe("flagged");
+    expect(itemStatus(item({ ref: "bad" }), r)).toBe("no_data");
+  });
+
+  test("unexpected severity goes to other, in engine order", () => {
+    const g = groupFlags({ flags: [{ flag_id: "a", severity: "weird" }, { flag_id: "b", severity: "info" }, { flag_id: "c", severity: "x" }] } as any);
+    expect(g.other.map((f) => f.flag_id)).toEqual(["a", "c"]);
+    expect(g.info).toHaveLength(1);
+  });
 });

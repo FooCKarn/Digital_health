@@ -10,21 +10,45 @@ const MAX_DRUGS = 30;
 const MAX_DAYS = 365;
 const MAX_DRUG_LEN = 100;
 
-/** null = ไม่มีสมุนไพร (ห้ามเรียก API) */
-export function buildPayload(active: TrackerItem[], profile: Profile, todayISOStr: string, knownConditions?: string[]): AnalyzePayload | null {
-  const days = new Map<string, number>();
+const MAX_HERB_LEN = 50;
+const key = (i: TrackerItem) => `${i.kind}:${i.ref}`;
+
+/** เลือกรายการที่ส่งได้จริงตามขีดจำกัดเซิร์ฟเวอร์ (ตามลำดับในรายการ) */
+function select(active: TrackerItem[]) {
+  const herbRefs: string[] = [];
   for (const i of active) {
-    if (i.kind !== "herb") continue;
-    const d = Math.min(Math.max(dayNumber(i.start_date, todayISOStr) || 1, 1), MAX_DAYS);
-    days.set(i.ref, Math.max(days.get(i.ref) ?? 0, d)); // id ซ้ำ = เก็บค่าวันที่มากกว่า
+    if (i.kind === "herb" && i.ref.length >= 1 && i.ref.length <= MAX_HERB_LEN && !herbRefs.includes(i.ref) && herbRefs.length < MAX_HERBS) herbRefs.push(i.ref);
   }
-  if (days.size === 0) return null;
-  const herbs = [...days].slice(0, MAX_HERBS).map(([id, days_in_use]) => ({ id, days_in_use }));
-  const drugs = active
-    .filter((i) => i.kind === "drug")
-    .map((i) => i.ref.trim())
-    .filter((d) => d.length >= 1 && d.length <= MAX_DRUG_LEN)
-    .slice(0, MAX_DRUGS);
+  const drugs: string[] = [];
+  for (const i of active) {
+    const d = i.ref.trim();
+    if (i.kind === "drug" && d.length >= 1 && d.length <= MAX_DRUG_LEN && drugs.length < MAX_DRUGS) drugs.push(d);
+  }
+  return { herbRefs, drugs };
+}
+
+/** รายการ (kind:ref) ที่ไม่ได้ถูกส่งไปตรวจ จึงต้องแสดงเป็น no_data ไม่ใช่ no_flag */
+export function unsentRefs(active: TrackerItem[]): Set<string> {
+  const { herbRefs, drugs } = select(active);
+  const out = new Set<string>();
+  for (const i of active) {
+    const sent = i.kind === "herb" ? herbRefs.includes(i.ref) : drugs.includes(i.ref.trim());
+    if (!sent) out.add(key(i));
+  }
+  return out;
+}
+
+/** null = ไม่มีสมุนไพร (ห้ามเรียก API) โรคที่ไม่อยู่ใน knownConditions ถูกตัด (ไม่ใช่รายการในแผง) */
+export function buildPayload(active: TrackerItem[], profile: Profile, todayISOStr: string, knownConditions?: string[]): AnalyzePayload | null {
+  const { herbRefs, drugs } = select(active);
+  if (herbRefs.length === 0) return null;
+  const herbs = herbRefs.map((id) => {
+    let best = 0;
+    for (const i of active) {
+      if (i.kind === "herb" && i.ref === id) best = Math.max(best, Math.min(Math.max(dayNumber(i.start_date, todayISOStr) || 1, 1), MAX_DAYS)); // id ซ้ำ = เก็บค่าวันที่มากกว่า
+    }
+    return { id, days_in_use: best };
+  });
   const p: AnalyzePayload["profile"] = {
     conditions: knownConditions ? profile.conditions.filter((c) => knownConditions.includes(c)) : [...profile.conditions],
   };
@@ -43,19 +67,21 @@ const norm = (s: string) => s.trim().toLowerCase();
  * ดังนั้น 'no_flag' ของแถวยาแปลว่า "ไม่ใช่ชื่อที่ระบบไม่รู้จัก" เท่านั้น
  * ห้ามแสดงว่า "ยานี้ไม่มีธง" ธงเกี่ยวกับยาอยู่ในแผงธงตามสมุนไพร
  */
-export function itemStatus(item: TrackerItem, result: AnalyzeResult): ItemStatus {
+export function itemStatus(item: TrackerItem, result: AnalyzeResult, unsent?: Set<string>): ItemStatus {
+  if (unsent?.has(key(item))) return "no_data"; // ไม่ได้ส่งไปตรวจ
   const unknown = result.coverage.unknown_inputs.map(norm);
   if (unknown.includes(norm(item.ref))) return "no_data";
   if (item.kind === "herb" && result.flags.some((f) => f.herb_id === item.ref)) return "flagged";
   return "no_flag";
 }
 
-export interface PanelGroups { avoid: Flag[]; caution: Flag[]; info: Flag[] }
+export interface PanelGroups { avoid: Flag[]; caution: Flag[]; info: Flag[]; other: Flag[] }
 
 /** ตาม severity ของ engine เท่านั้น เรียงตามลำดับเดิม */
 export function groupFlags(result: AnalyzeResult): PanelGroups {
-  const g: PanelGroups = { avoid: [], caution: [], info: [] };
-  for (const f of result.flags) g[f.severity]?.push(f);
+  const g: PanelGroups = { avoid: [], caution: [], info: [], other: [] };
+  // severity แปลกถูกแสดงในกลุ่ม other ไม่ตัดทิ้งและไม่จัดกลุ่มใหม่
+  for (const f of result.flags) (f.severity === "avoid" || f.severity === "caution" || f.severity === "info" ? g[f.severity] : g.other).push(f);
   return g;
 }
 
