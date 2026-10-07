@@ -8,7 +8,7 @@ import type { AskAnswer, Cite, Meta } from "../types";
 import base from "../styles/base.css?raw";
 import { CHAT_KEY, CHAT_MAX, ChatStore } from "./chatStore";
 
-const STL = "อ้างอิงผลตรวจก่อนที่คุณจะแก้ข้อมูล — กดตรวจใหม่เพื่ออัปเดต";
+const STL = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล — ถามอีกครั้งเมื่อผลใหม่ขึ้นเพื่อคำตอบล่าสุด";
 const FOLLOW = ["ทำไมถึงขึ้นธง", "ควรถามเภสัชกรว่าอะไร", "ข้อมูลนี้มาจากไหน", "คำถามที่สี่"];
 const MCHAT: Meta = { ...META, chat_followups_th: FOLLOW };
 const HEADLINE = "พบธงเตือน 1 รายการจากฐานข้อมูลนี้";
@@ -246,6 +246,17 @@ describe("16) ถาม-ตอบ ป้ายที่มา หลักฐา
     expect(within(panel()).getByRole("status")).toHaveTextContent("ล้างประวัติแชตแล้ว");
     expect(input()).toHaveFocus();
   });
+
+  test("16.8 ล้างประวัติแล้วชิปกลับเป็นค่าเริ่มต้นจาก meta", async () => {
+    await mount();
+    fireEvent.click(fab());
+    askQueue.push(() => respond({ answer: ans({ follow_ups: ["ชิปจากคำตอบ"] }) }));
+    await askN("ขิง", 1);
+    const chips = () => within(screen.getByRole("group", { name: "คำถามแนะนำ" })).getAllByRole("button").map((b) => b.textContent);
+    expect(chips()).toEqual(["ชิปจากคำตอบ"]);
+    fireEvent.click(screen.getByRole("button", { name: "ล้างประวัติแชต" }));
+    expect(chips()).toEqual(FOLLOW.slice(0, 3));
+  });
 });
 
 describe("17) ฉุกเฉิน การปฏิเสธ ไม่มีผลตรวจ", () => {
@@ -432,7 +443,7 @@ describe("20) ตรวจแล้วไม่พบธง แล้วถา�
 });
 
 describe("21) แก้ข้อมูลแล้วถามต่อ / แก้ระหว่างรอ -> ป้ายผลตรวจเดิม", () => {
-  test("21.1-21.5 ป้ายผลเดิม: ไม่มีเมื่อผลปัจจุบัน; มีเมื่อถามหลังแก้ (2 ครั้ง); หายเมื่อตรวจใหม่เสร็จ; มีเมื่อแก้ระหว่างรอ; เก็บในประวัติ", async () => {
+  test("21.1-21.5 ป้ายผลเดิม: ไม่มีเมื่อข้อมูลไม่เปลี่ยน; ไม่มีเมื่อถามหลังแก้ขณะตรวจใหม่ยังค้าง (เซิร์ฟเวอร์คำนวณจากข้อมูลปัจจุบัน); ไม่มีหลังตรวจเสร็จ; มีเมื่อแก้ระหว่างรอคำตอบ; เก็บในประวัติ", async () => {
     seed(["warfarin", "simvastatin"]); await mount({ checked: true });
     fireEvent.click(fab());
     const m1 = await askN("ทำไมถึงขึ้นธง", 1);
@@ -443,7 +454,8 @@ describe("21) แก้ข้อมูลแล้วถามต่อ / แก
     stopItem("warfarin");
     const m2 = await askN("ทำไมถึงขึ้นธง", 2);
     const m3 = await askN("ควรถามเภสัชกรว่าอะไร", 3);
-    for (const m of [m2, m3]) expect(m.querySelector(".stl")).toHaveTextContent(STL); // 21.2
+    for (const m of [m2, m3]) expect(m.querySelector(".stl")).toBeNull(); // 21.2 ถามด้วยข้อมูลปัจจุบัน ไม่ใช่คำตอบเก่า
+    expect(askBodies()[1].drugs).toEqual(["simvastatin"]); // ส่งข้อมูลหลังแก้จริง
 
     analyzeGate = null;
     await act(async () => { gate.open(); });
@@ -460,7 +472,7 @@ describe("21) แก้ข้อมูลแล้วถามต่อ / แก
     await waitFor(() => { expect(answers()).toHaveLength(5); notBusy(); });
     expect(answers()[4].querySelector(".stl")).toHaveTextContent(STL); // 21.4
 
-    expect(stored().msgs.filter((x: { old?: boolean }) => x.old)).toHaveLength(3); // 21.5
+    expect(stored().msgs.filter((x: { old?: boolean }) => x.old)).toHaveLength(1); // 21.5
   });
 });
 

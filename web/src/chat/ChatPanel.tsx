@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { ApiError, ask } from "../api";
 import { Evidence } from "../components/FlagCard";
 import { ScopeChip } from "../components/ScopeChip";
-import type { Analysis } from "../hooks/useAnalysis";
 import { useBusy } from "../hooks/useBusy";
 import { buildPayload } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
@@ -11,7 +10,8 @@ import { toMsg, type ChatMsg, type ChatStore } from "./chatStore";
 
 // ข้อความตายตัวจากหน้าเดิม (public/index.html)
 const NOTICE = "ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้เท่านั้น · ห้ามพิมพ์ข้อมูลส่วนตัว";
-const STALE_LINE = "อ้างอิงผลตรวจก่อนที่คุณจะแก้ข้อมูล — กดตรวจใหม่เพื่ออัปเดต";
+// หน้าใหม่ตรวจซ้ำอัตโนมัติ (ไม่มีปุ่ม ตรวจ) จึงไม่ใช้ถ้อยคำเดิม "กดตรวจใหม่"
+const STALE_LINE = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล — ถามอีกครั้งเมื่อผลใหม่ขึ้นเพื่อคำตอบล่าสุด";
 const CHANGED = "ผลตรวจเปลี่ยนแล้ว คำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน";
 const SRC_LABEL: Record<string, string> = {
   database: "ข้อความจากฐานข้อมูล", llm: "AI เรียบเรียงจากข้อความที่ค้นได้", refusal: "ตอบไม่ได้ / ไม่มีข้อมูล", emergency: "ข้อควรทราบเร่งด่วน",
@@ -45,12 +45,12 @@ function Msg({ m }: { m: ChatMsg }) {
 export type OpenRequest = { n: number; prefill?: string } | null;
 
 type Props = {
-  chat: ChatStore; store: TrackerStore; meta: Meta; today: string; analysis: Analysis;
+  chat: ChatStore; store: TrackerStore; meta: Meta; today: string;
   open: OpenRequest; onClose(): void;
 };
 
 /** แผงแชต (dialog ไม่เป็น modal) อยู่ใน DOM ตลอดเพื่อให้ aria-controls ชี้ได้ ซ่อนด้วย hidden */
-export function ChatPanel({ chat, store, meta, today, analysis, open, onClose }: Props) {
+export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
   const [, setVer] = useState(0);
   useEffect(() => chat.subscribe(() => setVer((v) => v + 1)), [chat]);
   const [text, setText] = useState("");
@@ -93,14 +93,14 @@ export function ChatPanel({ chat, store, meta, today, analysis, open, onClose }:
       const cg = chat.gen;
       setWaitGen(cg);
       const sentKey = key;
-      const behind = analysis.result !== null && !analysis.current; // ผลที่ผู้ใช้เห็นอยู่ยังเป็นของข้อมูลก่อนแก้
       const lastA = [...chat.msgs].reverse().find((m) => m.r === "a");
       const herbIds = new Set(meta.herbs.map((h) => h.id));
       const ctx = lastA?.r === "a" ? [...new Set(lastA.cites.map((c) => c.herb_id))].filter((id) => herbIds.has(id)).slice(0, 5) : [];
       try {
         const a = await ask({ ...(payload ?? {}), question: q, context_herbs: ctx });
         if (cg !== chat.gen) return; // ล้างประวัติไปแล้ว ไม่แสดงคำตอบค้าง
-        const old = sentKey !== null && (behind || sentKey !== keyNow.current);
+        // เซิร์ฟเวอร์คำนวณจากข้อมูลที่ส่งไป: เก่าเฉพาะเมื่อผู้ใช้แก้ข้อมูลระหว่างรอคำตอบ
+        const old = sentKey !== null && sentKey !== keyNow.current;
         const m = toMsg({ r: "a", t: a.text_th, src: a.source, cites: a.cites, old });
         if (!m) throw new ApiError("server");
         chat.add(m);
@@ -117,6 +117,7 @@ export function ChatPanel({ chat, store, meta, today, analysis, open, onClose }:
 
   const clear = () => {
     chat.clear();
+    setChips(meta.chat_followups_th.slice(0, 3));
     setStatus("ล้างประวัติแชตแล้ว");
     input.current?.focus();
   };

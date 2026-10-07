@@ -108,7 +108,7 @@ function Home({ store, meta, today }: { store: TrackerStore; meta: Meta; today: 
       {/* แชตอยู่ระดับ App นอกแผงแท็บ ใช้ได้ทุกแท็บ ใช้ store/meta/analysis ชุดเดียวกัน */}
       <div class="chat-ui">
         <ChatFab open={!!chatOpen} btnRef={fab} onClick={() => (chatOpen ? closeChat() : openChat())} />
-        <ChatPanel chat={chat} store={store} meta={meta} today={today} analysis={a} open={chatOpen} onClose={closeChat} />
+        <ChatPanel chat={chat} store={store} meta={meta} today={today} open={chatOpen} onClose={closeChat} />
       </div>
     </>
   );
