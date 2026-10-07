@@ -11,7 +11,9 @@ import { ProfileForm } from "./ProfileForm";
 
 type Msg = { ok: boolean; text: string } | null;
 
-export function MyData({ store, meta, today, analysis: a }: { store: TrackerStore; meta: Meta; today: string; analysis: Analysis }) {
+export function MyData({ store, meta, today, analysis: a, onClearAll }: {
+  store: TrackerStore; meta: Meta; today: string; analysis: Analysis; onClearAll?: () => void;
+}) {
   useStore(store);
   const [formKey, setFormKey] = useState(0); // ล้าง state ของฟอร์มหลังนำเข้า/ลบ
   const [msg, setMsg] = useState<Msg>(null);
@@ -37,8 +39,8 @@ export function MyData({ store, meta, today, analysis: a }: { store: TrackerStor
   };
 
   const clear = () => {
-    // Task 10: ลบข้อมูลทั้งหมดต้องล้างประวัติแชต sessionStorage hg_chat_v1 ด้วย
     const ok = store.clearAll();
+    onClearAll?.(); // ล้างประวัติแชต (sessionStorage hg_chat_v1 + ในหน่วยความจำ) ด้วย
     setConfirming(false);
     setFormKey((k) => k + 1);
     setMsg(ok ? { ok: true, text: "ลบข้อมูลทั้งหมดแล้ว" }

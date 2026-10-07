@@ -1,3 +1,6 @@
+import type { ComponentChildren } from "preact";
+import { useContext } from "preact/hooks";
+import { AskFlag } from "../chat/chatStore";
 import { isKnownSeverity } from "../model/panel";
 import type { Aggregate, Flag } from "../types";
 import { SeverityBadge } from "./SeverityBadge";
@@ -10,6 +13,7 @@ function Sev({ severity, prefix = "" }: { severity: string; prefix?: string }) {
 
 /** การ์ดธง: ข้อความทั้งหมดจากเซิร์ฟเวอร์แสดงเป็นข้อความล้วน */
 export function FlagCard({ flag: f }: { flag: Flag }) {
+  const ask = useContext(AskFlag);
   return (
     <li class="flag-card" data-sev={f.severity}>
       <Sev severity={f.severity} />
@@ -20,14 +24,25 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
         <span class={f.verified ? "chip" : "chip draft"}>{f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}</span>
         <span class="chip">{`กฎ ${f.rule_id}`}</span>
       </p>
-      {f.evidence_quote && (
-        <details class="evd">
-          <summary>ดูหลักฐาน</summary>
-          <blockquote>{`“${f.evidence_quote}”`}</blockquote>
-          <p class="meta">{`หนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) หน้า ${f.source_page}${f.pdf_page ? ` (หน้า ${f.pdf_page} ในไฟล์ PDF)` : ""} · วลีสั้นที่คัดมาใช้ตรวจเทียบ ข้อความเต็มและบริบทอยู่ในเล่ม`}</p>
-        </details>
+      {f.evidence_quote && <Evidence quote={f.evidence_quote} page={f.source_page} pdfPage={f.pdf_page} />}
+      {ask && (
+        <button type="button" class="askflag noprint" aria-label={`ถามเรื่องธงนี้: ${ask.herbName(f.herb_id)}`} onClick={() => ask.ask(f)}>ถามเรื่องธงนี้</button>
       )}
     </li>
+  );
+}
+
+/** "ดูหลักฐาน" (พับไว้): วลีสั้น + หน้าในหนังสือ ใช้ทั้งการ์ดธงและคำตอบแชต */
+export function Evidence({ summary = "ดูหลักฐาน", quote, page, pdfPage, children }: {
+  summary?: string; quote: string; page: number | string; pdfPage: number | null; children?: ComponentChildren;
+}) {
+  return (
+    <details class="evd">
+      <summary>{summary}</summary>
+      <blockquote>{`“${quote}”`}</blockquote>
+      <p class="meta">{`หนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) หน้า ${page}${pdfPage ? ` (หน้า ${pdfPage} ในไฟล์ PDF)` : ""} · วลีสั้นที่คัดมาใช้ตรวจเทียบ ข้อความเต็มและบริบทอยู่ในเล่ม`}</p>
+      {children}
+    </details>
   );
 }
 

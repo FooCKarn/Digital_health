@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { ApiError, getMeta } from "./api";
+import { ChatFab } from "./chat/ChatFab";
+import { ChatPanel, type OpenRequest } from "./chat/ChatPanel";
+import { AskFlag, ChatStore, getSessionStorage } from "./chat/chatStore";
 import { History } from "./components/History";
 import { MyData } from "./components/MyData";
 import { ThisPeriodView } from "./components/ThisPeriod";
@@ -55,6 +58,13 @@ function Home({ store, meta, today }: { store: TrackerStore; meta: Meta; today: 
   const [tab, setTab] = useState(0);
   const [hideRecovered, setHideRecovered] = useState(false);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const chat = useMemo(() => new ChatStore(getSessionStorage()), []);
+  const [chatOpen, setChatOpen] = useState<OpenRequest>(null);
+  const fab = useRef<HTMLButtonElement>(null);
+  const openChat = (prefill?: string) => setChatOpen((o) => ({ n: (o?.n ?? 0) + 1, prefill }));
+  const closeChat = () => { setChatOpen(null); fab.current?.focus(); };
+  const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? id;
+  const askFlag = useMemo(() => ({ herbName, ask: (f: { herb_id: string }) => openChat(`อธิบายธงของ${herbName(f.herb_id)}`) }), [meta]);
 
   // แท็บแบบ roving tabindex: ลูกศรซ้าย/ขวา (วน), Home, End เหมือนหน้าเดิม
   const onKey = (e: KeyboardEvent) => {
@@ -88,12 +98,18 @@ function Home({ store, meta, today }: { store: TrackerStore; meta: Meta; today: 
           </button>
         ))}
       </div>
-      <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
-        {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} />
-          : v.id === "history" ? <History store={store} />
-          : <MyData store={store} meta={meta} today={today} analysis={a} />}
+      <AskFlag.Provider value={askFlag}>
+        <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
+          {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} />
+            : v.id === "history" ? <History store={store} />
+            : <MyData store={store} meta={meta} today={today} analysis={a} onClearAll={() => chat.clear()} />}
+        </div>
+      </AskFlag.Provider>
+      {/* แชตอยู่ระดับ App นอกแผงแท็บ ใช้ได้ทุกแท็บ ใช้ store/meta/analysis ชุดเดียวกัน */}
+      <div class="chat-ui">
+        <ChatFab open={!!chatOpen} btnRef={fab} onClick={() => (chatOpen ? closeChat() : openChat())} />
+        <ChatPanel chat={chat} store={store} meta={meta} today={today} analysis={a} open={chatOpen} onClose={closeChat} />
       </div>
-      {/* Task 10: ติดตั้งแชตตรงนี้ (ระดับ App นอกแผงแท็บ ใช้ store/meta/analysis ชุดเดียวกัน) */}
     </>
   );
 }

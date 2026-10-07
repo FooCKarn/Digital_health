@@ -14,7 +14,7 @@ test("โหลด meta แล้วแสดงหน้า ช่วงนี�
   vi.stubGlobal("fetch", vi.fn(async () => respond(META)));
   render(<App />);
   expect(await screen.findByText("ยังไม่มีสมุนไพรให้ตรวจ", { selector: ".status-line" })).toBeInTheDocument();
-  expect(screen.getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา")).toBeInTheDocument();
+  expect(screen.getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา", { selector: ".scope .scope-chip" })).toBeInTheDocument();
 });
 
 describe("แท็บ ช่วงนี้ · ที่เคยใช้ · ข้อมูลของฉัน", () => {
