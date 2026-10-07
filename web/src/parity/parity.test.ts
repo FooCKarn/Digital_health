@@ -30,14 +30,19 @@ const stripPy = (s: string) => s.replace(/#.*$/gm, "");
 function checkRef(file: string, name: string, raw: string): string | null {
   if (file.endsWith(".py")) {
     const src = stripPy(raw);
-    if (/pytest\.mark\.(skip|skipif|xfail)\b|pytest\.(skip|xfail)\(/.test(src)) return "ไฟล์มี pytest skip/xfail";
+    const py = /pytest\.mark\.(skip|skipif|xfail)\b|pytest\.(skip|xfail|importorskip)\(|@unittest\.(skip\w*|expectedFailure)|^pytestmark\s*=.*\b(skip\w*|xfail)\b|parametrize\([^)]*,\s*\[\s*\]\s*[,)]/m;
+    if (py.test(src)) return "ไฟล์มี pytest skip/xfail";
     return new RegExp(`^def ${esc(name)}\\(`, "m").test(src) ? null : `ไม่มี def ${name}(`;
   }
   const src = stripJs(raw);
-  if (/\.(skip|only|todo)\b|\bx(it|test|describe)\(/.test(src)) return "ไฟล์มี skip/only/todo/x*";
+  // skipIf/runIf/fails/only/todo, x*, ตัวเลือก { skip: true } และ ({ skip }) => skip()
+  if (/\.(skip\w*|only|todo|runIf|fails)\b|\bx(it|test|describe)\(|\{\s*skip\s*:|\bskip\s*\(/.test(src)) return "ไฟล์มี skip/only/todo/x*";
   const q = "[\"'`]";
-  const firstArg = new RegExp(`\\b(test|it|describe)(\\.each\\([\\s\\S]*?\\))?\\(\\s*${q}${esc(name)}`);
-  const eachRow = new RegExp(`\\b(test|it|describe)\\.each\\(\\s*\\[[\\s\\S]*?\\[\\s*${q}${esc(name)}`);
+  // เนื้อใน .each(...) ห้ามข้ามไปถึงการเรียก test/it/describe ตัวอื่น (ผูกกับการเรียกเดียวกัน)
+  // และห้ามเลยจุดปิดตาราง ])( ของ .each นั้น
+  const same = "(?:(?!\\b(?:test|it|describe)\\b|\\]\\s*(?:as\\s+const\\s*)?\\)\\s*\\()[\\s\\S])*?";
+  const firstArg = new RegExp(`\\b(test|it|describe)(\\.each\\(${same}(?:\\]\\s*(?:as\\s+const\\s*)?)?\\))?\\(\\s*${q}${esc(name)}`);
+  const eachRow = new RegExp(`\\b(test|it|describe)\\.each\\(\\s*\\[${same}\\[\\s*${q}${esc(name)}`);
   return firstArg.test(src) || eachRow.test(src) ? null : `ไม่มีเทสต์ "${name}"`;
 }
 
@@ -91,6 +96,13 @@ describe("ตัวตรวจ checkRef จับการข้ามเทส
     ["xdescribe", `xdescribe("กลุ่ม", () => { it("${N}", () => {}); });`],
     ["sibling .only", `test("${N}", () => {});\ntest.only("อีกตัว", () => {});`],
     ["describe.only", `describe.only("อื่น", () => {});\ntest("${N}", () => {});`],
+    ["test.skipIf", `test.skipIf(true)("${N}", () => {});`],
+    ["describe.skipIf", `describe.skipIf(true)("กลุ่ม", () => { test("${N}", () => {}); });`],
+    ["test.runIf", `test.runIf(false)("${N}", () => {});`],
+    ["test.fails", `test.fails("${N}", () => {});`],
+    ["ตัวเลือก { skip: true }", `test("${N}", { skip: true }, () => {});`],
+    ["({ skip }) => skip()", `test("${N}", ({ skip }) => { skip(); });`],
+    ["ชื่ออยู่หลัง each ของเทสต์อื่น ไม่ใช่การเรียกเดียวกัน", `test.each([[1]])("อื่น %s", () => {});\nconst x = [["${N}"]];\ntest("ข", () => {});`],
     ["ชื่ออยู่แค่ในคอมเมนต์", `// test("${N}")\ntest("อื่น", () => {});`],
     ["ชื่ออยู่ในสตริงทั่วไป ไม่ใช่ชื่อเทสต์", `const s = "${N}";\ntest("อื่น", () => {});`],
   ])("จับได้: %s", (_n, src) => {
@@ -103,6 +115,10 @@ describe("ตัวตรวจ checkRef จับการข้ามเทส
     ["mark.xfail", "@pytest.mark.xfail\ndef test_a():\n    pass\n"],
     ["pytest.skip()", "def test_a():\n    pytest.skip('x')\n"],
     ["ไม่มีฟังก์ชัน", "def test_b():\n    pass\n"],
+    ["unittest.skip", "@unittest.skip('x')\ndef test_a():\n    pass\n"],
+    ["importorskip", "np = pytest.importorskip('numpy')\ndef test_a():\n    pass\n"],
+    ["pytestmark skip", "pytestmark = pytest.mark.skip\ndef test_a():\n    pass\n"],
+    ["parametrize ว่าง", "@pytest.mark.parametrize('x', [])\ndef test_a(x):\n    pass\n"],
   ])("pytest จับได้: %s", (_n, src) => {
     expect(checkRef("t.py", "test_a", src)).not.toBeNull();
   });
