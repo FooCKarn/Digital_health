@@ -236,6 +236,9 @@ function accName(e, d) {
   ok(!$("chatPanel").hidden && d.activeElement === $("chatInput") && $("chatHead").getAttribute("aria-expanded") === "true", "เปิดแล้วโฟกัสไปที่ช่องพิมพ์");
   ok($("chatPanel").getAttribute("role") === "dialog" && !!$("chatPanel").getAttribute("aria-label") && $("chatLog").getAttribute("role") === "log", "แผงเป็น dialog มีชื่อ และบทสนทนาเป็น log");
   ok(/ไม่ใช่การวินิจฉัย/.test($("chatNotice").textContent) && /จาก 50 ชนิด/.test($("chatNotice").textContent), "แถบคงที่: ไม่ใช่การวินิจฉัย + ขอบเขต 50 ชนิด");
+  const meta15 = await (await fetch(BASE + "/api/meta")).json();
+  ok($("chatNotice").textContent.includes(`กลุ่มยา ${meta15.coverage.drug_classes_in_db} กลุ่ม`), "แถบคงที่: ขอบเขตรวมจำนวนกลุ่มยา (กฎข้อ 5)");
+  ok(JSON.stringify([...d.querySelectorAll("#chatChips button")].map((b) => b.textContent)) === JSON.stringify(meta15.chat_followups_th.slice(0, 3)), "ชิปเริ่มต้นมาจาก /api/meta (config) ไม่ฝังในหน้า");
   $("chatPanel").dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   ok($("chatPanel").hidden && d.activeElement === $("chatHead"), "Esc ปิดแผงและโฟกัสกลับปุ่มแชต");
 
@@ -360,6 +363,15 @@ function accName(e, d) {
   er = await errN("รางจืด", 4); ok(!!er && er.textContent.includes("question ต้องเป็นข้อความ 1-300 ตัวอักษร"), "400 ข้อความไทยจากเซิร์ฟเวอร์: แสดงตามเดิม");
   w.__askResp = { status: 503, body: JSON.stringify({ error: "llm_unavailable", message: "บริการ AI ใช้ไม่ได้ชั่วคราว" }) };
   er = await errN("รางจืด", 5); ok(!!er && er.textContent.includes("บริการ AI ใช้ไม่ได้ชั่วคราว"), "503: คงข้อความจากเซิร์ฟเวอร์");
+
+  console.log("== 23) แชต: ถาม 'กินได้ไหม' เรื่องที่ไม่ได้กรอก -> ไม่ตอบ 'ไม่พบธง' ==");
+  ({ w, d, $ } = await load());
+  pick(w, d, "herbAdd", "ขิง"); $("age").value = "30"; await submit(d);
+  $("chatHead").click();
+  m = await askN("ขิงกับวาร์ฟารินกินได้ไหม", 1);
+  ok(!!m && !m.textContent.includes("ไม่พบธงเตือน") && m.textContent.includes("ไม่ควรรับประทาน") && !!m.querySelector("details.evd"), "ยาที่ไม่ได้กรอก: แสดงคำเตือนจากฐานข้อมูลพร้อมหลักฐาน ไม่บอกว่าไม่พบธง");
+  m = await askN("ขิงปลอดภัยไหม", 2);
+  ok(!!m && m.textContent.includes("ไม่พบธงเตือนในฐานข้อมูลนี้"), "ถามเฉพาะสิ่งที่ตรวจแล้วและไม่มีธง: ยังใช้ข้อความไม่พบธงมาตรฐาน");
 
   console.log(fails ? `\nสรุป: ล้มเหลว ${fails} ข้อ` : "\nสรุป: ผ่านทุกข้อ");
   process.exit(fails ? 1 : 0);

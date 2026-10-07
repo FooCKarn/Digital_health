@@ -26,6 +26,7 @@ def run_case(c, config):
     want = c["expect"]
     ids = [x["item_id"] for x in a["cites"]]
     ok = a["source"] == want["source"] and (not want["item_ids_any"] or any(i in ids for i in want["item_ids_any"]))
+    ok = ok and want.get("text_includes", "") in a["text_th"] and not (want.get("text_excludes") and want["text_excludes"] in a["text_th"])
     return ok, a
 
 

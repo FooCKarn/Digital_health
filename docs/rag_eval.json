@@ -1,5 +1,5 @@
 {
-  "_meta": "ชุดประเมินการค้นของแชต ร่างโดยผู้ช่วย AI ยังไม่ผ่านผู้เชี่ยวชาญ item_ids_any = ต้องมีอย่างน้อยหนึ่งรหัสอยู่ใน top-k; source=refusal/emergency/database ตรวจประเภทคำตอบ; known_limit=true คือข้อจำกัดที่รู้อยู่ รายงานแยกและไม่นับเป็นล้มเหลว",
+  "_meta": "ชุดประเมินการค้นของแชต ร่างโดยผู้ช่วย AI ยังไม่ผ่านผู้เชี่ยวชาญ item_ids_any = ต้องมีอย่างน้อยหนึ่งรหัสอยู่ใน top-k; source=refusal/emergency/database ตรวจประเภทคำตอบ; text_includes/text_excludes (ถ้ามี) = ข้อความที่คำตอบต้องมี/ต้องไม่มี; known_limit=true คือข้อจำกัดที่รู้อยู่ รายงานแยกและไม่นับเป็นล้มเหลว",
   "cases": [
     {"id": "R01", "question": "ขิงกับยากันเลือดเป็นลิ่ม", "check": null, "expect": {"source": "database", "item_ids_any": ["khing.drug_cautions.0"]}},
     {"id": "R02", "question": "ขิงเด็กต่ำกว่า 6 ขวบ", "check": null, "expect": {"source": "database", "item_ids_any": ["khing.age_limits.0"]}},
@@ -31,6 +31,10 @@
     {"id": "N09", "question": "วันนี้อากาศเป็นอย่างไร", "check": {"herbs": [{"id": "khilek"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "refusal", "item_ids_any": []}},
     {"id": "N10", "question": "ขิงกับเบาหวาน", "check": null, "expect": {"source": "refusal", "item_ids_any": []}},
     {"id": "N11", "question": "ใช้ได้นานกี่วัน", "check": {"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "refusal", "item_ids_any": []}},
+    {"id": "S01", "question": "ขิงกับวาร์ฟารินกินได้ไหม", "check": {"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "database", "item_ids_any": ["khing.drug_cautions.0"], "text_excludes": "ไม่พบธงเตือน"}},
+    {"id": "S02", "question": "ขี้เหล็กกินได้ไหม", "check": {"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "database", "item_ids_any": ["khilek.contraindications.0", "khilek.contraindications.1", "khilek.contraindications.2"], "text_excludes": "ไม่พบธงเตือน"}},
+    {"id": "S03", "question": "ทำไมถึงเตือนเรื่องขี้เหล็ก", "check": {"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}}, "expect": {"source": "database", "item_ids_any": ["khilek.contraindications.0", "khilek.contraindications.1", "khilek.contraindications.2"], "text_excludes": "ไม่พบธงเตือน"}},
+    {"id": "S04", "question": "กระชายกินได้ไหม", "check": {"herbs": [{"id": "krachai"}], "drugs": [], "profile": {"age": 30}}, "expect": {"source": "database", "item_ids_any": [], "text_includes": "ไม่พบธงเตือนในฐานข้อมูลนี้"}},
     {"id": "K01", "question": "โสมกับ warfarin", "check": null, "expect": {"source": "refusal", "item_ids_any": []}, "known_limit": true}
   ]
 }

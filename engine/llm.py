@@ -318,10 +318,19 @@ def validate_answer(out, chunks: list, allowed_text: str, all_herb_names: list, 
         if n.lower() in ans.lower() and n.lower() not in low:
             return f"มีชื่อยานอกรายการที่ค้นได้: {n}"
     cited = [c for c in chunks if c["item_id"] in cites]
-    # ponytail: heuristic หยาบ ตรวจแค่คำเตือน/ปฏิเสธหายไป ไม่เข้าใจความหมายจริง
+    # ponytail: heuristic หยาบ ตรวจแค่คำเตือน/ปฏิเสธหายไป และรูป 'ไม่มี/ไม่ต้อง + ข้อห้าม/หลีกเลี่ยง' ไม่เข้าใจความหมายจริง
+    # ประโยคกลับความหมายแบบอื่นอาจหลุด จึงให้แชตใช้ LLM แบบเลือกเปิดเท่านั้น (HERBGUARD_CHAT_LLM=1 ใน service.ask)
     if any(re.search(r"ไม่|ห้าม|ควรระวัง", c["text_th"]) for c in cited) and not re.search(r"ไม่|ห้าม|หลีกเลี่ยง|ระวัง", ans):
         return "ความหมายอาจถูกกลับ (รายการที่อ้างเป็นข้อห้าม แต่คำตอบไม่มีคำปฏิเสธ)"
+    neg = _NEGATED_WARNING.search(ans)
+    if neg and neg.group(0) not in allowed_text:
+        return f"ความหมายอาจถูกกลับ (ปฏิเสธคำเตือน: {neg.group(0)})"
+    if set(cites) != ids:   # เหมือน flag_id ของ explain: ต้องครอบคลุมทุกรายการที่ค้นได้ กันการตัดคำเตือนทิ้ง
+        return "อ้างรายการไม่ครบทุกรายการที่ค้นได้"
     return None
+
+
+_NEGATED_WARNING = re.compile(r"(ไม่มี|ไม่ต้อง|ไม่จำเป็นต้อง|ไม่ได้มี|ไม่ได้เป็น|ไม่ใช่)\s*(ข้อห้าม|ข้อควรระวัง|หลีกเลี่ยง|ระวัง|อันตราย|ความเสี่ยง|ปัญหา|ผลเสีย)")
 
 
 def answer_with_llm(question: str, chunks: list, allowed_text: str, all_herb_names: list, all_drug_names: list, forbidden: list, complete=None):

@@ -22,7 +22,8 @@ def test_chat_keys_present_and_well_typed():
                               "chat_explain_phrases", "chat_pharmacist_phrases", "rag_stop_phrases", "chat_followups_th"]:
         assert CFG[k]["value"] and all(isinstance(p, str) and p.strip() for p in CFG[k]["value"]), k
     msgs = CFG["chat_messages_th"]["value"]
-    assert set(msgs) == {"emergency", "no_info", "dose", "diagnosis", "safety_prefix", "safety_no_flag", "no_check"}
+    assert set(msgs) == {"emergency", "no_info", "dose", "diagnosis", "safety_prefix", "safety_no_flag", "no_check",
+                         "asked_unchecked", "asked_unchecked_none"}
 
 
 def test_fixed_messages_never_claim_safety():
@@ -31,6 +32,7 @@ def test_fixed_messages_never_claim_safety():
         assert "ปลอดภัย" not in m.replace("ไม่ได้แปลว่าปลอดภัย", ""), k
     assert msgs["safety_no_flag"].startswith("ไม่พบธงเตือนในฐานข้อมูลนี้") and "ไม่ได้แปลว่าปลอดภัย" in msgs["safety_no_flag"]
     assert "1669" in msgs["emergency"]
+    assert "ไม่ได้แปลว่าปลอดภัย" in msgs["asked_unchecked_none"] and "สำหรับข้อมูลที่คุณกรอก" in msgs["safety_no_flag"]
 
 
 def test_emergency_and_drug_synonym_lists_flagged_for_expert_review():

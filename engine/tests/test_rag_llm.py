@@ -27,7 +27,7 @@ def good():
     base = ask(None, use_llm=False)
     ids = [c["item_id"] for c in base["cites"]]
     text = base["cites"] and "รางจืดควรระวังเมื่อใช้ร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยเบาหวาน"
-    return {"answer_th": text, "cites": ids[:1]}, base
+    return {"answer_th": text, "cites": ids}, base   # ต้องอ้างครบทุกรายการที่ค้นได้ (กันการตัดคำเตือนทิ้ง)
 
 
 def test_faithful_llm_answer_is_used_and_cites_are_only_retrieved_items():
@@ -123,6 +123,28 @@ def test_flipped_contraindication_is_rejected():
 def test_affirmative_reword_of_a_caution_is_rejected():
     a = ask(fake({"answer_th": "รางจืดใช้ร่วมกับยาลดระดับน้ำตาลในเลือดได้", "cites": ["rangchuet.drug_cautions.0"]}))
     assert a["source"] == "database" and "กลับ" in a["rejected_reason"]
+
+
+def test_answer_that_drops_a_retrieved_item_is_rejected():
+    # ละคำเตือน: ค้นได้หลายรายการ แต่ LLM อ้าง (และเรียบเรียง) แค่รายการเดียว
+    obj, base = good()
+    assert len(obj["cites"]) >= 2
+    a = ask(fake({**obj, "cites": obj["cites"][:1]}))
+    assert a["source"] == "database" and a["text_th"] == base["text_th"] and "ครบ" in a["rejected_reason"]
+
+
+@pytest.mark.parametrize("text", [
+    "ขิงไม่มีข้อห้ามสำหรับผู้ที่ได้รับยาต้านการแข็งตัวของเลือด",
+    "ผู้ที่ได้รับยาต้านการแข็งตัวของเลือดไม่ต้องหลีกเลี่ยงขิง",
+])
+def test_negated_warning_is_rejected(text):
+    # ตัวตรวจกลับความหมายเดิมผ่านเพราะมีคำว่า 'ไม่' อยู่แล้ว ตัวตรวจรูป 'ไม่มี/ไม่ต้อง + ข้อห้าม/หลีกเลี่ยง' จับสองแบบนี้ได้
+    # แต่ยังเป็น heuristic ระดับคำ (ประโยคกลับความหมายแบบอื่นอาจหลุด) จึงตั้งให้แชตใช้ LLM แบบเลือกเปิดเท่านั้น (HERBGUARD_CHAT_LLM=1)
+    q = "ขิงกับยาต้านการแข็งตัวของเลือด"
+    base = ask(None, q=q, use_llm=False)
+    assert "khing.drug_cautions.0" in [c["item_id"] for c in base["cites"]]
+    a = ask(fake({"answer_th": text, "cites": [c["item_id"] for c in base["cites"]]}), q=q)
+    assert a["source"] == "database" and a["text_th"] == base["text_th"] and "กลับ" in a["rejected_reason"], a["rejected_reason"]
 
 
 def test_any_llm_exception_or_none_reply_falls_back():

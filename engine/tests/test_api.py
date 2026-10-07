@@ -255,6 +255,31 @@ def test_ask_never_logs_the_question(monkeypatch, capsys):
     assert "คำถามลับ" not in out.out and "คำถามลับ" not in out.err
 
 
+def test_ask_calls_llm_only_when_chat_llm_is_opted_in(monkeypatch):
+    # ค่าเริ่มต้น = ตอบแบบสกัดข้อความ แม้มี key; ใช้ LLM เมื่อตั้ง HERBGUARD_CHAT_LLM=1 เท่านั้น
+    calls = []
+
+    def spy(system, user, max_tokens=800):
+        calls.append(user)
+        raise service.llm.LLMUnavailable("ทดสอบ")
+    monkeypatch.setattr(service.llm, "default_complete", spy)
+    monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
+    q = {"question": "รางจืดกับยาเบาหวาน"}
+    assert service.ask(q)["answer"]["source"] == "database" and calls == []
+    monkeypatch.setenv("HERBGUARD_CHAT_LLM", "0")
+    service.ask(q)
+    assert calls == []
+    monkeypatch.setenv("HERBGUARD_CHAT_LLM", "1")
+    assert service.ask(q)["answer"]["source"] == "database" and len(calls) == 1   # LLM ล่ม = กลับแบบสกัดข้อความ
+
+
+def test_meta_exposes_chat_followups_from_config():
+    assert service.meta()["chat_followups_th"] == service.CONFIG["chat_followups_th"]["value"]
+    html = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    assert "setChips([" not in html and "setChips(META.chat_followups_th)" in html   # ชิปเริ่มต้นมาจาก config ไม่ฝังในหน้า
+    assert "META.coverage.drug_classes_in_db" in html                                # แถบแชตแสดงขอบเขตกลุ่มยาด้วย
+
+
 def test_http_ask_roundtrip_and_400(base, monkeypatch):
     _no_keys(monkeypatch)
     s, body = call(base + "/api/ask", ASK)

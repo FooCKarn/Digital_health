@@ -549,7 +549,8 @@ function build() {
   wireAdder("drugAdd", META.drugs.map((n) => [n, n]), (v) => addChip("drugSel", "drugAdd", v, v));
   wireAdder("condAdd", Object.entries(META.conditions), (v) => addChip("condSel", "condAdd", v, META.conditions[v]));
   $("foot").textContent = META.disclaimer_th;
-  $("chatNotice").textContent += ` · ฐานข้อมูลครอบคลุม ${META.coverage.herbs_in_db} จาก ${META.coverage.herbs_in_book} ชนิด`;
+  $("chatNotice").textContent += ` · ฐานข้อมูลครอบคลุมสมุนไพร ${META.coverage.herbs_in_db} จาก ${META.coverage.herbs_in_book} ชนิด · กลุ่มยา ${META.coverage.drug_classes_in_db} กลุ่ม`;
+  setChips(META.chat_followups_th);  // ไม่มีในข้อมูล = ไม่แสดงชิป
   syncHerbs();
 }
 
@@ -674,7 +675,6 @@ $("chatClear").onclick = () => { chatGen++; chatMsgs = []; saveChat(); $("chatLo
 $("chatForm").addEventListener("submit", (e) => { e.preventDefault(); sendChat($("chatInput").value); });
 $("chatPanel").addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); closeChat(); } });
 loadChat(); chatMsgs.forEach((m) => $("chatLog").append(renderMsg(m)));
-setChips(["ทำไมถึงขึ้นธง", "ควรถามเภสัชกรว่าอะไร"]);
 
 fetch("/api/meta").then((r) => r.json()).then((m) => { META = m; build(); })
   .catch(() => { $("loadErr").hidden = false; $("loadErr").textContent = "โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรชหน้า"; });

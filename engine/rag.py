@@ -174,9 +174,20 @@ def _flag_cite(f: dict, index: dict) -> dict:
             "source_page": f["source_page"], "pdf_page": f.get("pdf_page"), "evidence_quote": f.get("evidence_quote"), "verified": f["verified"]}
 
 
+def _lines(chunks: list) -> str:
+    return "\n".join(f"• {c['herb_name_th']}: {c['text_th']} (ชั้นหลักฐาน {c['evidence_tier']}, หน้า {c['source_page']})" for c in chunks)
+
+
 def _extractive(chunks: list) -> str:
-    return "จากฐานข้อมูลนี้:\n" + "\n".join(
-        f"• {c['herb_name_th']}: {c['text_th']} (ชั้นหลักฐาน {c['evidence_tier']}, หน้า {c['source_page']})" for c in chunks)
+    return "จากฐานข้อมูลนี้:\n" + _lines(chunks)
+
+
+def _lookup(question: str, scope: set, index: dict, config: dict, extra_stop: list = ()) -> list:
+    """ค้นแบบสกัดข้อความ: เฉพาะรายการที่ตรงกับหลักของคำถาม (ยา/โรค/หัวข้อ) และผ่านคะแนนขั้นต่ำ"""
+    classes, codes, kinds = anchors(question, index)
+    hits = retrieve(strip_stop(question, config["rag_stop_phrases"]["value"] + list(extra_stop)), index, scope,
+                    len(index["chunks"]), config["rag_min_score"]["value"])
+    return [c for c, _ in hits if c["drug_class"] in classes or c["condition"] in codes or c["kind"] in kinds][:config["rag_top_k"]["value"]]
 
 
 def answer(question: str, result, context_herbs: list, checked_herbs: list, index: dict, config: dict, complete=None, use_llm: bool = True) -> dict:
@@ -202,23 +213,33 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
         if result is None:
             return out("refusal", msgs["no_check"])
         flags = result["flags"]
-        named = named_herbs(norm(question), index) if intent == "explain_flags" else []
-        if named:
-            flags = [f for f in flags if f["herb_id"] in named]
+        named = named_herbs(norm(question), index)
+        classes, codes, _ = anchors(question, index)
+        # กฎข้อ 5: คำถามเอ่ยถึงสมุนไพรที่ไม่ได้ตรวจ หรือยา/โรคที่ไม่มีธงใดครอบคลุม -> ห้ามตอบ 'ไม่พบธง' ผลตรวจไม่ได้ตอบเรื่องนั้น
+        unchecked = [h for h in named if h not in checked_herbs]
+        uncovered = unchecked or classes - {f.get("drug_class") for f in flags} or codes - {f.get("condition") for f in flags}
+        if intent == "explain_flags":
+            flags = [f for f in flags if f["herb_id"] in named] or flags   # สมุนไพรที่ระบุไม่มีธง = แสดงธงทั้งหมด
+        head = msgs["safety_prefix"] + "\n" if intent == "safety_yesno" else ""
+        flag_text = head + "\n".join(f"• {f['message_th']} (ชั้นหลักฐาน {f['evidence_tier']}, หน้า {f['source_page']})" for f in flags)
+        flag_cites = [_flag_cite(f, index) for f in flags]
+        if uncovered:   # ค้นแบบสกัดข้อความเสมอ ไม่ใช้ LLM ในทางนี้
+            phrases = config["chat_safety_yesno_phrases"]["value"] + config["chat_explain_phrases"]["value"]
+            scope = set(named) or set(checked_herbs)
+            chunks = _lookup(question, scope, index, config, phrases)
+            if not chunks and unchecked:   # ไม่มีหลักอื่นในคำถาม: แสดงรายการของสมุนไพรนั้นตามลำดับหัวข้อ (ข้อห้ามก่อน)
+                chunks = [c for c in index["chunks"] if c["herb_id"] in unchecked][:config["rag_top_k"]["value"]]
+            pre = flag_text + "\n" if flags else ""
+            if not chunks:
+                return out("database", pre + msgs["asked_unchecked_none"], flag_cites)
+            return out("database", pre + msgs["asked_unchecked"] + "\n" + _lines(chunks), flag_cites + [_cite(c) for c in chunks])
         if not flags:
             return out("database", msgs["safety_no_flag"])
-        lines = "\n".join(f"• {f['message_th']} (ชั้นหลักฐาน {f['evidence_tier']}, หน้า {f['source_page']})" for f in flags)
-        head = msgs["safety_prefix"] + "\n" if intent == "safety_yesno" else ""
-        return out("database", head + lines, [_flag_cite(f, index) for f in flags])
+        return out("database", flag_text, flag_cites)
 
-    scope = resolve_scope(question, index, checked_herbs, context_herbs)
-    classes, codes, kinds = anchors(question, index)
-    hits = [h for h in retrieve(strip_stop(question, config["rag_stop_phrases"]["value"]), index, scope,
-                                len(index["chunks"]), config["rag_min_score"]["value"])
-            if h[0]["drug_class"] in classes or h[0]["condition"] in codes or h[0]["kind"] in kinds][:config["rag_top_k"]["value"]]
-    if not hits:
+    chunks = _lookup(question, resolve_scope(question, index, checked_herbs, context_herbs), index, config)
+    if not chunks:
         return out("refusal", msgs["no_info"])
-    chunks = [c for c, _ in hits]
     base_text, why = _extractive(chunks), None
     if use_llm:
         allowed = " ".join(f"{c['herb_name_th']} {c['text_th']} {c['evidence_quote'] or ''} {c['drug_class'] or ''}" for c in chunks)

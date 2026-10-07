@@ -3,6 +3,7 @@
 meta() -> ข้อมูลให้หน้าเว็บสร้างฟอร์ม; run(payload) -> {"result", "summary"}; ข้อมูลไม่ถูกต้อง -> ValueError
 """
 import json
+import os
 import re
 from pathlib import Path
 
@@ -28,6 +29,7 @@ def meta() -> dict:
         "coverage": {"herbs_in_db": len(HERB_IDS), "herbs_in_book": 50,
                      "drug_classes_in_db": len({c for e in DRUGS["entries"] for c in e["class"]})},
         "disclaimer_th": CONFIG["disclaimer_th"],
+        "chat_followups_th": CONFIG["chat_followups_th"]["value"],
     }
 
 
@@ -133,7 +135,8 @@ def explain(payload) -> dict:
 
 
 def ask(payload) -> dict:
-    """แชต: ค้นจากฐานข้อมูลก่อนเสมอ (ตอบแบบสกัดข้อความ) แล้วให้ LLM เรียบเรียงเป็นตัวเลือก
+    """แชต: ค้นจากฐานข้อมูลก่อนเสมอ (ตอบแบบสกัดข้อความ) ให้ LLM เรียบเรียงเฉพาะเมื่อตั้ง HERBGUARD_CHAT_LLM=1 (เลือกเปิด ค่าเริ่มต้นปิด
+    เพราะตัวตรวจการกลับความหมายยังเป็น heuristic ระดับคำ)
     คำนวณผลตรวจใหม่ฝั่งเซิร์ฟเวอร์ (ไม่เชื่อค่าจากไคลเอนต์) ไม่รับ/ไม่ใช้ประวัติแชต ไม่บันทึกคำถาม"""
     if not isinstance(payload, dict):
         raise ValueError("ข้อมูลต้องเป็น JSON object")
@@ -145,5 +148,6 @@ def ask(payload) -> dict:
         raise ValueError("context_herbs ไม่ถูกต้อง")
     inp = validate({k: payload[k] for k in ("herbs", "drugs", "profile") if k in payload}, min_herbs=0)
     result = check(inp, HERBS, DRUGS, CONFIG, TAGS) if inp["herbs"] else None
-    answer = rag.answer(q.strip(), result, ctx, [h["id"] for h in inp["herbs"]], RAG, CONFIG)
+    answer = rag.answer(q.strip(), result, ctx, [h["id"] for h in inp["herbs"]], RAG, CONFIG,
+                        use_llm=os.environ.get("HERBGUARD_CHAT_LLM") == "1")
     return {"answer": answer}

@@ -107,6 +107,54 @@ def test_every_answer_is_deterministic_and_has_no_internal_fields():
     assert a1 == a2 and not any(k.startswith("_") for c in a1["cites"] for k in c)
 
 
+KHING_ONLY = check({"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 30}}, HERBS, DRUGS, CONFIG, TAGS)
+KW_KRACHAI = check({"herbs": [{"id": "khing"}, {"id": "garlic"}, {"id": "krachai"}], "drugs": ["warfarin"], "profile": {"age": 60}}, HERBS, DRUGS, CONFIG, TAGS)
+
+
+def ids(a):
+    return [c["item_id"] for c in a["cites"]]
+
+
+def test_safety_question_naming_an_unchecked_drug_shows_database_items_not_no_flag():
+    # กฎข้อ 5: ขิงตรวจแล้วแต่ไม่ได้กรอกยา ถามเรื่องวาร์ฟาริน ห้ามตอบ 'ไม่พบธง' ทั้งที่ฐานมีคำเตือน khing.drug_cautions.0
+    assert not KHING_ONLY["flags"]
+    a = ask("ขิงกับวาร์ฟารินกินได้ไหม", result=KHING_ONLY, checked=("khing",))
+    assert a["text_th"] != MSG["safety_no_flag"] and MSG["asked_unchecked"] in a["text_th"] and no_claim_of_safety(a["text_th"])
+    assert "khing.drug_cautions.0" in ids(a) and a["source"] == "database"
+
+
+def test_safety_question_naming_an_unchecked_herb_shows_that_herbs_items():
+    a = ask("ขี้เหล็กกินได้ไหม", result=KHING_ONLY, checked=("khing",))
+    assert a["text_th"] != MSG["safety_no_flag"] and MSG["asked_unchecked"] in a["text_th"]
+    assert a["cites"] and all(c["herb_id"] == "khilek" for c in a["cites"]) and "khilek.contraindications.0" in ids(a)
+
+
+def test_explain_question_naming_an_unchecked_herb_keeps_current_flags_and_adds_its_items():
+    a = ask("ทำไมถึงเตือนเรื่องขี้เหล็ก", result=check({"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}}, HERBS, DRUGS, CONFIG, TAGS),
+            checked=("khing",))
+    assert a["text_th"] != MSG["safety_no_flag"] and MSG["asked_unchecked"] in a["text_th"]
+    assert any(i.startswith("flag:") for i in ids(a)) and any(i.startswith("khilek.") for i in ids(a))   # ธงจริงของขิงยังแสดง
+
+
+def test_safety_question_about_unchecked_thing_with_nothing_in_db_uses_fixed_message():
+    a = ask("ขิงกับเบาหวานกินได้ไหม", result=KHING_ONLY, checked=("khing",))
+    assert a["text_th"] == MSG["asked_unchecked_none"] and a["cites"] == [] and no_claim_of_safety(a["text_th"])
+
+
+def test_no_flag_wording_is_still_used_when_question_names_only_checked_things():
+    # ไม่ควรเตือน: ถามเฉพาะสิ่งที่ตรวจแล้วและไม่มีธงจริง = ข้อความไม่พบธงมาตรฐาน
+    for q in ("กระชายกินได้ไหม", "กระชายปลอดภัยไหม"):
+        assert ask(q, result=NONE, checked=("krachai",))["text_th"] == MSG["safety_no_flag"], q
+    a = ask("ขิงกับวาร์ฟารินกินได้ไหม", result=check({"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}}, HERBS, DRUGS, CONFIG, TAGS),
+            checked=("khing",))
+    assert a["text_th"].startswith(MSG["safety_prefix"]) and MSG["asked_unchecked"] not in a["text_th"] and all(i.startswith("flag:") for i in ids(a))
+
+
+def test_explain_named_checked_herb_without_flags_shows_all_flags():
+    a = ask("ทำไมถึงเตือนเรื่องกระชาย", result=KW_KRACHAI, checked=("khing", "garlic", "krachai"))
+    assert a["text_th"] != MSG["safety_no_flag"] and len(a["cites"]) == len(KW_KRACHAI["flags"]) > 0
+
+
 def test_known_limit_unknown_herb_with_known_drug_is_documented_not_silently_trusted():
     """ข้อจำกัดที่รู้อยู่: สมุนไพรนอกฐาน + ยาที่รู้จัก อาจได้ข้อมูลของยาเป็นคำตอบ (ดูชุดประเมิน known_limit) เทสต์นี้ล็อกว่าผลต้องไม่ว่างเปล่า
     และต้องมีป้ายที่มา เพื่อให้ผู้ใช้เห็นว่าเป็นข้อความจากฐานข้อมูลของสมุนไพรชนิดอื่น ไม่ใช่คำตอบของโสม"""
