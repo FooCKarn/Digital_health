@@ -6,6 +6,7 @@ import { NO_FLAG, NO_FLAG_NOTE, NOT_CHECKED, PHARMACIST } from "../texts";
 import { groupFlags, isKnownSeverity, notCheckedLabels, unknownConditions, type PanelGroups } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Aggregate, Meta } from "../types";
+import type { DiaryStore } from "../model/diary";
 import { ActiveList } from "./ActiveList";
 import { Disclaimer } from "./Disclaimer";
 import { AggCard, FlagCard } from "./FlagCard";
@@ -17,7 +18,7 @@ const STALE = "ผลก่อนแก้ไข (ยังไม่ได้ต
 
 const aggBucket = (a: Aggregate): keyof PanelGroups => (isKnownSeverity(a.severity) ? a.severity : "other");
 
-type Props = { store: TrackerStore; meta: Meta; today: string };
+type Props = { store: TrackerStore; meta: Meta; today: string; diary?: DiaryStore };
 
 /** ใช้เดี่ยว ๆ (ตรวจเอง) */
 export function ThisPeriod(p: Props) {
@@ -26,7 +27,7 @@ export function ThisPeriod(p: Props) {
 }
 
 /** ใช้ใน App: ผลตรวจชุดเดียวแบ่งกับใบสรุปเภสัชกร (ไม่เรียก API ซ้ำ) */
-export function ThisPeriodView({ store, meta, today, analysis: a }: Props & { analysis: Analysis }) {
+export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props & { analysis: Analysis }) {
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(""); // ประกาศการเพิ่ม แยกจากพื้นที่ประกาศผลตรวจ
   const opener = useRef<HTMLButtonElement>(null);
@@ -97,7 +98,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a }: Props & { an
       <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
       {adding && <AddSheet meta={meta} store={store} today={today} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
 
-      <ActiveList store={store} today={today} analysis={a} />
+      <ActiveList store={store} today={today} analysis={a} diary={diary} />
     </section>
   );
 }

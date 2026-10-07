@@ -53,10 +53,11 @@ test("fetch เรียกเฉพาะ /api/* และมีที่เด
   expect([...api.matchAll(/\bfetch\(([^,)]+)/g)].map((m) => m[1])).toEqual(["url"]);
 });
 
-test("ที่เก็บในเบราว์เซอร์ใช้แค่ hg_tracker_v1 (localStorage) และ hg_chat_v1 (sessionStorage)", () => {
+test("ที่เก็บในเบราว์เซอร์ใช้แค่ hg_tracker_v1 และ hg_diary_v1 (localStorage) กับ hg_chat_v1 (sessionStorage)", () => {
   expect(hits(/\b(localStorage|sessionStorage)\b/)).toEqual(["./chat/chatStore.ts", "./model/storage.ts"]);
   expect(hits(/document\.cookie|indexedDB|caches\.open/)).toEqual([]);
   expect(code(src["./model/tracker.ts"])).toMatch(/STORAGE_KEY = "hg_tracker_v1"/);
+  expect(code(src["./model/diary.ts"])).toMatch(/DIARY_KEY = "hg_diary_v1"/);
   expect(code(src["./chat/chatStore.ts"])).toMatch(/CHAT_KEY = "hg_chat_v1"/);
   // store.removeItem(id) คือเมธอดของ TrackerStore ไม่ใช่ Web Storage
   const keys = files.flatMap(([p, s]) => [...code(s).matchAll(/(\w+)\??\.(?:getItem|setItem|removeItem)\(\s*([^,)]+)/g)]
@@ -64,7 +65,7 @@ test("ที่เก็บในเบราว์เซอร์ใช้แ�
   expect(keys.length).toBeGreaterThanOrEqual(8);
   for (const k of keys) {
     // storage.ts เขียนคีย์ทดสอบชั่วคราวแล้วลบทันที เพื่อดูว่าเบราว์เซอร์ให้บันทึกได้ไหม
-    expect(["STORAGE_KEY", "CHAT_KEY"].includes(k.split(":")[1]) || k === "./model/storage.ts:k").toBe(true);
+    expect(["STORAGE_KEY", "CHAT_KEY", "DIARY_KEY"].includes(k.split(":")[1]) || k === "./model/storage.ts:k").toBe(true);
   }
   expect(code(src["./model/storage.ts"])).toMatch(/const k = "__hg_probe__";[\s\S]*removeItem\(k\)/);
 });

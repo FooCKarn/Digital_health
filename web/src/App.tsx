@@ -3,23 +3,28 @@ import { ApiError, getMeta } from "./api";
 import { ChatFab } from "./chat/ChatFab";
 import { ChatPanel, type OpenRequest } from "./chat/ChatPanel";
 import { AskFlag, ChatStore, getSessionStorage } from "./chat/chatStore";
+import { Diary } from "./components/Diary";
 import { History } from "./components/History";
+import { Policy } from "./components/Policy";
 import { MyData } from "./components/MyData";
 import { ThisPeriodView } from "./components/ThisPeriod";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { todayISO } from "./model/dates";
 import { getLocalStorage } from "./model/storage";
 import { TrackerStore } from "./model/tracker";
+import { DiaryStore } from "./model/diary";
 import type { Meta } from "./types";
 
 const VIEWS = [
   { id: "now", label: "ช่วงนี้" },
+  { id: "diary", label: "บันทึก" },
   { id: "history", label: "ที่เคยใช้" },
   { id: "mine", label: "ข้อมูลของฉัน" },
 ] as const;
 
 export function App() {
   const store = useMemo(() => new TrackerStore(getLocalStorage(), () => todayISO()), []);
+  const diary = useMemo(() => new DiaryStore(getLocalStorage(), () => todayISO()), []);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -43,11 +48,17 @@ export function App() {
   return (
     <>
       <header>
-        <h1>HerbGuard TTM</h1>
-        <p class="meta">ตรวจธงเตือนการใช้สมุนไพรร่วมกับยา จากหนังสือ TTM first · <strong>ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง</strong></p>
+        <div class="appbar">
+        <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C6 6 4 12 9 20c1-1 2-2 3-4 1 2 2 3 3 4 5-8 3-14-3-18z"/></svg></span>
+        <div>
+          <h1>HerbGuard TTM</h1>
+          <p class="meta">ตัวติดตามสมุนไพรและยาของฉัน · ตรวจธงเตือนจากหนังสือ TTM first</p>
+        </div>
+        </div>
+        <p class="proto-banner"><strong>ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง</strong></p>
       </header>
       <main>
-        {meta ? <Home store={store} meta={meta} /> : error ? (
+        {meta ? <Home store={store} diary={diary} meta={meta} /> : error ? (
           <div class="err" role="alert">
             <span>{`โหลดข้อมูลไม่สำเร็จ: ${error}`}</span>{" "}
             <button type="button" onClick={() => setAttempt((n) => n + 1)}>ลองใหม่</button>
@@ -61,6 +72,7 @@ export function App() {
           <p>แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ)</p>
           <p>ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบธงเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร</p>
         </details>
+        <Policy />
         {meta && <p class="meta">{meta.disclaimer_th}</p>}
       </footer>
     </>
@@ -68,7 +80,7 @@ export function App() {
 }
 
 /** สามมุมมองใช้ผลตรวจชุดเดียว (เรียก /api/analyze ที่เดียว) */
-function Home({ store, meta }: { store: TrackerStore; meta: Meta }) {
+function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; meta: Meta }) {
   // คำนวณทุกครั้งที่ render (Home render ใหม่เมื่อข้อมูล/แท็บเปลี่ยน) เปิดหน้าข้ามเที่ยงคืนแล้ววันที่ใช้จึงขยับตาม
   // ponytail: ไม่มีตัวจับเวลาเที่ยงคืน ถ้าหน้าค้างไว้เฉย ๆ จะขยับเมื่อมีการโต้ตอบครั้งถัดไป
   const today = todayISO();
@@ -112,15 +124,17 @@ function Home({ store, meta }: { store: TrackerStore; meta: Meta }) {
         {VIEWS.map((x, i) => (
           <button key={x.id} ref={(el) => { tabs.current[i] = el; }} type="button" role="tab" id={`tab-${x.id}`}
             aria-selected={i === tab} aria-controls={i === tab ? `panel-${x.id}` : undefined} tabIndex={i === tab ? 0 : -1} onClick={() => setTab(i)}>
-            {x.label}
+            <TabIcon id={x.id} />
+            <span>{x.label}</span>
           </button>
         ))}
       </div>
       <AskFlag.Provider value={askFlag}>
         <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
-          {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} />
+          {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} diary={diary} />
+            : v.id === "diary" ? <Diary diary={diary} store={store} today={today} analysis={a} />
             : v.id === "history" ? <History store={store} />
-            : <MyData store={store} meta={meta} today={today} analysis={a} onClearAll={() => chat.clear()} />}
+            : <MyData store={store} meta={meta} today={today} analysis={a} onClearAll={() => { chat.clear(); diary.clearAll(); }} />}
         </div>
       </AskFlag.Provider>
       {/* แชตอยู่ระดับ App นอกแผงแท็บ ใช้ได้ทุกแท็บ ใช้ store/meta/analysis ชุดเดียวกัน */}
@@ -129,5 +143,19 @@ function Home({ store, meta }: { store: TrackerStore; meta: Meta }) {
         <ChatPanel chat={chat} store={store} meta={meta} today={today} open={chatOpen} onClose={closeChat} />
       </div>
     </>
+  );
+}
+
+const TAB_PATH: Record<string, string> = {
+  now: "M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10Z",
+  diary: "M6 3h12v18H6ZM9 8h6M9 12h6M9 16h3",
+  history: "M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7M3 4v4h4",
+  mine: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0",
+};
+function TabIcon({ id }: { id: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d={TAB_PATH[id]} />
+    </svg>
   );
 }

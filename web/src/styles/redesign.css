@@ -1,0 +1,87 @@
+/* ดีไซน์แบบแอปติดตามสุขภาพ: การ์ดนุ่ม ไม่มีกรอบเส้นทุกชิ้น เมนูล่างมีไอคอน
+   สีทั้งหมดใช้โทเคนใน tokens.css (ผ่านเทสต์คอนทราสต์); ไฟล์นี้เพิ่มเฉพาะระยะ/มุม/เงา */
+:root { --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --r-card: 18px; --shadow-1: 0 1px 2px rgba(18, 48, 58, .08), 0 4px 14px rgba(18, 48, 58, .06); }
+body { font-size: 17px; }
+button, [role="button"], select, input:not([type="checkbox"]):not([type="radio"]) { min-height: 48px; }
+input[type="text"], input[type="search"], input[type="number"], input[type="date"], select, textarea {
+  border: 1.5px solid var(--c-muted); border-radius: 12px; padding: 6px 12px; background: var(--c-surface); color: var(--c-text);
+}
+button { border-radius: 14px; }
+
+/* แถบหัวแอป */
+.appbar { display: flex; align-items: center; gap: var(--sp-3); padding-top: var(--sp-4); padding-bottom: var(--sp-2); }
+.appbar h1 { margin: 0; font-size: 1.35rem; line-height: 1.25; }
+.appbar .meta { margin: 0; }
+.logo { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: 14px; background: var(--c-primary); color: var(--c-on-primary); }
+.proto-banner { margin: 0 0 var(--sp-3); padding: 6px var(--sp-4); font-size: .88rem; color: var(--c-caution-fg); background: var(--c-caution-bg); border-radius: 10px; }
+
+/* การ์ด */
+.card, details[data-group], .sheet, .active-row {
+  background: var(--c-surface); border: 0; border-radius: var(--r-card); box-shadow: var(--shadow-1);
+}
+.card { margin: var(--sp-4) 0; padding: var(--sp-4); }
+.card h3 { margin: 0 0 var(--sp-2); font-size: 1.05rem; }
+details[data-group] { margin: var(--sp-3) 0; }
+details[data-group][data-group="avoid"] { border-left: 6px solid var(--c-avoid-fg); }
+details[data-group][data-group="caution"] { border-left: 6px solid var(--c-caution-fg); }
+details[data-group][data-group="info"] { border-left: 6px solid var(--c-info-fg); }
+.sheet { border: 2px solid var(--c-primary); padding: var(--sp-4); }
+.scope { margin-top: 0; }
+.scope-chip { font-weight: 500; }
+.disclaimer { border: 0; background: transparent; padding-left: 0; }
+.banner-avoid { border-radius: var(--r-card); }
+.warn, .err { border-radius: 12px; }
+.empty-note { padding: var(--sp-4); text-align: center; color: var(--c-muted); background: var(--c-accent-green); border-radius: 14px; }
+.ok { color: var(--c-info-fg); background: var(--c-info-bg); padding: 6px 12px; border-radius: 10px; }
+button.wide { width: 100%; margin-top: var(--sp-3); }
+
+/* รายการที่กำลังใช้ เป็นการ์ดต่อรายการ */
+.active-list ul { display: grid; gap: var(--sp-3); }
+.active-row { border-top: 0; padding: var(--sp-3) var(--sp-4); }
+.checkin { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); flex: 1 1 100%; }
+.check-btn { min-width: 160px; font-weight: 500; }
+.check-btn[aria-pressed="true"] { background: var(--c-primary); color: var(--c-on-primary); font-weight: 700; }
+.weekdots { display: inline-flex; gap: 5px; }
+.weekdots i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--c-primary); }
+.weekdots i[data-on="1"] { background: var(--c-primary); }
+
+/* บันทึกสุขภาพ */
+.moods { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--sp-2); margin: var(--sp-3) 0; }
+.mood { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: var(--sp-2) 2px; min-height: 64px; font-size: .85rem; line-height: 1.25; }
+.mood-n { font-size: 1.25rem; font-weight: 700; }
+.mood[aria-checked="true"] { background: var(--c-primary); color: var(--c-on-primary); font-weight: 700; }
+.vitals .field input { max-width: 200px; }
+.lbl { display: block; font-weight: 500; }
+.bp { display: flex; align-items: center; gap: var(--sp-2); }
+.bp input { width: 96px; }
+.trend { margin: var(--sp-3) 0; color: var(--c-primary); }
+.trend svg { width: 100%; height: auto; display: block; }
+.trend figcaption { color: var(--c-text); }
+.trend-range { margin: 0; }
+.mooddots { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+.dot { flex: 1; text-align: center; padding: 6px 0; border-radius: 10px; background: var(--c-noflag-bg); color: var(--c-noflag-fg); font-weight: 700; }
+.dot:not([data-m="0"]) { background: var(--c-accent-green); color: var(--c-text); }
+
+/* เมนู: บนจอเล็กเป็นแถบล่างมีไอคอน; จอใหญ่เป็นแท็บแบบแคปซูล */
+.tabs { gap: var(--sp-2); border-bottom: 0; margin: var(--sp-2) 0 var(--sp-4); }
+.tabs [role="tab"] { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 14px; border-color: transparent; background: transparent; padding: 4px 6px; line-height: 1.2; font-size: .92rem; }
+.tabs [role="tab"][aria-selected="true"] { background: var(--c-primary); color: var(--c-on-primary); }
+@media (min-width: 601px) { .tabs [role="tab"] { flex-direction: row; gap: var(--sp-2); } }
+@media (max-width: 600px) {
+  .tabs { background: var(--c-surface); box-shadow: 0 -2px 12px rgba(18, 48, 58, .12); border-top: 0; }
+  .tabs [role="tab"] { font-size: .78rem; min-height: 56px; padding: 4px 2px; }
+  main { padding-bottom: 96px; }
+}
+@media print { .appbar .meta, .proto-banner { display: none; } }
+.check-btn[aria-pressed="true"]::before { content: "✓ "; }
+.this-period { padding-left: 0; padding-right: 0; }
+
+/* ตารางนโยบายบนจอเล็ก: เรียงซ้อนเป็นบล็อก */
+@media (max-width: 600px) {
+  .policy table, .policy tbody, .policy tr, .policy th, .policy td { display: block; width: 100%; box-sizing: border-box; }
+  .policy thead { position: absolute; left: -9999px; }
+  .policy tr { margin: var(--sp-3) 0; padding: var(--sp-3); border: 1px solid var(--c-line); border-radius: 12px; }
+  .policy th, .policy td { border: 0; padding: var(--sp-1) 0; }
+  .policy td::before { content: attr(data-label); display: block; font-weight: 700; color: var(--c-muted); font-size: .85rem; }
+}
+.policy h3 { margin: var(--sp-4) 0 var(--sp-2); font-size: 1.05rem; }
