@@ -217,16 +217,17 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
         classes, codes, _ = anchors(question, index)
         # กฎข้อ 5: คำถามเอ่ยถึงสมุนไพรที่ไม่ได้ตรวจ หรือยา/โรคที่ไม่มีธงใดครอบคลุม -> ห้ามตอบ 'ไม่พบธง' ผลตรวจไม่ได้ตอบเรื่องนั้น
         unchecked = [h for h in named if h not in checked_herbs]
-        uncovered = unchecked or classes - {f.get("drug_class") for f in flags} or codes - {f.get("condition") for f in flags}
+        phrases = config["chat_safety_yesno_phrases"]["value"] + config["chat_explain_phrases"]["value"]
+        chunks = _lookup(question, set(named) or set(checked_herbs), index, config, phrases)
+        # ไม่มีธงแต่ฐานมีรายการตรงหลักของคำถาม (เช่น 'เด็ก' 'คนท้อง' ที่ผู้ใช้ไม่ได้กรอก) = ผลตรวจไม่ได้ตอบเรื่องนั้นเช่นกัน
+        uncovered = (unchecked or classes - {f.get("drug_class") for f in flags} or codes - {f.get("condition") for f in flags}
+                     or (not flags and chunks))
         if intent == "explain_flags":
             flags = [f for f in flags if f["herb_id"] in named] or flags   # สมุนไพรที่ระบุไม่มีธง = แสดงธงทั้งหมด
         head = msgs["safety_prefix"] + "\n" if intent == "safety_yesno" else ""
         flag_text = head + "\n".join(f"• {f['message_th']} (ชั้นหลักฐาน {f['evidence_tier']}, หน้า {f['source_page']})" for f in flags)
         flag_cites = [_flag_cite(f, index) for f in flags]
         if uncovered:   # ค้นแบบสกัดข้อความเสมอ ไม่ใช้ LLM ในทางนี้
-            phrases = config["chat_safety_yesno_phrases"]["value"] + config["chat_explain_phrases"]["value"]
-            scope = set(named) or set(checked_herbs)
-            chunks = _lookup(question, scope, index, config, phrases)
             if not chunks and unchecked:   # ไม่มีหลักอื่นในคำถาม: แสดงรายการของสมุนไพรนั้นตามลำดับหัวข้อ (ข้อห้ามก่อน)
                 chunks = [c for c in index["chunks"] if c["herb_id"] in unchecked][:config["rag_top_k"]["value"]]
             pre = flag_text + "\n" if flags else ""

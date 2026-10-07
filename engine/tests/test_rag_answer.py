@@ -155,6 +155,25 @@ def test_explain_named_checked_herb_without_flags_shows_all_flags():
     assert a["text_th"] != MSG["safety_no_flag"] and len(a["cites"]) == len(KW_KRACHAI["flags"]) > 0
 
 
+def test_topic_word_question_with_no_flag_still_shows_database_item():
+    # กฎข้อ 5: ติ๊กขิง ไม่มีธง ถามเรื่องเด็ก ต้องเห็นข้อห้ามเด็กจากฐานข้อมูล ไม่ใช่ "ไม่พบธงเตือน"
+    q = "ขิงให้เด็กกินได้ไหม"
+    assert rag.classify(q, CONFIG) == "safety_yesno" and not KHING_ONLY["flags"]
+    a = ask(q, result=KHING_ONLY, checked=("khing",))
+    assert "khing.age_limits.0" in ids(a) and MSG["asked_unchecked"] in a["text_th"]
+    assert not a["text_th"].startswith(MSG["safety_no_flag"]) and no_claim_of_safety(a["text_th"]) and a["source"] == "database"
+
+
+def test_same_question_without_topic_word_keeps_standard_no_flag_text():
+    # ไม่ควรเตือน: ถามเฉพาะสิ่งที่ตรวจแล้ว ไม่มีคำหัวข้อ และไม่มีธง = ข้อความมาตรฐาน
+    a = ask("ขิงกินได้ไหม", result=KHING_ONLY, checked=("khing",))
+    assert a["text_th"] == MSG["safety_no_flag"] and a["cites"] == []
+
+
+def test_chest_tightness_is_emergency():
+    assert ask("ขิงกินได้ไหม มีอาการแน่นหน้าอก", result=KHING_ONLY, checked=("khing",))["source"] == "emergency"
+
+
 def test_known_limit_unknown_herb_with_known_drug_is_documented_not_silently_trusted():
     """ข้อจำกัดที่รู้อยู่: สมุนไพรนอกฐาน + ยาที่รู้จัก อาจได้ข้อมูลของยาเป็นคำตอบ (ดูชุดประเมิน known_limit) เทสต์นี้ล็อกว่าผลต้องไม่ว่างเปล่า
     และต้องมีป้ายที่มา เพื่อให้ผู้ใช้เห็นว่าเป็นข้อความจากฐานข้อมูลของสมุนไพรชนิดอื่น ไม่ใช่คำตอบของโสม"""
