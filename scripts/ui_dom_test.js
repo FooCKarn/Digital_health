@@ -17,7 +17,11 @@ async function load(opts = {}) {
       // fetch ที่ควบคุมได้: หน่วงเวลา/จำลองเครือข่ายล่ม เฉพาะ /api/analyze (และ /api/ask ล่มได้)
       w.fetch = async (u, o) => {
         if (String(u).includes("/api/analyze")) { w.__calls++; if (w.__delay) await sleep(w.__delay); if (w.__fail) throw new Error("network down"); }
-        if (String(u).includes("/api/ask") && w.__askFail) throw new Error("network down");
+        if (String(u).includes("/api/ask")) {
+          if (w.__askDelay) await sleep(w.__askDelay);
+          if (w.__askFail) throw new Error("network down");
+          if (w.__askResp) return new Response(w.__askResp.body, { status: w.__askResp.status, headers: { "Content-Type": "application/json" } });
+        }
         return fetch(new URL(u, BASE), o);
       };
       w.Element.prototype.scrollIntoView = () => {}; w.URL.createObjectURL = () => "blob:x"; w.URL.revokeObjectURL = () => {};
@@ -240,27 +244,27 @@ function accName(e, d) {
   pick(w, d, "herbAdd", "ขิง"); pick(w, d, "drugAdd", "warfarin"); $("age").value = "60"; await submit(d);
   $("chatHead").click();
   $("chatInput").value = "ขิงกับยากันเลือดเป็นลิ่ม"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
-  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 1 && !d.querySelector("#chatLog [aria-busy]") && $("chatLog").textContent.includes("จากฐานข้อมูลนี้"));
-  const am = d.querySelector("#chatLog .msg.a");
-  ok(d.querySelectorAll("#chatLog .msg.u").length === 1 && am.querySelector(".src").textContent === "ข้อความจากฐานข้อมูล" && am.textContent.includes("ขิง"), "ฟองผู้ใช้ + ฟองผู้ช่วยพร้อมป้ายที่มา");
+  await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 1 && !$("chatLog").hasAttribute("aria-busy") && $("chatLog").textContent.includes("จากฐานข้อมูลนี้"));
+  const am = d.querySelector("#chatLog .cmsg.a");
+  ok(d.querySelectorAll("#chatLog .cmsg.u").length === 1 && am.querySelector(".src").textContent === "ข้อความจากฐานข้อมูล" && am.textContent.includes("ขิง"), "ฟองผู้ใช้ + ฟองผู้ช่วยพร้อมป้ายที่มา");
   const ev = am.querySelector("details.evd");
   ok(!!ev && !ev.open && /^ดูหลักฐาน: ขิง/.test(ev.querySelector("summary").textContent) && /หน้า \d+ \(หน้า \d+ ในไฟล์ PDF\)/.test(ev.textContent), "ปุ่มดูหลักฐานในคำตอบ (พับไว้) พร้อมหน้า");
   const saved = JSON.parse(w.sessionStorage.getItem("hg_chat_v1"));
   ok(saved.v === 1 && saved.msgs.length === 2 && saved.msgs[0].r === "u" && !/\b(age|profile|pregnant|breastfeeding|conditions|drugs)\b/.test(JSON.stringify(saved)), "ประวัติอยู่ใน sessionStorage (ข้อความเท่านั้น ไม่มีโปรไฟล์)");
   ok(d.querySelectorAll("#chatChips button").length === 2, "มีชิปคำถามแนะนำ");
   d.querySelector("#chatChips button").click();
-  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 2 && $("chatSend").getAttribute("aria-disabled") === "false");
-  ok(d.querySelectorAll("#chatLog .msg.a")[1].textContent.includes("ขิง"), "กดชิป 'ทำไมถึงขึ้นธง' ได้คำตอบจากผลตรวจปัจจุบัน");
+  await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 2 && $("chatSend").getAttribute("aria-disabled") === "false");
+  ok(d.querySelectorAll("#chatLog .cmsg.a")[1].textContent.includes("ขิง"), "กดชิป 'ทำไมถึงขึ้นธง' ได้คำตอบจากผลตรวจปัจจุบัน");
   const sav = w.sessionStorage.getItem("hg_chat_v1");
   ({ w, d, $ } = await load({ storage: sav }));
-  ok(d.querySelectorAll("#chatLog .msg").length === 4, "โหลดหน้าใหม่ในแท็บเดียวกัน: ประวัติ 4 ข้อความกลับมา");
+  ok(d.querySelectorAll("#chatLog .cmsg").length === 4, "โหลดหน้าใหม่ในแท็บเดียวกัน: ประวัติ 4 ข้อความกลับมา");
   $("chatHead").click(); $("chatClear").click();
-  ok(d.querySelectorAll("#chatLog .msg").length === 0 && JSON.parse(w.sessionStorage.getItem("hg_chat_v1")).msgs.length === 0, "ล้างประวัติแล้วทั้งหน้าจอและ sessionStorage ว่าง");
+  ok(d.querySelectorAll("#chatLog .cmsg").length === 0 && JSON.parse(w.sessionStorage.getItem("hg_chat_v1")).msgs.length === 0, "ล้างประวัติแล้วทั้งหน้าจอและ sessionStorage ว่าง");
 
   console.log("== 17) แชต: ฉุกเฉิน การปฏิเสธ ไม่มีผลตรวจ ==");
   ({ w, d, $ } = await load());
   $("chatHead").click();
-  const ask = async (q, n) => { $("chatInput").value = q; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true })); await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === n && $("chatSend").getAttribute("aria-disabled") === "false"); return [...d.querySelectorAll("#chatLog .msg.a")][n - 1]; };
+  const ask = async (q, n) => { $("chatInput").value = q; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true })); await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === n && $("chatSend").getAttribute("aria-disabled") === "false"); return [...d.querySelectorAll("#chatLog .cmsg.a")][n - 1]; };
   let m = await ask("หายใจไม่ออกหลังกินขิง", 1);
   ok(m.classList.contains("emerg") && m.getAttribute("role") === "alert" && m.textContent.includes("1669") && m.querySelector(".src").textContent === "ข้อควรทราบเร่งด่วน", "ฉุกเฉิน: ข้อความเร่งด่วน (role=alert) ไม่เรียก AI");
   m = await ask("ขิงกินวันละกี่เม็ด", 2); ok(/ไม่แนะนำขนาด/.test(m.textContent) && m.querySelector(".src").textContent === "ตอบไม่ได้ / ไม่มีข้อมูล", "ขอขนาดยา: ปฏิเสธ + ป้าย");
@@ -268,41 +272,94 @@ function accName(e, d) {
   m = await ask("รางจืดกับยาเบาหวาน", 4); ok(m.textContent.includes("รางจืด") && !!m.querySelector("details.evd"), "ถามเรื่องสมุนไพรที่ระบุชื่อได้แม้ยังไม่ตรวจ");
   m = await ask("ฟุตบอลคืออะไร", 5); ok(m.textContent.includes("ไม่พบข้อมูล"), "คำถามนอกฐาน: ไม่พบข้อมูล");
   m = await ask("ขิงกับ warfarin ปลอดภัยไหม", 6); ok(m.textContent.includes("ยังไม่มีผลตรวจ") && !/ใช้ได้|กินได้/.test(m.textContent), "ถามปลอดภัยไหมโดยยังไม่ตรวจ: ไม่ตอบใช่/ไม่ใช่");
-  const sysText = (() => { const c = d.body.cloneNode(true); c.querySelectorAll(".msg.u").forEach((u) => u.remove()); return c.textContent; })();  // ไม่นับคำที่ผู้ใช้พิมพ์เอง
+  const sysText = (() => { const c = d.body.cloneNode(true); c.querySelectorAll(".cmsg.u").forEach((u) => u.remove()); return c.textContent; })();  // ไม่นับคำที่ผู้ใช้พิมพ์เอง
   ok(sysText.replace(/ไม่ได้(แปลว่า|หมายความว่า)ปลอดภัย/g, "").indexOf("ปลอดภัย") === -1, "ข้อความของระบบทั้งหน้าไม่มีคำว่า ปลอดภัย นอกเชิงปฏิเสธ (ไม่นับคำถามที่ผู้ใช้พิมพ์)");
 
   console.log("== 18) แชต: storage เสีย/ใช้ไม่ได้ + ผลตรวจเปลี่ยน + ปุ่มถามเรื่องธง ==");
   ({ w, d, $ } = await load({ storage: "{not json" }));
   $("chatHead").click(); $("chatInput").value = "รางจืดกับยาเบาหวาน"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
-  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
-  ok(d.querySelectorAll("#chatLog .msg.a").length === 1, "sessionStorage เสีย (JSON พัง): แชตยังใช้ได้");
+  await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
+  ok(d.querySelectorAll("#chatLog .cmsg.a").length === 1, "sessionStorage เสีย (JSON พัง): แชตยังใช้ได้");
   ({ w, d, $ } = await load({ storageThrows: true }));
   $("chatHead").click(); $("chatInput").value = "รางจืดกับยาเบาหวาน"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
-  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
-  ok(d.querySelectorAll("#chatLog .msg.a").length === 1, "setItem โยน error (โควตา/โหมดส่วนตัว): แชตยังใช้ได้ ไม่มีประวัติ");
+  await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
+  ok(d.querySelectorAll("#chatLog .cmsg.a").length === 1, "setItem โยน error (โควตา/โหมดส่วนตัว): แชตยังใช้ได้ ไม่มีประวัติ");
   ({ w, d, $ } = await load());
   pick(w, d, "herbAdd", "ขิง"); pick(w, d, "drugAdd", "warfarin"); $("age").value = "60"; await submit(d);
   const askBtn = d.querySelector("li.flag button.askflag");
   ok(!!askBtn && /^ถามเรื่องธงนี้/.test(askBtn.getAttribute("aria-label")) && askBtn.textContent === "ถามเรื่องธงนี้", "การ์ดธงมีปุ่ม 'ถามเรื่องธงนี้' (ชื่อขึ้นต้นด้วยคำที่เห็น)");
   askBtn.click();
-  ok(!$("chatPanel").hidden && $("chatInput").value.startsWith("อธิบายธงของ") && d.activeElement === $("chatInput") && d.querySelectorAll("#chatLog .msg").length === 0, "กดแล้วเปิดแชตและเติมคำถามให้ (ยังไม่ส่งเอง)");
+  ok(!$("chatPanel").hidden && $("chatInput").value.startsWith("อธิบายธงของ") && d.activeElement === $("chatInput") && d.querySelectorAll("#chatLog .cmsg").length === 0, "กดแล้วเปิดแชตและเติมคำถามให้ (ยังไม่ส่งเอง)");
   $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
-  await waitFor(() => d.querySelectorAll("#chatLog .msg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
+  await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
   d.querySelector('#drugSel [data-v="warfarin"] button').click();   // แก้ข้อมูล -> ผลเก่าถูกซ่อน
-  ok([...d.querySelectorAll("#chatLog .msg.n")].some((n) => n.textContent.includes("ผลตรวจเปลี่ยนแล้ว")), "แก้ข้อมูลหลังคุยแล้ว: แชตแจ้งว่าคำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน");
+  ok([...d.querySelectorAll("#chatLog .cmsg.n")].some((n) => n.textContent.includes("ผลตรวจเปลี่ยนแล้ว")), "แก้ข้อมูลหลังคุยแล้ว: แชตแจ้งว่าคำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน");
 
   console.log("== 19) แชต: API ล้มเหลว + ปุ่มกำลังทำงาน + ความเข้าถึง ==");
   ({ w, d, $ } = await load());
   w.__askFail = true; $("chatHead").click(); $("chatInput").value = "รางจืดกับยาเบาหวาน"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
   await waitFor(() => d.querySelector("#chatLog .err") && $("chatSend").getAttribute("aria-disabled") === "false");
-  ok(d.querySelector("#chatLog .err").getAttribute("role") === "alert" && d.querySelectorAll("#chatLog .msg.u").length === 1, "API ล้ม: ข้อความ role=alert และคำถามของผู้ใช้ยังอยู่ในประวัติ");
+  ok(d.querySelector("#chatLog .err").getAttribute("role") === "alert" && d.querySelectorAll("#chatLog .cmsg.u").length === 1, "API ล้ม: ข้อความ role=alert และคำถามของผู้ใช้ยังอยู่ในประวัติ");
   const names = [...d.querySelectorAll(".chat-ui button, .chat-ui input")].filter((e) => !accName(e, d));
   ok(names.length === 0 && d.querySelectorAll("div[aria-label]:not([role])").length === 0, "ทุกปุ่ม/ช่องในแผงแชตมีชื่อ ไม่มี div ที่มี aria-label โดยไม่มี role");
   const ids2 = [...d.querySelectorAll("[id]")].map((e) => e.id); ok(ids2.length === new Set(ids2).size, "ไม่มี id ซ้ำ");
   ok($("chatInput").maxLength === 300, "ช่องพิมพ์จำกัด 300 ตัวอักษร");
   const x = "<img src=x onerror=\"window.__xss=1\">"; w.__askFail = false; $("chatInput").value = x; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
-  await waitFor(() => $("chatSend").getAttribute("aria-disabled") === "false" && d.querySelectorAll("#chatLog .msg.a").length >= 1);
-  ok(w.__xss === undefined && !d.querySelector("#chatLog img") && [...d.querySelectorAll("#chatLog .msg.u")].some((u) => u.textContent === x), "คำถามฝัง HTML แสดงเป็นข้อความธรรมดา");
+  await waitFor(() => $("chatSend").getAttribute("aria-disabled") === "false" && d.querySelectorAll("#chatLog .cmsg.a").length >= 1);
+  ok(w.__xss === undefined && !d.querySelector("#chatLog img") && [...d.querySelectorAll("#chatLog .cmsg.u")].some((u) => u.textContent === x), "คำถามฝัง HTML แสดงเป็นข้อความธรรมดา");
+
+  // ส่งคำถามแล้วรอคำตอบ/ข้อผิดพลาดลำดับที่ n (ใช้ในสถานการณ์ 20-22)
+  const send = (q) => { $("chatInput").value = q; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true })); };
+  const askN = async (q, n) => { send(q); await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === n && $("chatSend").getAttribute("aria-disabled") === "false"); return [...d.querySelectorAll("#chatLog .cmsg.a")][n - 1]; };
+  const errN = async (q, n) => { send(q); await waitFor(() => d.querySelectorAll("#chatLog .err").length === n && $("chatSend").getAttribute("aria-disabled") === "false"); return [...d.querySelectorAll("#chatLog .err")][n - 1]; };
+  const STL = "อ้างอิงผลตรวจก่อนที่คุณจะแก้ข้อมูล";
+
+  console.log("== 20) แชต: ตรวจแล้วไม่พบธง แล้วถาม 'ปลอดภัยไหม' ==");
+  ({ w, d, $ } = await load());
+  pick(w, d, "herbAdd", "กระชาย"); $("age").value = "30"; await submit(d);
+  ok($("resHead").textContent === "ไม่พบธงเตือนในฐานข้อมูลนี้", "ผลตรวจ: ไม่พบธง");
+  $("chatHead").click();
+  m = await askN("กระชายปลอดภัยไหม", 1);
+  ok(!!m && m.textContent.includes("ไม่พบธงเตือนในฐานข้อมูลนี้"), "คำตอบมี 'ไม่พบธงเตือนในฐานข้อมูลนี้' (ไม่ตอบว่าใช้ได้)");
+  const sys20 = (() => { const c = d.body.cloneNode(true); c.querySelectorAll(".cmsg.u").forEach((u) => u.remove()); return c.textContent; })();
+  // รูปปฏิเสธที่ยอมรับ: ไม่ได้แปลว่า/ไม่ได้หมายความว่าปลอดภัย (รูปหลังมาจาก disclaimer_th ใน data/config.json เดิม) เกณฑ์เดียวกับสถานการณ์ 0
+  ok(sys20.replace(/ไม่ได้(แปลว่า|หมายความว่า)ปลอดภัย/g, "").indexOf("ปลอดภัย") === -1, "ข้อความของระบบไม่มีคำว่า ปลอดภัย นอกเชิงปฏิเสธ");
+
+  console.log("== 21) แชต: แก้ข้อมูลแล้วถามต่อ / แก้ระหว่างรอคำตอบ -> คำตอบติดป้ายผลตรวจเดิม ==");
+  ({ w, d, $ } = await load());
+  pick(w, d, "herbAdd", "ขิง"); pick(w, d, "drugAdd", "warfarin"); $("age").value = "60"; await submit(d);
+  $("chatHead").click();
+  m = await askN("ทำไมถึงขึ้นธง", 1); ok(!!m && !m.querySelector(".stl"), "ผลตรวจปัจจุบัน: คำตอบไม่มีป้ายผลเดิม");
+  d.querySelector('#drugSel [data-v="warfarin"] button').click();   // แก้ข้อมูล -> ผลเก่าถูกซ่อน
+  const m2 = await askN("ทำไมถึงขึ้นธง", 2), m3 = await askN("ควรถามเภสัชกรว่าอะไร", 3);
+  ok([m2, m3].every((x) => x && x.querySelector(".stl") && x.querySelector(".stl").textContent.startsWith(STL)), "แก้ข้อมูลแล้วถาม 2 ครั้ง: ทั้งสองคำตอบมีป้าย 'อ้างอิงผลตรวจก่อนที่คุณจะแก้ข้อมูล'");
+  await submit(d);
+  m = await askN("ทำไมถึงขึ้นธง", 4); ok(!!m && !m.querySelector(".stl"), "ตรวจใหม่แล้ว: คำตอบถัดไปไม่มีป้าย");
+  w.__askDelay = 400; send("ทำไมถึงขึ้นธง"); await sleep(60);
+  $("age").value = "61"; $("age").dispatchEvent(new w.Event("input", { bubbles: true }));   // แก้ระหว่างรอคำตอบ
+  await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 5 && $("chatSend").getAttribute("aria-disabled") === "false");
+  m = [...d.querySelectorAll("#chatLog .cmsg.a")][4];
+  ok(!!m && !!m.querySelector(".stl") && m.querySelector(".stl").textContent.startsWith(STL), "แก้ข้อมูลระหว่างรอคำตอบ: คำตอบที่มาถึงทีหลังมีป้ายผลเดิม");
+  ok(JSON.parse(w.sessionStorage.getItem("hg_chat_v1")).msgs.filter((x) => x.old).length === 3, "ป้ายผลเดิมถูกเก็บในประวัติ (3 คำตอบ)");
+
+  console.log("== 22) แชต: ล้างประวัติระหว่างรอ + ข้อความผิดพลาดเป็นภาษาไทย ==");
+  ({ w, d, $ } = await load());
+  $("chatHead").click();
+  w.__askDelay = 300; send("รางจืดกับยาเบาหวาน"); await sleep(60); $("chatClear").click();
+  await waitFor(() => $("chatSend").getAttribute("aria-disabled") === "false"); await sleep(50);
+  ok(d.querySelectorAll("#chatLog .cmsg, #chatLog .err").length === 0 && JSON.parse(w.sessionStorage.getItem("hg_chat_v1")).msgs.length === 0, "ล้างประวัติระหว่างรอ: คำตอบที่มาทีหลังไม่ค้างอยู่ในแชตหรือประวัติ");
+  w.__askDelay = 0;
+  w.__askResp = { status: 500, body: JSON.stringify({ error: "server_error", detail: "KeyError: boom" }) };
+  let er = await errN("รางจืด", 1);
+  ok(!!er && er.textContent.includes("ระบบขัดข้อง") && !/server_error|KeyError/.test(er.textContent) && er.getAttribute("role") === "alert", `500: ข้อความไทยตายตัว ไม่โชว์รหัสภายใน (${er && er.textContent})`);
+  w.__askResp = { status: 200, body: "not json" };
+  er = await errN("รางจืด", 2); ok(!!er && er.textContent.includes("ระบบขัดข้อง"), "คำตอบอ่านไม่ได้ (ไม่ใช่ JSON): ข้อความไทยตายตัว");
+  w.__askResp = { status: 400, body: JSON.stringify({ error: "bad thing" }) };
+  er = await errN("รางจืด", 3); ok(!!er && er.textContent.includes("คำถามหรือข้อมูลไม่ถูกต้อง") && !er.textContent.includes("bad thing"), "400 ข้อความไม่ใช่ภาษาไทย: ใช้ข้อความไทยตายตัว");
+  w.__askResp = { status: 400, body: JSON.stringify({ error: "question ต้องเป็นข้อความ 1-300 ตัวอักษร" }) };
+  er = await errN("รางจืด", 4); ok(!!er && er.textContent.includes("question ต้องเป็นข้อความ 1-300 ตัวอักษร"), "400 ข้อความไทยจากเซิร์ฟเวอร์: แสดงตามเดิม");
+  w.__askResp = { status: 503, body: JSON.stringify({ error: "llm_unavailable", message: "บริการ AI ใช้ไม่ได้ชั่วคราว" }) };
+  er = await errN("รางจืด", 5); ok(!!er && er.textContent.includes("บริการ AI ใช้ไม่ได้ชั่วคราว"), "503: คงข้อความจากเซิร์ฟเวอร์");
 
   console.log(fails ? `\nสรุป: ล้มเหลว ${fails} ข้อ` : "\nสรุป: ผ่านทุกข้อ");
   process.exit(fails ? 1 : 0);

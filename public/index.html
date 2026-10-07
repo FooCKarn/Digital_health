@@ -103,12 +103,13 @@
   #chatPanel header button { min-height: 36px; padding: 2px 10px; background: transparent; color: var(--card); border-color: var(--card); }
   #chatNotice { margin: 0; padding: 4px 12px; font-size: .85rem; background: var(--caution-bg); color: var(--caution); }
   #chatLog { flex: 1; overflow-y: auto; padding: 8px 12px; }
-  .msg { margin: 8px 0; padding: 8px 10px; border-radius: 12px; max-width: 92%; white-space: pre-line; overflow-wrap: anywhere; }
-  .msg.u { margin-left: auto; background: var(--brand); color: var(--card); border-bottom-right-radius: 3px; }
-  .msg.a { background: var(--scope-bg); border: 1px solid var(--line); border-bottom-left-radius: 3px; }
-  .msg.a.emerg { background: var(--avoid-bg); border: 2px solid var(--avoid); color: var(--text); font-weight: 600; }
-  .msg.n { max-width: 100%; background: transparent; color: var(--muted); font-size: .88rem; text-align: center; }
-  .msg .src { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 2px; }
+  .cmsg { margin: 8px 0; padding: 8px 10px; border-radius: 12px; max-width: 92%; white-space: pre-line; overflow-wrap: anywhere; }
+  .cmsg.u { margin-left: auto; background: var(--brand); color: var(--card); border-bottom-right-radius: 3px; }
+  .cmsg.a { background: var(--scope-bg); border: 1px solid var(--line); border-bottom-left-radius: 3px; }
+  .cmsg.a.emerg { background: var(--avoid-bg); border: 2px solid var(--avoid); color: var(--text); font-weight: 600; }
+  .cmsg.n { max-width: 100%; background: transparent; color: var(--muted); font-size: .88rem; text-align: center; }
+  .cmsg .stl { display: block; margin-top: 4px; font-size: .82rem; font-weight: 600; color: var(--caution); }
+  .cmsg .src { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 2px; }
   #chatChips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 12px; }
   #chatChips button { min-height: 36px; padding: 2px 12px; border-radius: 999px; }
   #chatForm { display: flex; gap: 6px; padding: 8px 12px; border-top: 1px solid var(--line); }
@@ -229,6 +230,7 @@ const SEV = { avoid: "ไม่ควรใช้ / ห้าม", caution: "ค
 const NOT_CHECKED = { pregnancy: "การตั้งครรภ์", breastfeeding: "การให้นมบุตร", age: "อายุ" };
 const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้";  // ข้อความมาตรฐานของกฎข้อ 5 ห้ามเปลี่ยนเป็นคำที่สื่อว่าไม่มีความเสี่ยง
 let META = null, LAST = null, T0 = Date.now(), gen = 0;
+let chatStale = false;  // true = แก้ข้อมูลหลังตรวจแล้วแต่ยังไม่ตรวจใหม่: คำตอบแชตยังอ้างผลตรวจเดิม (LAST)
 const SID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2);  // สุ่มต่อการเปิดหน้า ไม่ผูกตัวตน
 
 // สร้าง DOM ด้วย textContent เท่านั้น (ไม่แทรก HTML จากข้อมูลใด ๆ กัน XSS)
@@ -250,7 +252,7 @@ function live(m) {
 }
 // stale: แก้ข้อมูลหลังกดตรวจ = ผลเก่าไม่ตรงแล้ว ซ่อนทันที และเพิ่มตัวนับรอบ เพื่อทิ้งผลของคำขอที่ยังค้างอยู่ (กันผลเก่าโผล่ทับข้อมูลใหม่)
 function stale() {
-  gen++;
+  gen++; if (LAST) chatStale = true;
   const o = $("out");
   if (!o.hidden) { o.hidden = true; live("ข้อมูลเปลี่ยนแล้ว ผลเดิมถูกซ่อน กด “ตรวจ” อีกครั้ง"); chatNote(); }
 }
@@ -407,7 +409,7 @@ function showError(message) {
 async function post(url, body) {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || data.error || "เกิดข้อผิดพลาด");
+  if (!res.ok) { const e = new Error(data.message || data.error || "เกิดข้อผิดพลาด"); e.status = res.status; throw e; }
   return data;
 }
 
@@ -572,7 +574,7 @@ $("form").addEventListener("submit", async (e) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาด");
     if (my !== gen) return;
-    LAST = body; renderResult(data); setTab(1);
+    LAST = body; chatStale = false; renderResult(data); setTab(1);
     const h = $("resHead"); h.focus({ preventScroll: true });  // ย้ายโฟกัสไปหัวข้อผล ให้โปรแกรมอ่านหน้าจอประกาศ
     const calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     $("out").scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
@@ -584,9 +586,10 @@ $("form").addEventListener("submit", async (e) => {
 // ---------- แชต "ผู้ช่วย AI" (สเปก docs/superpowers/specs/2026-10-06-chat-assistant-design.md) ----------
 // ประวัติเก็บใน sessionStorage ของแท็บนี้เท่านั้น (ไม่ส่งให้เซิร์ฟเวอร์/LLM, ไม่เก็บโปรไฟล์) เสียหรือใช้ไม่ได้ = ทำงานต่อโดยไม่มีประวัติ
 const CHAT_KEY = "hg_chat_v1", CHAT_MAX = 50;
+const STALE_LINE = "อ้างอิงผลตรวจก่อนที่คุณจะแก้ข้อมูล — กดตรวจใหม่เพื่ออัปเดต";
 const SRC_LABEL = { database: "ข้อความจากฐานข้อมูล", llm: "AI เรียบเรียงจากข้อความที่ค้นได้", refusal: "ตอบไม่ได้ / ไม่มีข้อมูล", emergency: "ข้อควรทราบเร่งด่วน" };
 // chatDK = ชุดข้อมูลที่ตรวจตอนคุยล่าสุด เก็บในหน่วยความจำเท่านั้น (มีโปรไฟล์อยู่ จึงห้ามลง storage)
-let chatMsgs = [], chatDK = "";
+let chatMsgs = [], chatDK = "", chatGen = 0;  // chatGen เพิ่มเมื่อล้างประวัติ: ทิ้งคำตอบของคำถามที่ค้างอยู่
 
 function okMsg(m) {
   return m && ["u", "a", "n"].includes(m.r) && typeof m.t === "string" && m.t.length <= 4000 && (m.cites === undefined || Array.isArray(m.cites));
@@ -601,10 +604,11 @@ function loadChat() {
 function saveChat() { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify({ v: 1, msgs: chatMsgs.slice(-CHAT_MAX) })); } catch (e) { /* ใช้ไม่ได้ (โหมดส่วนตัว/เต็ม) = ไม่มีประวัติ แต่แชตยังใช้ได้ */ } }
 
 function renderMsg(m) {
-  if (m.r === "u") return el("div", { class: "msg u", text: m.t });
-  if (m.r === "n") return el("div", { class: "msg n", text: m.t });
-  const b = el("div", { class: "msg a" + (m.src === "emergency" ? " emerg" : "") }, [el("span", { class: "src", text: SRC_LABEL[m.src] || "ผู้ช่วย AI" }), txt(m.t)]);
+  if (m.r === "u") return el("div", { class: "cmsg u", text: m.t });
+  if (m.r === "n") return el("div", { class: "cmsg n", text: m.t });
+  const b = el("div", { class: "cmsg a" + (m.src === "emergency" ? " emerg" : "") }, [el("span", { class: "src", text: SRC_LABEL[m.src] || "ผู้ช่วย AI" }), txt(m.t)]);
   if (m.src === "emergency") b.setAttribute("role", "alert");
+  if (m.old) b.append(el("span", { class: "stl", text: STALE_LINE }));
   (m.cites || []).slice(0, 6).forEach((c) => { const d = c && c.evidence_quote ? sourceBox(c, `ดูหลักฐาน: ${c.herb_name_th || ""}`) : null; if (d) b.append(d); });
   return b;
 }
@@ -631,30 +635,42 @@ function openChat(prefill) {
 }
 function closeChat() { $("chatPanel").hidden = true; $("chatHead").setAttribute("aria-expanded", "false"); $("chatHead").focus(); }
 
+// ข้อความผิดพลาดภาษาไทยตายตัว ไม่แสดงรหัสภายใน (server_error, ชื่อ exception) ให้ผู้ใช้เห็น
+function chatErr(err) {
+  if (err.status === 503) return err.message;
+  if (err.status === 400 && /[฀-๿]/.test(err.message)) return err.message;
+  if (err.status === 400) return "คำถามหรือข้อมูลไม่ถูกต้อง";
+  return "ระบบขัดข้องหรือเชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง";
+}
 async function sendChat(q) {
   q = (q || "").trim();
   const btn = $("chatSend");
   if (!q || isBusy(btn)) return;
   setBusy(btn, true); $("chatInput").value = "";
   addMsg({ r: "u", t: q });
-  const wait = el("div", { class: "msg a", text: "กำลังค้นข้อมูล…" }); $("chatLog").append(wait); $("chatLog").setAttribute("aria-busy", "true");
+  const wait = el("div", { class: "cmsg a", text: "กำลังค้นข้อมูล…" }); $("chatLog").append(wait); $("chatLog").setAttribute("aria-busy", "true");
   const lastA = [...chatMsgs].reverse().find((m) => m.r === "a");
   const ctx = [...new Set(((lastA && lastA.cites) || []).map((c) => c.herb_id))].filter(Boolean).slice(0, 5);
-  const body = { ...(LAST || { herbs: [], drugs: [], profile: { conditions: [] } }), question: q, context_herbs: ctx };
+  const sent = LAST, g = gen, cg = chatGen;  // จำรอบไว้: ถ้าผู้ใช้แก้ข้อมูลหรือล้างประวัติระหว่างรอ จะรู้ว่าคำตอบนี้อ้างข้อมูลเก่า
+  const old = () => !!sent && (chatStale || g !== gen);
+  const body = { ...(sent || { herbs: [], drugs: [], profile: { conditions: [] } }), question: q, context_herbs: ctx };
   try {
     const { answer: a } = await post("/api/ask", body);
     wait.remove();
+    if (cg !== chatGen) return;  // ล้างประวัติไปแล้ว ไม่แสดงคำตอบค้าง
+    if (!a || typeof a.text_th !== "string") throw new Error("bad response");
     const cites = (a.cites || []).map((c) => ({ item_id: c.item_id, herb_id: c.herb_id, herb_name_th: c.herb_name_th, source_page: c.source_page, pdf_page: c.pdf_page, evidence_quote: c.evidence_quote, verified: c.verified }));
-    addMsg({ r: "a", t: a.text_th, src: a.source, cites }); setChips(a.follow_ups);
+    addMsg({ r: "a", t: a.text_th, src: a.source, cites, ...(old() ? { old: true } : {}) }); setChips(a.follow_ups);
   } catch (err) {
     wait.remove();
-    const e = box("err", "ถามไม่สำเร็จ: " + err.message); e.setAttribute("role", "alert"); $("chatLog").append(e);
+    if (cg !== chatGen) return;
+    const e = box("err", "ถามไม่สำเร็จ: " + chatErr(err)); e.setAttribute("role", "alert"); $("chatLog").append(e);
   } finally { $("chatLog").removeAttribute("aria-busy"); setBusy(btn, false); $("chatInput").focus(); }
 }
 
 $("chatHead").onclick = () => ($("chatPanel").hidden ? openChat() : closeChat());
 $("chatClose").onclick = closeChat;
-$("chatClear").onclick = () => { chatMsgs = []; saveChat(); $("chatLog").replaceChildren(); live("ล้างประวัติแชตแล้ว"); $("chatInput").focus(); };
+$("chatClear").onclick = () => { chatGen++; chatMsgs = []; saveChat(); $("chatLog").replaceChildren(); live("ล้างประวัติแชตแล้ว"); $("chatInput").focus(); };
 $("chatForm").addEventListener("submit", (e) => { e.preventDefault(); sendChat($("chatInput").value); });
 $("chatPanel").addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); closeChat(); } });
 loadChat(); chatMsgs.forEach((m) => $("chatLog").append(renderMsg(m)));

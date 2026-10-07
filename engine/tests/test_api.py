@@ -174,6 +174,14 @@ def test_index_page_chat_widget_markers_and_privacy_rules():
     assert "ปลอดภัย" not in html.replace("ไม่ได้แปลว่าปลอดภัย", "")
 
 
+def test_chat_css_does_not_restyle_flag_card_msg():
+    import re
+    css = (ROOT / "public" / "index.html").read_text(encoding="utf-8").split("<style>")[1].split("</style>")[0]
+    # .msg เป็นของการ์ดธง ใช้ได้เฉพาะใต้ .flag; ฟองแชตใช้ .cmsg (กันสไตล์แชตรั่วไปเปลี่ยนหน้าผลตรวจ)
+    hits = [css[max(0, m.start() - 6):m.end()] for m in re.finditer(r"(?<![\w-])\.msg\b", css)]
+    assert hits and all(h.startswith(".flag ") for h in hits), hits
+
+
 def test_robots_txt_and_header_block_indexing_consistently(base):
     with urllib.request.urlopen(base + "/robots.txt") as r:
         assert "Disallow: /" in r.read().decode()
