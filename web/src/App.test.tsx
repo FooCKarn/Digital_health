@@ -92,6 +92,23 @@ describe("แท็บ ช่วงนี้ · ที่เคยใช้ · �
     expect(screen.queryByText(/เสียหาย/)).toBeNull();
   });
 
+  test("ข้ามเที่ยงคืน: วันนี้คำนวณใหม่ทุกครั้งที่ Home render (ไม่ค้างค่าตอนโหลดหน้า)", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date(2026, 9, 7, 23, 59));
+      localStorage.setItem("hg_tracker_v1", JSON.stringify({
+        v: 1, items: [{ id: "a", kind: "herb", ref: "khing", label: "ขิง", start_date: "2026-10-07", end_date: null }],
+        profile: { age: null, pregnant: null, breastfeeding: null, conditions: [] },
+      }));
+      const tabs = await mount();
+      expect(await screen.findByText("สมุนไพร · วันที่ 1")).toBeInTheDocument();
+      vi.setSystemTime(new Date(2026, 9, 8, 0, 1));
+      fireEvent.click(tabs[1]);
+      fireEvent.click(tabs[0]);
+      expect(await screen.findByText("สมุนไพร · วันที่ 2")).toBeInTheDocument();
+    } finally { vi.useRealTimers(); }
+  });
+
   test("ข้อความแนะนำเภสัชกรชี้ไปหน้า ข้อมูลของฉัน (ไม่ใช่แท็บที่ไม่มีแล้ว)", async () => {
     localStorage.setItem("hg_tracker_v1", JSON.stringify({
       v: 1, items: [{ id: "a", kind: "herb", ref: "khing", label: "ขิง", start_date: "2020-01-01", end_date: null }],

@@ -47,7 +47,7 @@ export function App() {
         <p class="meta">ตรวจธงเตือนการใช้สมุนไพรร่วมกับยา จากหนังสือ TTM first · <strong>ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง</strong></p>
       </header>
       <main>
-        {meta ? <Home store={store} meta={meta} today={todayISO()} /> : error ? (
+        {meta ? <Home store={store} meta={meta} /> : error ? (
           <div class="err" role="alert">
             <span>{`โหลดข้อมูลไม่สำเร็จ: ${error}`}</span>{" "}
             <button type="button" onClick={() => setAttempt((n) => n + 1)}>ลองใหม่</button>
@@ -68,7 +68,10 @@ export function App() {
 }
 
 /** สามมุมมองใช้ผลตรวจชุดเดียว (เรียก /api/analyze ที่เดียว) */
-function Home({ store, meta, today }: { store: TrackerStore; meta: Meta; today: string }) {
+function Home({ store, meta }: { store: TrackerStore; meta: Meta }) {
+  // คำนวณทุกครั้งที่ render (Home render ใหม่เมื่อข้อมูล/แท็บเปลี่ยน) เปิดหน้าข้ามเที่ยงคืนแล้ววันที่ใช้จึงขยับตาม
+  // ponytail: ไม่มีตัวจับเวลาเที่ยงคืน ถ้าหน้าค้างไว้เฉย ๆ จะขยับเมื่อมีการโต้ตอบครั้งถัดไป
+  const today = todayISO();
   const a = useAnalysis(store, today, Object.keys(meta.conditions));
   const [tab, setTab] = useState(0);
   const [hideRecovered, setHideRecovered] = useState(false);

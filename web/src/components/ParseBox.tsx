@@ -57,7 +57,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
     <section class="parse-box" aria-labelledby="parse-h">
       <h3 id="parse-h">ตัวเลือก: ให้ AI แยกรายการจากข้อความ</h3>
       <label for="parse-text">พิมพ์ข้อความ เช่น ใช้ขิงมา 3 วัน และกินยา warfarin</label>
-      <textarea ref={box} id="parse-text" rows={3} maxLength={2000} value={text} onInput={(e) => setText(e.currentTarget.value)} />
+      <textarea ref={box} id="parse-text" rows={3} maxLength={1000} value={text} onInput={(e) => setText(e.currentTarget.value)} />
       <button type="button" aria-disabled={parse.busy} onClick={send}>แยกรายการด้วย AI</button>
       {msg && <p role="status">{msg}</p>}
       {prop && (

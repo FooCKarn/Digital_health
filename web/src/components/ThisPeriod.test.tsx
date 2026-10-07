@@ -51,7 +51,10 @@ test("(ฉ) ยาที่อยู่ใน unknown_inputs ได้ 'ยั�
   const w = row("warfarin");
   expect(w.querySelector("[data-kind='no_flag']")).toBeNull();
   expect(w.textContent).not.toContain("ไม่พบธง");
-  expect(within(w).getByText("ดูธงในแผงด้านบน")).toBeInTheDocument();
+  // ผลตรวจไม่มีธงเลย: ห้ามชี้ไปแผงที่ว่าง และห้ามสื่อว่ายานี้ไม่มีธง/ปลอดภัย
+  expect(within(w).getByText("ผลตรวจไม่ได้แยกผลรายยา")).toBeInTheDocument();
+  expect(w.textContent).not.toContain("ดูธงในแผงด้านบน");
+  expect(w.textContent).not.toContain("ปลอดภัย");
   expect(screen.getByText(/ยังไม่ได้ตรวจ \(ไม่มีในฐานข้อมูล\): ยาแปลก/)).toBeInTheDocument();
 });
 

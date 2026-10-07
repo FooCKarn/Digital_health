@@ -1,4 +1,4 @@
-import { isValidISODate, validateStart } from "./dates";
+import { isValidISODate, startForDay, validateStart } from "./dates";
 
 export type ItemKind = "herb" | "drug";
 export interface TrackerItem { id: string; kind: ItemKind; ref: string; label: string; start_date: string; end_date: string | null }
@@ -37,8 +37,11 @@ function profileError(p: unknown, known: string[] | null): string | null {
 }
 
 /** ตรวจทีละฟิลด์ แล้วสร้างอ็อบเจ็กต์ใหม่จากฟิลด์ที่อนุญาตเท่านั้น (กัน __proto__/ฟิลด์แปลก) */
-function parseState(raw: unknown, today: string, known: string[] | null): TrackerState | string {
+function parseState(raw: unknown, today: string, known: string[] | null, onLoad = false): TrackerState | string {
   const BAD = "ไฟล์ไม่ถูกต้อง";
+  // ตอนโหลดจากเครื่อง: วันที่ล้ำไป 1 วัน (นาฬิกา/เขตเวลาเพี้ยน) ปัดเป็นวันนี้ แทนที่จะทิ้งข้อมูลทั้งหมด; นำเข้าไฟล์ยังปฏิเสธ
+  const tomorrow = startForDay(0, today);
+  const fix = (d: unknown) => (onLoad && d === tomorrow ? today : d);
   if (!isObj(raw) || raw.v !== 1) return "ไฟล์ไม่ถูกต้องหรือเป็นเวอร์ชันที่ไม่รองรับ";
   if (!Array.isArray(raw.items) || raw.items.length > MAX_ITEMS) return "จำนวนรายการไม่ถูกต้อง";
   const ids = new Set<string>();
@@ -46,7 +49,8 @@ function parseState(raw: unknown, today: string, known: string[] | null): Tracke
   let herbs = 0, drugs = 0;
   for (const it of raw.items) {
     if (!isObj(it)) return BAD;
-    const { id, kind, ref, label, start_date, end_date } = it;
+    const { id, kind, ref, label } = it;
+    const start_date = fix(it.start_date), end_date = fix(it.end_date);
     if (!str(id, 64) || ids.has(id) || (kind !== "herb" && kind !== "drug") || !str(ref, refMax(kind)) || !str(label, MAX_TEXT)) return BAD;
     if (!isValidISODate(start_date) || !(end_date === null || isValidISODate(end_date))) return "วันที่ในไฟล์ไม่ถูกต้อง";
     // ไม่ปฏิเสธวันเริ่มเก่า (สำรองข้อมูลอายุเกินปีต้องกู้ได้) แต่ปฏิเสธอนาคต
@@ -84,7 +88,7 @@ export class TrackerStore {
     try { text = storage.getItem(STORAGE_KEY); } catch { this.persistent = false; return; }
     if (text === null) return;
     try {
-      const r = bytes(text) > MAX_IMPORT_BYTES ? "big" : parseState(JSON.parse(text), today(), this.known);
+      const r = bytes(text) > MAX_IMPORT_BYTES ? "big" : parseState(JSON.parse(text), today(), this.known, true);
       if (typeof r === "string") this.recovered = true;
       else this._state = r;
     } catch {

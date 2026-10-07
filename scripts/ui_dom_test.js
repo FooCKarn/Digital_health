@@ -1,6 +1,8 @@
 // ทดสอบหน้าเว็บ public/index.html ด้วย jsdom กับเซิร์ฟเวอร์ในเครื่อง (ไม่ต้องมีเบราว์เซอร์ ไม่ใช้ API key)
 // ติดตั้ง jsdom นอก repo (ไม่เพิ่ม dependency ให้ Vercel): mkdir $TEMP/domtest; cd $TEMP/domtest; npm i jsdom
 // รัน: python scripts/dev_server.py 8765  แล้ว  NODE_PATH=<โฟลเดอร์ domtest>/node_modules node scripts/ui_dom_test.js http://127.0.0.1:8765
+// สำคัญ: ไฟล์นี้ทดสอบ "หน้าที่ dev_server เสิร์ฟ" ถ้ามี web/dist (หลัง npm run build) dev_server จะเสิร์ฟหน้าใหม่แทน public/index.html
+//   และเทสต์นี้จะล้มเพราะทดสอบผิดหน้า ให้รันตอนที่ไม่มี web/dist (ลบหรือเปลี่ยนชื่อชั่วคราว) หน้าใหม่ทดสอบด้วย vitest ใน web/
 // หมายเหตุ: jsdom ไม่ใช่เบราว์เซอร์/โปรแกรมอ่านหน้าจอจริง ตรวจโครงสร้าง โฟกัส และข้อความประกาศใน DOM เท่านั้น
 const { JSDOM } = require("jsdom");
 const BASE = process.argv[2];

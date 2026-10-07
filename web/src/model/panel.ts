@@ -89,8 +89,8 @@ export function groupFlags(result: AnalyzeResult): PanelGroups {
   return g;
 }
 
-/** สิ่งที่แถวในรายการแสดง: pending = กำลังตรวจ, see_panel = ดูธงในแผง (ยา/ระดับแปลก) */
-export type RowView = Severity | "no_flag" | "no_data" | "pending" | "see_panel";
+/** สิ่งที่แถวในรายการแสดง: pending = กำลังตรวจ, see_panel = ดูธงในแผง (ยา/ระดับแปลก), drug_unsplit = ยาเมื่อผลไม่มีธงเลย */
+export type RowView = Severity | "no_flag" | "no_data" | "pending" | "see_panel" | "drug_unsplit";
 
 /**
  * ใช้ผลตรวจได้เฉพาะเมื่อผลนั้นตรงกับข้อมูลปัจจุบัน (current) เท่านั้น
@@ -105,7 +105,8 @@ export function rowView(item: TrackerItem, a: { result: AnalyzeResult | null; su
   const st = itemStatus(item, r, unsent);
   if (st === "no_data") return "no_data";
   // ผลตรวจไม่บอกว่ายาแต่ละตัวมีธงไหม จึงห้ามแสดงว่า "ยานี้ไม่พบธง"
-  if (item.kind === "drug") return "see_panel";
+  // ผลไม่มีธงเลย = แผงว่าง ไม่ชี้ไปแผง แต่บอกตามจริงว่าผลไม่ได้แยกรายยา (ไม่ได้แปลว่ายานี้ไม่มีธง)
+  if (item.kind === "drug") return r.flags.length ? "see_panel" : "drug_unsplit";
   if (st === "no_flag") return "no_flag";
   return SEVERITIES.find((k) => r.flags.some((f) => f.herb_id === item.ref && f.severity === k)) ?? "see_panel";
 }

@@ -37,6 +37,8 @@ test("ลบต้องยืนยัน; ยกเลิกแล้วยั
   fireEvent.click(screen.getByRole("button", { name: "ลบ ขิง" }));
   expect(store.history()).toHaveLength(0);
   expect(screen.getByText("ยังไม่มีรายการที่หยุดใช้")).toBeInTheDocument();
+  // ปุ่มที่มีโฟกัสหายไปพร้อมแถว: โฟกัสย้ายไปหัวข้อ ไม่หลุดไป body (เหมือน ActiveList)
+  expect(screen.getByRole("heading", { name: "ที่เคยใช้" })).toHaveFocus();
 });
 
 test("ไม่มีรายการ", () => {

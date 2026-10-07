@@ -1,3 +1,4 @@
+import { useRef } from "preact/hooks";
 import { useStore } from "../hooks/useStore";
 import type { TrackerStore } from "../model/tracker";
 
@@ -9,9 +10,11 @@ const fmt = (iso: string) =>
 export function History({ store }: { store: TrackerStore }) {
   useStore(store);
   const items = [...store.history()].sort((a, b) => (b.end_date ?? "").localeCompare(a.end_date ?? ""));
+  // แถวที่ลบหายไปพร้อมปุ่มที่มีโฟกัส: ย้ายโฟกัสไปหัวข้อ (เหมือน ActiveList)
+  const head = useRef<HTMLHeadingElement>(null);
   return (
     <section class="history" aria-labelledby="history-h">
-      <h2 id="history-h">ที่เคยใช้</h2>
+      <h2 id="history-h" ref={head} tabIndex={-1}>ที่เคยใช้</h2>
       <p class="meta">รายการที่หยุดใช้แล้วไม่ถูกนำไปตรวจ ผลในหน้า ช่วงนี้ คิดจากรายการที่กำลังใช้อยู่เท่านั้น</p>
       {items.length === 0 ? <p>ยังไม่มีรายการที่หยุดใช้</p> : (
         <ul class="plain-list">
@@ -27,7 +30,7 @@ export function History({ store }: { store: TrackerStore }) {
                 </div>
               </div>
               <div class="row-actions">
-                <button type="button" aria-label={`ลบ ${i.label}`} onClick={() => confirm(`ลบ ${i.label} ออกถาวร?`) && store.removeItem(i.id)}>ลบ</button>
+                <button type="button" aria-label={`ลบ ${i.label}`} onClick={() => confirm(`ลบ ${i.label} ออกถาวร?`) && (store.removeItem(i.id), head.current?.focus())}>ลบ</button>
               </div>
             </li>
           ))}

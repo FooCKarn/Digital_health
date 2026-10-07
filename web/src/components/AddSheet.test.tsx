@@ -110,6 +110,11 @@ test("ParseBox เสนอรายการแต่ยังไม่เพ�
   expect(store.active()).toMatchObject([{ kind: "herb", ref: "khing", start_date: "2026-10-05" }]);
 });
 
+test("ParseBox: ช่องข้อความจำกัด 1000 ตัวอักษรเท่าที่เซิร์ฟเวอร์รับ (service.parse)", async () => {
+  const d = await open(setup());
+  expect((within(d).getByLabelText(/พิมพ์ข้อความ/) as HTMLTextAreaElement).maxLength).toBe(1000);
+});
+
 test("ParseBox: รหัสสมุนไพรที่ไม่อยู่ใน meta ไม่ถูกแสดง/เพิ่ม และถูกรายงาน (dropped > 0 แสดงคำเตือน)", async () => {
   handlers["/api/parse"] = () => respond({ herbs: [{ id: "khing" }, { id: "evil_id" }], drugs: [], unmatched: [], dropped: 1 });
   const user = setup();

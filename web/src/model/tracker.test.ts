@@ -196,6 +196,21 @@ test("old start date imports fine (year-old backup)", () => {
   expect(s.importJSON(JSON.stringify({ v: 1, items: [it], profile: p })).ok).toBe(true);
 });
 
+test("load tolerates dates 1 day in the future (clock/timezone skew): clamped to today; import still rejects", () => {
+  const p = { age: null, pregnant: null, breastfeeding: null, conditions: [] };
+  const items = [
+    { id: "a", kind: "herb", ref: "k", label: "ขิง", start_date: "2026-10-08", end_date: null },
+    { id: "b", kind: "drug", ref: "warfarin", label: "warfarin", start_date: "2026-10-01", end_date: "2026-10-08" },
+  ];
+  const raw = JSON.stringify({ v: 1, items, profile: p });
+  const s = new TrackerStore(memStorage({ [STORAGE_KEY]: raw }), today);
+  expect(s.recovered).toBe(false);
+  expect(s.state.items.map((i) => [i.start_date, i.end_date])).toEqual([[TODAY, null], ["2026-10-01", TODAY]]);
+  const two = JSON.stringify({ v: 1, items: [{ ...items[0], start_date: "2026-10-09" }], profile: p });
+  expect(new TrackerStore(memStorage({ [STORAGE_KEY]: two }), today).recovered).toBe(true);
+  expect(new TrackerStore(memStorage(), today).importJSON(raw).ok).toBe(false);
+});
+
 test("stored future date is treated as corrupted", () => {
   const it = { id: "a", kind: "herb", ref: "k", label: "ขิง", start_date: "2026-10-01", end_date: "2026-12-01" };
   const st = { v: 1, items: [it], profile: { age: null, pregnant: null, breastfeeding: null, conditions: [] } };
