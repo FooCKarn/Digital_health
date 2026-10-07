@@ -49,7 +49,11 @@ HerbGuard TTM: ระบบ rule-based ตรวจความปลอดภ�
 # รัน engine test: python -m pytest engine/tests
 # รัน golden set:  python scripts/run_golden.py
 # สกัดข้อมูล:      python scripts/extract_pdf.py <pdf> && python scripts/round_a.py && python scripts/verify_extraction.py
-# รันเว็บ (Vercel ฉบับท้องถิ่น): python scripts/dev_server.py 8000   แล้วเปิด http://localhost:8000
+# หน้าเว็บใหม่ (web/, Vite + Preact, Node):  cd web && npm ci
+#   เทสต์หน้าเว็บ:   cd web && npm test          (ตรวจชนิด: npm run typecheck)
+#   รันตอนพัฒนา:     cd web && npm run dev       (/api ส่งต่อไป dev_server พอร์ต 8000 ต้องรันคู่กัน)
+#   build:           cd web && npm run build     (ได้ web/dist ที่ Vercel เสิร์ฟ)
+# รันเว็บ (Vercel ฉบับท้องถิ่น): python scripts/dev_server.py 8000   แล้วเปิด http://localhost:8000  (เสิร์ฟ web/dist ถ้า build แล้ว ไม่งั้นหน้าเดิม public/)
 # รัน UI Streamlit (ต้นแบบแรก): streamlit run app/app.py
 ```
 

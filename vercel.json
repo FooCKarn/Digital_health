@@ -1,6 +1,10 @@
 {
+  "framework": null,
+  "installCommand": "npm ci --prefix web",
+  "buildCommand": "npm run build --prefix web",
+  "outputDirectory": "web/dist",
   "functions": {
-    "api/*.py": { "includeFiles": "**", "maxDuration": 60 }
+    "api/*.py": { "includeFiles": "{api,engine,data}/**", "maxDuration": 60 }
   },
   "headers": [
     {

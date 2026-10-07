@@ -186,6 +186,34 @@ def test_robots_txt_and_header_block_indexing_consistently(base):
     with urllib.request.urlopen(base + "/robots.txt") as r:
         assert "Disallow: /" in r.read().decode()
     assert "noindex" in (ROOT / "vercel.json").read_text(encoding="utf-8")     # X-Robots-Tag
+    assert (ROOT / "web" / "public" / "robots.txt").read_bytes() == (ROOT / "public" / "robots.txt").read_bytes()  # หน้าใหม่ (Vite คัดลอกลง dist)
+
+
+def _serve(dist):
+    srv = make_server(0, dist=dist)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return srv, f"http://127.0.0.1:{srv.server_address[1]}"
+
+
+def test_dev_server_serves_built_web_dist_and_api(tmp_path):
+    (tmp_path / "index.html").write_text("<title>new-web-app</title>", encoding="utf-8")
+    srv, url = _serve(tmp_path)
+    try:
+        with urllib.request.urlopen(url + "/") as r:
+            assert "new-web-app" in r.read().decode()
+        assert call(url + "/api/meta")[0] == 200
+    finally:
+        srv.shutdown()
+
+
+def test_dev_server_falls_back_to_public_without_dist(tmp_path):
+    srv, url = _serve(tmp_path / "missing")
+    try:
+        with urllib.request.urlopen(url + "/") as r:
+            assert r.read() == (ROOT / "public" / "index.html").read_bytes()
+        assert call(url + "/api/meta")[0] == 200
+    finally:
+        srv.shutdown()
 
 
 def test_index_page_respects_ui_rule_5_and_has_no_reassurance_glyphs():

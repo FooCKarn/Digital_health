@@ -1,5 +1,5 @@
-"""เซิร์ฟเวอร์ทดสอบในเครื่อง จำลอง Vercel: เสิร์ฟ public/ และเรียก handler ตัวเดียวกับ api/*.py
-ใช้: python scripts/dev_server.py [port]   แล้วเปิด http://localhost:8000
+"""เซิร์ฟเวอร์ทดสอบในเครื่อง จำลอง Vercel: เสิร์ฟ web/dist (ถ้ายังไม่ build ใช้ public/ เดิม) และเรียก handler ตัวเดียวกับ api/*.py
+ใช้: (cd web && npm ci && npm run build) แล้ว python scripts/dev_server.py [port]   แล้วเปิด http://localhost:8000
 """
 import sys
 from functools import partial
@@ -36,8 +36,17 @@ class Dev(SimpleHTTPRequestHandler):
         self._route("POST") or self.send_error(404)
 
 
-def make_server(port=8000):
-    return ThreadingHTTPServer(("127.0.0.1", port), partial(Dev, directory=str(ROOT / "public")))
+def static_dir(dist=None):
+    """หน้าใหม่ web/dist (ผล npm run build) ถ้ามี ไม่งั้นหน้าเดิม public/"""
+    dist = Path(dist) if dist else ROOT / "web" / "dist"
+    if (dist / "index.html").is_file():
+        return dist
+    print(f"ไม่พบ {dist / 'index.html'}: run npm run build in web/ (ตอนนี้เสิร์ฟหน้าเดิม public/)", file=sys.stderr)
+    return ROOT / "public"
+
+
+def make_server(port=8000, dist=None):
+    return ThreadingHTTPServer(("127.0.0.1", port), partial(Dev, directory=str(static_dir(dist))))
 
 
 if __name__ == "__main__":
