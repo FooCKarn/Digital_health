@@ -1,0 +1,44 @@
+/* โทเคนสี: ข้อความ/ปุ่มใช้ #0E7490 (ไม่ใช้ #0891B2 เพราะคอนทราสต์บนพื้นขาวต่ำกว่า 4.5:1)
+   ฟ้าคราม + เขียวสุขภาพใช้เป็นพื้นหลัง/ตกแต่งเท่านั้น; no_flag ใช้เทาน้ำเงิน ห้ามเขียว */
+:root {
+  --c-bg: #F2F9F8;
+  --c-surface: #FFFFFF;
+  --c-text: #12303A;
+  --c-muted: #3F5A65;
+  --c-line: #BFD6D8;
+  --c-primary: #0E7490;
+  --c-on-primary: #FFFFFF;
+  --c-focus: #0B4F6C;
+  --c-accent-green: #DDF3E8;
+  --c-avoid-fg: #9B1C1C;
+  --c-avoid-bg: #FDECEC;
+  --c-caution-fg: #7A4B00;
+  --c-caution-bg: #FFF3D6;
+  --c-info-fg: #1E4E8C;
+  --c-info-bg: #E8F1FB;
+  --c-noflag-fg: #3F5563;
+  --c-noflag-bg: #E9EEF2;
+  --c-nodata-fg: #46606C;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg: #0F1C20;
+    --c-surface: #16272D;
+    --c-text: #E6F1F3;
+    --c-muted: #B5C7CF;
+    --c-line: #2F4850;
+    --c-primary: #67D1E8;
+    --c-on-primary: #08262E;
+    --c-focus: #9BE3F2;
+    --c-accent-green: #173A2E;
+    --c-avoid-fg: #FFB4AB;
+    --c-avoid-bg: #3A1B19;
+    --c-caution-fg: #FFD37A;
+    --c-caution-bg: #3A2F12;
+    --c-info-fg: #A9D0F5;
+    --c-info-bg: #1A2B3D;
+    --c-noflag-fg: #C3D3DC;
+    --c-noflag-bg: #25333B;
+    --c-nodata-fg: #B5C7CF;
+  }
+}
