@@ -15,19 +15,19 @@ const LABEL = {
 /** ตัวเลือก: AI เรียบเรียงภาษาจากผลตรวจปัจจุบัน แสดงเฉพาะเมื่อผลที่เห็นตรงกับข้อมูลปัจจุบัน */
 export function ExplainBox({ store, today, known, analysis }: { store: TrackerStore; today: string; known: string[]; analysis: Analysis }) {
   const [got, setGot] = useState<{ key: string; ex: Explanation } | null>(null);
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState<{ key: string; msg: string } | null>(null);
   const b = useBusy();
   const payload = buildPayload(store.active(), store.state.profile, today, known);
   if (!analysis.current || !payload) return null;
   const key = JSON.stringify(payload);
 
   const go = () => b.run(async () => {
-    setErr("");
+    setErr(null);
     try {
       const { explanation } = await explain(payload);
       setGot({ key, ex: explanation });
     } catch {
-      setErr(FIXED);
+      setErr({ key, msg: FIXED });
     }
   });
   const ex = got?.key === key ? got.ex : null; // คำอธิบายของข้อมูลเก่าไม่แสดง
@@ -36,7 +36,7 @@ export function ExplainBox({ store, today, known, analysis }: { store: TrackerSt
     <section class="explain-box">
       <button type="button" aria-disabled={b.busy} onClick={go}>ตัวเลือก: ให้ AI เรียบเรียงภาษา</button>
       {b.busy && <span role="status">กำลังเรียบเรียง…</span>}
-      {err && <p class="err" role="alert">{err}</p>}
+      {err?.key === key && <p class="err" role="alert">{err.msg}</p>}
       {ex && (
         <div class="explanation">
           <p class="chip">{LABEL[ex.source] ?? LABEL.template}</p>

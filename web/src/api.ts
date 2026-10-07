@@ -44,7 +44,11 @@ export const parseText = (text: string) =>
   post<ParseProposal>("/api/parse", { text }, (d) => Array.isArray(d.herbs) && Array.isArray(d.drugs));
 
 export const explain = (payload: AnalyzePayload) =>
-  post<{ explanation: Explanation }>("/api/explain", payload, (d) => !!d.explanation);
+  post<{ explanation: Explanation }>("/api/explain", payload, (d) => {
+    const e = d.explanation;
+    return (e?.source === "llm" || e?.source === "template") && typeof e.summary_th === "string" && Array.isArray(e.items)
+      && e.items.every((i: any) => typeof i?.flag_id === "string" && typeof i?.text_th === "string");
+  });
 
 export const sendFeedback = async (payload: FeedbackPayload): Promise<void> => {
   await post("/api/feedback", payload, (d) => d.ok === true);

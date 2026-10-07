@@ -1,4 +1,4 @@
-import { analyze, ApiError, ask, getMeta, parseText, sendFeedback } from "./api";
+import { analyze, ApiError, ask, getMeta, parseText, sendFeedback, explain } from "./api";
 
 const ok = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
 const err = (status: number, body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status }));
@@ -54,4 +54,14 @@ test("getMeta uses GET; ask unwraps answer; sendFeedback resolves", async () => 
   expect((await ask({ question: "q", context_herbs: [] })).text_th).toBe("t");
   vi.stubGlobal("fetch", vi.fn(() => ok({ ok: true })));
   await expect(sendFeedback({ session_id: "s", reviewer_role: "citizen", entries: [] })).resolves.toBeUndefined();
+});
+
+test("explain: คำตอบรูปผิดหรือ source แปลก -> ApiError server", async () => {
+  const good = { source: "llm", summary_th: "x", items: [{ flag_id: "f", text_th: "t" }], disclaimer_th: "d" };
+  vi.stubGlobal("fetch", vi.fn(() => ok({ explanation: good })));
+  await expect(explain(P)).resolves.toMatchObject({ explanation: { source: "llm" } });
+  for (const bad of [{ ...good, items: undefined }, { ...good, summary_th: 1 }, { ...good, source: "x" }, { ...good, items: [{ flag_id: "f" }] }]) {
+    vi.stubGlobal("fetch", vi.fn(() => ok({ explanation: bad })));
+    await expect(explain(P)).rejects.toMatchObject({ kind: "server", thaiMessage: FIXED });
+  }
 });

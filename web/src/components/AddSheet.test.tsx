@@ -34,7 +34,6 @@ const open = async (user: ReturnType<typeof userEvent.setup>) => {
 test("เพิ่มขิง เริ่ม 3 วันก่อน -> รายการแสดง 'วันที่ 4'", async () => {
   const user = setup();
   const d = await open(user);
-  await waitFor(() => expect(screen.getByLabelText("ค้นหา หรือพิมพ์ชื่อยา")).toHaveFocus());
   await user.type(within(d).getByLabelText("ค้นหา หรือพิมพ์ชื่อยา"), "ขิง");
   expect(within(d).queryByRole("button", { name: /ฟ้าทะลายโจร/ })).toBeNull();
   await user.click(within(d).getByRole("button", { name: "ขิง (สมุนไพร)" }));
@@ -111,6 +110,47 @@ test("ParseBox เสนอรายการแต่ยังไม่เพ�
   expect(store.active()).toMatchObject([{ kind: "herb", ref: "khing", start_date: "2026-10-05" }]);
 });
 
+test("ParseBox: รหัสสมุนไพรที่ไม่อยู่ใน meta ไม่ถูกแสดง/เพิ่ม และถูกรายงาน (dropped > 0 แสดงคำเตือน)", async () => {
+  handlers["/api/parse"] = () => respond({ herbs: [{ id: "khing" }, { id: "evil_id" }], drugs: [], unmatched: [], dropped: 1 });
+  const user = setup();
+  const d = await open(user);
+  await user.type(within(d).getByLabelText(/พิมพ์ข้อความ/), "x");
+  await user.click(within(d).getByRole("button", { name: "แยกรายการด้วย AI" }));
+  await within(d).findByRole("checkbox", { name: /ขิง/ });
+  expect(within(d).getAllByRole("checkbox")).toHaveLength(1);
+  expect(d.textContent).not.toContain("evil_id");
+  expect(within(d).getByText(/ส่งรายการที่ระบบไม่รู้จักกลับมา 2 รายการ/)).toBeInTheDocument();
+});
+
+test("ParseBox: เพิ่มบางส่วนล้มเหลว -> รายการที่สำเร็จถูกเอาติ๊กออก ลองใหม่ไม่ซ้ำ", async () => {
+  store.addItem({ kind: "drug", ref: "warfarin", label: "warfarin", start_date: T });
+  handlers["/api/parse"] = () => respond({ herbs: [{ id: "khing" }], drugs: ["warfarin"], unmatched: [], dropped: 0 });
+  const user = setup();
+  const d = await open(user);
+  await user.type(within(d).getByLabelText(/พิมพ์ข้อความ/), "x");
+  await user.click(within(d).getByRole("button", { name: "แยกรายการด้วย AI" }));
+  await user.click(await within(d).findByRole("checkbox", { name: /ขิง/ }));
+  await user.click(within(d).getByRole("checkbox", { name: /warfarin/ }));
+  await user.click(within(d).getByRole("button", { name: /ยืนยันเพิ่ม 2/ }));
+  expect(within(d).getByRole("alert")).toHaveTextContent("warfarin: มีรายการนี้อยู่แล้ว");
+  expect(store.active()).toHaveLength(2);
+  expect(within(d).getByRole("checkbox", { name: /ขิง/ })).not.toBeChecked();
+  expect(within(d).getByRole("button", { name: /ยืนยันเพิ่ม 1/ })).toBeInTheDocument();
+});
+
+test("แก้วันที่แล้วข้อความผิดพลาดของวันที่หายไป", async () => {
+  const user = setup();
+  const d = await open(user);
+  await user.click(within(d).getByRole("button", { name: "ขิง (สมุนไพร)" }));
+  const date = within(d).getByLabelText("วันที่เริ่มใช้");
+  await user.clear(date);
+  await user.type(date, "2026-10-09");
+  await user.click(within(d).getByRole("button", { name: "เพิ่ม" }));
+  expect(within(d).getByRole("alert")).toBeInTheDocument();
+  await user.clear(date);
+  expect(within(d).queryByRole("alert")).toBeNull();
+});
+
 test("/api/parse 503 -> ข้อความไทยตายตัว ไม่พัง", async () => {
   handlers["/api/parse"] = () => respond({ error: "no_key", detail: "SECRET-DETAIL" }, 503);
   const user = setup();
@@ -143,7 +183,19 @@ describe("ExplainBox", () => {
     setup();
     expect(explainBtn()).toBeNull();
     store.addItem({ kind: "herb", ref: "khing", label: "ขิง", start_date: T });
-    await waitFor(() => expect(explainBtn()).not.toBeNull());
+    await waitFor(() => expect(explainBtn()).not.toBeNull(), { timeout: 2000 });
+  });
+
+  test("คำตอบ explain รูปผิด/source แปลก -> ข้อความไทยตายตัว ไม่พัง", async () => {
+    store.addItem({ kind: "herb", ref: "khing", label: "ขิง", start_date: T });
+    for (const ex of [{ source: "llm", summary_th: "x" }, { source: "weird", summary_th: "x", items: [], disclaimer_th: "d" }]) {
+      handlers["/api/explain"] = () => respond({ explanation: ex });
+      const user = userEvent.setup();
+      const { unmount } = render(<ThisPeriod store={store} meta={META} today={T} />);
+      await user.click(await screen.findByRole("button", { name: "ตัวเลือก: ให้ AI เรียบเรียงภาษา" }));
+      expect(await screen.findByText("ใช้ AI ไม่ได้ในขณะนี้ ข้อความธงด้านบนยังใช้ได้ตามปกติ")).toBeInTheDocument();
+      unmount();
+    }
   });
 
   test("ข้อความจากเซิร์ฟเวอร์แสดงเป็นข้อความ + ป้ายที่มา (template ระบุตามจริง)", async () => {

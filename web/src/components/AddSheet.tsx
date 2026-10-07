@@ -47,7 +47,7 @@ export function AddSheet({ meta, store, today, onClose }: { meta: Meta; store: T
         {itemErr && <p class="err" role="alert">{itemErr}</p>}
         <label for="sheet-date">วันที่เริ่มใช้</label>
         <input id="sheet-date" type="date" max={today} value={date} aria-invalid={!!dateErr} aria-describedby={dateErr ? "sheet-date-err" : undefined}
-          onInput={(e) => setDate(e.currentTarget.value)} />
+          onInput={(e) => { setDate(e.currentTarget.value); setDateErr(""); }} />
         {dateErr && <p class="err" role="alert" id="sheet-date-err">{dateErr}</p>}
         <div class="row-actions">
           <button type="submit" class="primary">เพิ่ม</button>

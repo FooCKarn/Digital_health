@@ -17,8 +17,11 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [errs, setErrs] = useState<string[]>([]);
   const parse = useBusy();
+  // ป้องกันซ้อน: รหัสสมุนไพรที่ไม่อยู่ใน meta ไม่ถูกแสดง/เพิ่ม และนับรวมใน "ตัดทิ้ง"
+  const okHerbs = prop ? prop.herbs.filter((h) => meta.herbs.some((x) => x.id === h.id)) : [];
+  const dropped = prop ? prop.dropped + (prop.herbs.length - okHerbs.length) : 0;
   const rows: Row[] = prop ? [
-    ...prop.herbs.map((h): Row => ({ key: `h-${h.id}`, kind: "herb", ref: h.id, label: meta.herbs.find((x) => x.id === h.id)?.name_th ?? h.id, day: h.days_in_use })),
+    ...okHerbs.map((h): Row => ({ key: `h-${h.id}`, kind: "herb", ref: h.id, label: meta.herbs.find((x) => x.id === h.id)?.name_th ?? h.id, day: h.days_in_use })),
     ...prop.drugs.map((d): Row => { const k = meta.drugs.find((x) => x.toLowerCase() === d.toLowerCase()) ?? d; return { key: `d-${k}`, kind: "drug", ref: k, label: k }; }),
   ] : [];
   const chosen = rows.filter((r) => ticked[r.key]);
@@ -38,11 +41,13 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
   const confirmAll = () => {
     if (!chosen.length) return;
     const bad: string[] = [];
+    const left = { ...ticked };
     for (const r of chosen) {
       const start = (r.day && startForDay(Math.min(Math.max(r.day, 1), 365), today)) || today;
       const res = store.addItem({ kind: r.kind, ref: r.ref, label: r.label, start_date: start });
-      if (!res.ok) bad.push(`${r.label}: ${res.message}`);
+      if (res.ok) left[r.key] = false; else bad.push(`${r.label}: ${res.message}`);
     }
+    setTicked(left); // รายการที่เพิ่มสำเร็จแล้วไม่ถูกส่งซ้ำเมื่อลองใหม่
     setErrs(bad);
     if (!bad.length) onDone();
   };
@@ -69,7 +74,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
             </ul>
           )}
           {prop.unmatched.length > 0 && <p class="warn">{`ไม่พบในฐานข้อมูล/ไม่แน่ใจ (ไม่ถูกเสนอให้เพิ่ม): ${prop.unmatched.join(", ")}`}</p>}
-          {prop.dropped > 0 && <p class="warn">{`AI ส่งรายการที่ระบบไม่รู้จักกลับมา ${prop.dropped} รายการ (ตัดทิ้งแล้ว) โปรดเทียบกับข้อความที่พิมพ์`}</p>}
+          {dropped > 0 && <p class="warn">{`AI ส่งรายการที่ระบบไม่รู้จักกลับมา ${dropped} รายการ (ตัดทิ้งแล้ว) โปรดเทียบกับข้อความที่พิมพ์`}</p>}
           {rows.length > 0 && <button type="button" class="primary" aria-disabled={chosen.length === 0} onClick={confirmAll}>{`ยืนยันเพิ่ม ${chosen.length} รายการ`}</button>}
           {errs.map((e) => <p class="err" role="alert" key={e}>{e}</p>)}
         </div>
