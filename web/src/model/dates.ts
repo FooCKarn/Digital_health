@@ -28,6 +28,13 @@ export function dayNumber(startISO: string, todayISOStr: string): number {
   return a === null || b === null ? NaN : b - a + 1;
 }
 
+/** วันที่เริ่มเมื่อวันนี้เป็นวันที่ n ของการใช้ (n=1 คือวันนี้); คืน null ถ้าผิดรูป */
+export function startForDay(n: number, todayISOStr: string): string | null {
+  const t = utcDay(todayISOStr);
+  if (t === null || !Number.isInteger(n)) return null;
+  return new Date((t - (n - 1)) * MS_DAY).toISOString().slice(0, 10);
+}
+
 export function validateStart(startISO: string, todayISOStr: string): string | null {
   const n = dayNumber(startISO, todayISOStr);
   if (Number.isNaN(n)) return "วันที่ไม่ถูกต้อง";

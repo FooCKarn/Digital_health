@@ -1,3 +1,6 @@
+import { useRef, useState } from "preact/hooks";
+import { AddSheet } from "./AddSheet";
+import { ExplainBox } from "./ExplainBox";
 import { useAnalysis } from "../hooks/useAnalysis";
 import { groupFlags, isKnownSeverity, notCheckedLabels, unknownConditions, type PanelGroups } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
@@ -19,6 +22,9 @@ const PHARMACIST = "แนะนำให้ปรึกษาเภสัชก
 const aggBucket = (a: Aggregate): keyof PanelGroups => (isKnownSeverity(a.severity) ? a.severity : "other");
 
 export function ThisPeriod({ store, meta, today }: { store: TrackerStore; meta: Meta; today: string }) {
+  const [adding, setAdding] = useState(false);
+  const opener = useRef<HTMLButtonElement>(null);
+  const close = () => { setAdding(false); opener.current?.focus(); };
   const known = Object.keys(meta.conditions);
   const a = useAnalysis(store, today, known);
   const { result: r, summary: s } = a;
@@ -79,6 +85,11 @@ export function ThisPeriod({ store, meta, today }: { store: TrackerStore; meta: 
           {badConds.length > 0 && <p class="warn">{`ไม่ได้ตรวจเงื่อนไข (ระบบไม่รู้จัก): ${badConds.join(", ")}`}</p>}
         </section>
       )}
+
+      <ExplainBox store={store} today={today} known={known} analysis={a} />
+
+      <button ref={opener} type="button" class="primary" onClick={() => setAdding(true)}>+ เพิ่ม</button>
+      {adding && <AddSheet meta={meta} store={store} today={today} onClose={close} />}
 
       <ActiveList store={store} today={today} analysis={a} />
     </section>

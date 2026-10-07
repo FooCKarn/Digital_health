@@ -1,0 +1,50 @@
+import { useState } from "preact/hooks";
+import { explain } from "../api";
+import type { Analysis } from "../hooks/useAnalysis";
+import { useBusy } from "../hooks/useBusy";
+import { buildPayload } from "../model/panel";
+import type { TrackerStore } from "../model/tracker";
+import type { Explanation } from "../types";
+
+const FIXED = "ใช้ AI ไม่ได้ในขณะนี้ ข้อความธงด้านบนยังใช้ได้ตามปกติ";
+const LABEL = {
+  llm: "AI เรียบเรียงจากผลตรวจนี้ (ผ่านตัวตรวจข้อความแล้ว)",
+  template: "ข้อความสำรองจากฐานข้อมูล (AI ไม่ได้ใช้หรือข้อความไม่ผ่านการตรวจ)",
+};
+
+/** ตัวเลือก: AI เรียบเรียงภาษาจากผลตรวจปัจจุบัน แสดงเฉพาะเมื่อผลที่เห็นตรงกับข้อมูลปัจจุบัน */
+export function ExplainBox({ store, today, known, analysis }: { store: TrackerStore; today: string; known: string[]; analysis: Analysis }) {
+  const [got, setGot] = useState<{ key: string; ex: Explanation } | null>(null);
+  const [err, setErr] = useState("");
+  const b = useBusy();
+  const payload = buildPayload(store.active(), store.state.profile, today, known);
+  if (!analysis.current || !payload) return null;
+  const key = JSON.stringify(payload);
+
+  const go = () => b.run(async () => {
+    setErr("");
+    try {
+      const { explanation } = await explain(payload);
+      setGot({ key, ex: explanation });
+    } catch {
+      setErr(FIXED);
+    }
+  });
+  const ex = got?.key === key ? got.ex : null; // คำอธิบายของข้อมูลเก่าไม่แสดง
+
+  return (
+    <section class="explain-box">
+      <button type="button" aria-disabled={b.busy} onClick={go}>ตัวเลือก: ให้ AI เรียบเรียงภาษา</button>
+      {b.busy && <span role="status">กำลังเรียบเรียง…</span>}
+      {err && <p class="err" role="alert">{err}</p>}
+      {ex && (
+        <div class="explanation">
+          <p class="chip">{LABEL[ex.source] ?? LABEL.template}</p>
+          <p>{ex.summary_th}</p>
+          <ul>{ex.items.map((i) => <li key={i.flag_id}>{i.text_th}</li>)}</ul>
+          <p class="meta">{ex.disclaimer_th}</p>
+        </div>
+      )}
+    </section>
+  );
+}

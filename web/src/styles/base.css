@@ -65,3 +65,14 @@ details > summary { min-height: 44px; display: flex; align-items: center; paddin
 .active-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 0; border-top: 1px solid var(--c-line); }
 .active-row > div:first-child { flex: 1 1 160px; }
 .row-actions { display: flex; gap: 8px; }
+
+/* เพิ่มรายการ / AI */
+.sheet { margin: 12px 0; padding: 12px 16px; border: 2px solid var(--c-line); border-radius: 12px; background: var(--c-surface); }
+.sheet label { display: block; margin-top: 8px; font-weight: 500; }
+.sheet input[type="search"], .sheet input[type="date"], .sheet textarea { width: 100%; box-sizing: border-box; }
+.pick-list { display: flex; flex-wrap: wrap; gap: 8px; max-height: 220px; overflow-y: auto; margin: 8px 0; }
+.pick-list button[aria-pressed="true"] { outline: 3px solid var(--c-focus); }
+button[aria-disabled="true"] { opacity: .6; cursor: progress; }
+.proposal { list-style: none; padding: 0; }
+.proposal label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.explain-box { margin: 12px 0; }
