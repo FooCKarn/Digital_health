@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { ApiError, sendFeedback } from "../api";
 import { downloadJSON } from "../download";
 import { useBusy } from "../hooks/useBusy";
@@ -15,11 +15,19 @@ type Answer = "" | "true" | "false" | "unsure";
  * ข้อเสนอแนะการทดลอง (data-schema ข้อ 7) ส่งเฉพาะ session_id บทบาท ชื่อเคสสมมติ ความเห็น เวลา และความเห็นต่อ flag_id
  * ห้ามแนบรายการสมุนไพร/ยา/โปรไฟล์ของผู้ใช้
  */
-export function FeedbackCard({ flags, herbName }: { flags: Flag[]; herbName: (id: string) => string }) {
+export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Flag[]; current: boolean; herbName: (id: string) => string }) {
   const [role, setRole] = useState<Role>("citizen");
   const [caseId, setCaseId] = useState("");
   const [comment, setComment] = useState("");
-  const [answers, setAnswers] = useState<Record<string, Answer>>({});
+  // ธงของผลปัจจุบันล่าสุดที่เห็น: ช่วงตรวจใหม่ (ไม่ใช่ปัจจุบัน) ไม่เปลี่ยน/ไม่ล้างอะไร
+  const seen = useRef({ sig: "[]", flags: [] as Flag[] });
+  const sig = JSON.stringify(incoming.map((f) => [f.flag_id, f.rule_id, f.herb_id, f.message_th]));
+  if (current && sig !== seen.current.sig) seen.current = { sig, flags: incoming };
+  const flags = seen.current.flags;
+  // คำตอบผูกกับชุดธง: ชุดธงเปลี่ยน = คำตอบเก่าใช้ไม่ได้ (flag_id เดิมอาจเป็นธงอื่น)
+  const [ans, setAns] = useState({ sig: "", map: {} as Record<string, Answer> });
+  const answers = ans.sig === seen.current.sig ? ans.map : {};
+  const setAnswer = (id: string, v: Answer) => setAns({ sig: seen.current.sig, map: { ...answers, [id]: v } });
   const [msg, setMsg] = useState("");
   const { busy, run } = useBusy();
 
@@ -64,7 +72,7 @@ export function FeedbackCard({ flags, herbName }: { flags: Flag[]; herbName: (id
       {flags.map((f, i) => (
         <div class="field" key={f.flag_id}>
           <label for={`fb-f${i}`}>{`ความเห็นต่อธงที่ ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`}</label>
-          <select id={`fb-f${i}`} value={answers[f.flag_id] ?? ""} onChange={(e) => { const v = e.currentTarget.value as Answer; setAnswers((a) => ({ ...a, [f.flag_id]: v })); }}>
+          <select id={`fb-f${i}`} value={answers[f.flag_id] ?? ""} onChange={(e) => { const v = e.currentTarget.value as Answer; setAnswer(f.flag_id, v); }}>
             <option value="">— ยังไม่ตอบ —</option>
             <option value="true">เห็นด้วย</option>
             <option value="false">ไม่เห็นด้วย</option>

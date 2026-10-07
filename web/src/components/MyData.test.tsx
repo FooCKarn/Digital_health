@@ -312,23 +312,55 @@ describe("ข้อเสนอแนะ", () => {
     for (const w of ["warfarin", "htn", "khing", "ขิง", "pregnant", "profile", "age"]) expect(s).not.toContain(w);
   });
 
-  test("ผลเปลี่ยนจน flag_id เดิมเป็นธงอื่น: คำตอบเก่าถูกล้าง ไม่ส่งไปผิดธง", async () => {
-    const user = userEvent.setup();
-    herb();
-    const calls: any[] = [];
-    vi.stubGlobal("fetch", vi.fn(async (_u: string, init?: RequestInit) => { calls.push(JSON.parse(String(init!.body))); return respond({ ok: true }); }));
-    const view = show(okA(body([flag({ flag_id: "f0", rule_id: "R1", message_th: "ธงเดิม" })])));
-    await user.click(screen.getByText(/ช่วยเราปรับปรุง/, { selector: "summary" }));
-    await user.selectOptions(screen.getByLabelText(/ความเห็นต่อธงที่ 1/), "ไม่เห็นด้วย");
-    // ควรไม่ล้าง: render ซ้ำด้วยผลเดิม คำตอบยังอยู่
-    view.rerender(<MyData store={store} meta={META} today={T} analysis={okA(body([flag({ flag_id: "f0", rule_id: "R1", message_th: "ธงเดิม" })]))} />);
-    expect(screen.getByLabelText(/ความเห็นต่อธงที่ 1/)).toHaveValue("false");
-    // ควรล้าง: f0 กลายเป็นธงอื่น
-    view.rerender(<MyData store={store} meta={META} today={T} analysis={okA(body([flag({ flag_id: "f0", rule_id: "R2", message_th: "ธงใหม่" })]))} />);
-    expect(screen.getByLabelText(/ความเห็นต่อธงที่ 1/)).toHaveValue("");
-    await user.click(screen.getByRole("button", { name: "ส่งความเห็น" }));
-    await screen.findByText("ขอบคุณ ส่งแล้ว");
-    expect(calls[0].entries).toEqual([]);
+  describe("คำตอบต่อธงผูกกับผลปัจจุบัน; ความเห็น/บทบาท/ชื่อเคสคงอยู่", () => {
+    const oldFlags = () => body([flag({ flag_id: "f0", rule_id: "R1", message_th: "ธงเดิม" })]);
+    const rerender = (view: ReturnType<typeof show>, a: Analysis) => view.rerender(<MyData store={store} meta={META} today={T} analysis={a} />);
+    const answer = () => screen.getByLabelText(/ความเห็นต่อธงที่ 1/);
+
+    async function fill() {
+      const user = userEvent.setup();
+      herb();
+      const view = show(okA(oldFlags()));
+      await user.click(screen.getByText(/ช่วยเราปรับปรุง/, { selector: "summary" }));
+      await user.selectOptions(answer(), "ไม่เห็นด้วย");
+      await user.selectOptions(screen.getByLabelText("คุณคือ"), "เภสัชกร");
+      await user.type(screen.getByLabelText("ชื่อเคสสมมติ (ถ้ามี)"), "เคส1");
+      await user.type(screen.getByLabelText("ความเห็น"), "ความเห็นยาว");
+      return { user, view };
+    }
+    const kept = () => {
+      expect(screen.getByLabelText("คุณคือ")).toHaveValue("pharmacist");
+      expect(screen.getByLabelText("ชื่อเคสสมมติ (ถ้ามี)")).toHaveValue("เคส1");
+      expect(screen.getByLabelText("ความเห็น")).toHaveValue("ความเห็นยาว");
+    };
+
+    test("(ก)(ค) ตรวจใหม่ผ่านช่วงไม่ใช่ปัจจุบัน แล้วได้ผลเดิม: ทุกอย่างคงอยู่", async () => {
+      const { view } = await fill();
+      const b = oldFlags();
+      // ช่วงตรวจใหม่ (ไม่ใช่ปัจจุบัน) และช่วงไม่มีผลเลย ไม่ล้างอะไร
+      rerender(view, ana({ status: "loading", result: b.result, summary: b.summary, current: false }));
+      expect(answer()).toHaveValue("false");
+      kept();
+      rerender(view, ana({ status: "loading" }));
+      kept();
+      rerender(view, okA(oldFlags()));
+      expect(answer()).toHaveValue("false");
+      kept();
+    });
+
+    test("(ข) ผลใหม่ที่ f0 เป็นธงอื่น: คำตอบถูกล้าง ความเห็น/บทบาท/ชื่อเคสคงอยู่ และไม่ส่งคำตอบเก่า", async () => {
+      const calls: any[] = [];
+      vi.stubGlobal("fetch", vi.fn(async (_u: string, init?: RequestInit) => { calls.push(JSON.parse(String(init!.body))); return respond({ ok: true }); }));
+      const { user, view } = await fill();
+      rerender(view, ana({ status: "loading" }));
+      rerender(view, okA(body([flag({ flag_id: "f0", rule_id: "R2", message_th: "ธงใหม่" })])));
+      expect(answer()).toHaveValue("");
+      kept();
+      await user.click(screen.getByRole("button", { name: "ส่งความเห็น" }));
+      await screen.findByText("ขอบคุณ ส่งแล้ว");
+      expect(calls[0].entries).toEqual([]);
+      expect(calls[0].comment).toBe("ความเห็นยาว");
+    });
   });
 });
 

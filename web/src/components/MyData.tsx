@@ -81,8 +81,8 @@ export function MyData({ store, meta, today, analysis: a }: { store: TrackerStor
       <details class="opt-box noprint">
         <summary>เพิ่มเติม: อธิบายชั้นหลักฐาน · ช่วยเราปรับปรุง</summary>
         <Glossary />
-        {/* ผลเปลี่ยน = การ์ดใหม่ (คำตอบเก่าห้ามติดไปกับธงอื่นที่ใช้ flag_id ซ้ำ) */}
-        <FeedbackCard key={JSON.stringify(flags.map((f) => [f.flag_id, f.rule_id, f.herb_id, f.message_th]))} flags={flags} herbName={herbName} />
+        {/* ไม่ remount ตามผล: การ์ดล้างเฉพาะคำตอบต่อธงเมื่อชุดธงของผลปัจจุบันเปลี่ยน */}
+        <FeedbackCard flags={flags} current={a.current && !!a.result} herbName={herbName} />
       </details>
     </section>
   );
