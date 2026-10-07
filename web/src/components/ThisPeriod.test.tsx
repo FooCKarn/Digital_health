@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/preact";
 import base from "../styles/base.css?raw";
 import { TrackerStore } from "../model/tracker";
-import { body, flag, META, respond, T } from "../test/fixtures";
+import { body, flag, flush, META, respond, T } from "../test/fixtures";
 import type { Flag } from "../types";
 import { ThisPeriod } from "./ThisPeriod";
 
@@ -9,21 +9,23 @@ const NO_FLAG = "ไม่พบธงเตือนในฐานข้อม
 const NO_FLAG_NOTE = "นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร";
 
 let store: TrackerStore;
-beforeEach(() => { store = new TrackerStore(null, () => T); });
-afterEach(() => vi.unstubAllGlobals());
+beforeEach(() => { vi.useFakeTimers(); store = new TrackerStore(null, () => T); });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 const add = (kind: "herb" | "drug", ref: string, label = ref) => store.addItem({ kind, ref, label, start_date: T });
 
-/** แสดงผลแล้วรอให้ตรวจเสร็จ (หน่วง 300 ms จริง) */
+/** แสดงผลแล้วรอให้ตรวจเสร็จ (fake timers) */
 async function show(b: ReturnType<typeof body>) {
   const f = vi.fn(async () => respond(b));
   vi.stubGlobal("fetch", f);
   const view = render(<ThisPeriod store={store} meta={META} today={T} />);
-  await screen.findByRole("heading", { name: b.result.flags.length ? b.summary.headline_th : NO_FLAG });
+  await flush();
+  screen.getByRole("heading", { name: b.result.flags.length ? b.summary.headline_th : NO_FLAG });
   return { ...view, fetch: f };
 }
 
-const row = (label: string) => screen.getByRole("listitem", { name: label });
+const row = (label: string) => screen.getByText(label, { selector: "strong" }).closest("li") as HTMLElement;
+const hasRow = (label: string) => screen.queryByText(label, { selector: "strong" }) !== null;
 
 test("(จ) ไม่มีธง + ไม่ได้กรอกอายุ: เห็นทั้งสถานะและรายการที่ไม่ได้ตรวจ พร้อมขอบเขตและ disclaimer", async () => {
   add("herb", "khing", "ขิง");
@@ -140,7 +142,7 @@ test("มีแต่ยา: ยังไม่มีสมุนไพรให
   vi.stubGlobal("fetch", f);
   render(<ThisPeriod store={store} meta={META} today={T} />);
   expect(screen.getByText("ยังไม่มีสมุนไพรให้ตรวจ", { selector: ".status-line" })).toBeInTheDocument();
-  await new Promise((r) => setTimeout(r, 400));
+  await flush(1000);
   expect(f).not.toHaveBeenCalled();
   expect(document.body.textContent).not.toContain(NO_FLAG);
   expect(within(row("warfarin")).getByText("ยังไม่มีข้อมูลตรวจ")).toBeInTheDocument();
@@ -159,12 +161,14 @@ test("ตรวจล้มเหลวหลังมีผล: คงผลเ
   const { fetch: f } = await show(body([flag({ message_th: "ผลแรก" })]));
   f.mockImplementation(async () => respond({ error: "x" }, 500));
   act(() => void add("herb", "fathalai"));
-  expect(await screen.findByRole("alert")).toHaveTextContent("ผลนี้เก่า ตรวจไม่สำเร็จ: ตรวจไม่สำเร็จ ลองใหม่อีกครั้ง");
+  await flush();
+  expect(screen.getByRole("alert")).toHaveTextContent("ผลนี้เก่า ตรวจไม่สำเร็จ: ตรวจไม่สำเร็จ ลองใหม่อีกครั้ง");
   expect(screen.getByText("ผลแรก")).toBeInTheDocument();
   expect(screen.getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา")).toBeInTheDocument();
   f.mockImplementation(async () => respond(body([flag({ message_th: "ผลสอง" })])));
   fireEvent.click(screen.getByRole("button", { name: "ลองใหม่" }));
-  expect(await screen.findByText("ผลสอง")).toBeInTheDocument();
+  await flush();
+  expect(screen.getByText("ผลสอง")).toBeInTheDocument();
   expect(screen.queryByRole("alert")).toBeNull();
 });
 
@@ -173,14 +177,14 @@ test("หยุดใช้: แถวหายจากรายการทั
   add("drug", "warfarin");
   await show(body());
   fireEvent.click(screen.getByRole("button", { name: "หยุดใช้ ขิง" }));
-  expect(screen.queryByRole("listitem", { name: "ขิง" })).toBeNull();
+  expect(hasRow("ขิง")).toBe(false);
   expect(store.history()).toHaveLength(1);
   vi.stubGlobal("confirm", () => false);
   fireEvent.click(screen.getByRole("button", { name: "ลบ warfarin" }));
   expect(row("warfarin")).toBeInTheDocument();
   vi.stubGlobal("confirm", () => true);
   fireEvent.click(screen.getByRole("button", { name: "ลบ warfarin" }));
-  expect(screen.queryByRole("listitem", { name: "warfarin" })).toBeNull();
+  expect(hasRow("warfarin")).toBe(false);
   expect(store.state.items).toHaveLength(1);
 });
 
@@ -200,4 +204,54 @@ test("ปุ่มในรายการสูงอย่างน้อย 4
   await show(body());
   for (const b of within(row("ขิง")).getAllByRole("button")) expect(getComputedStyle(b).minHeight).toBe("44px");
   style.remove();
+});
+
+describe("ผลเก่าห้ามแสดงเป็นผลปัจจุบัน (C1/I1)", () => {
+  const noFlagInRow = (label: string) => {
+    expect(row(label).textContent).not.toContain(NO_FLAG);
+    expect(row(label).querySelector("[data-kind='no_flag'],[data-kind='avoid'],[data-kind='caution'],[data-kind='info']")).toBeNull();
+  };
+
+  test("เพิ่มยาระหว่างรอผลใหม่: แถวขิงไม่แสดง ไม่พบธง และหัวข้อเป็นผลก่อนแก้ไข", async () => {
+    add("herb", "khing", "ขิง");
+    const { fetch: f } = await show(body());
+    expect(within(row("ขิง")).getByText(NO_FLAG)).toBeInTheDocument(); // ควรไม่เตือน: ผลปัจจุบันแสดงตามปกติ
+    f.mockImplementation(() => new Promise(() => {}));
+    act(() => void add("drug", "warfarin"));
+    // ทันทีหลังแก้ (ก่อน effect/หน่วงเวลา)
+    noFlagInRow("ขิง");
+    expect(within(row("ขิง")).getByText("กำลังตรวจ…")).toBeInTheDocument();
+    await flush();
+    noFlagInRow("ขิง");
+    expect(screen.queryByRole("heading", { name: NO_FLAG })).toBeNull();
+    expect(screen.queryByText("นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร")).toBeNull();
+    expect(screen.getByRole("heading", { name: "ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)" })).toBeInTheDocument();
+    expect(screen.getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา")).toBeInTheDocument();
+    expect(screen.getByRole("note")).toBeInTheDocument();
+  });
+
+  test("แก้โปรไฟล์แล้วตรวจล้มเหลว: แถวได้ ยังไม่มีข้อมูลตรวจ ไม่ใช่ป้ายระดับจากผลเก่า; ธงเก่ายังเห็นใต้หัวข้อผลก่อนแก้ไข", async () => {
+    add("herb", "khing", "ขิง");
+    const { fetch: f } = await show(body([flag({ severity: "caution", message_th: "ธงเก่า" })]));
+    expect(within(row("ขิง")).getByText("ควรระวัง")).toBeInTheDocument();
+    f.mockImplementation(async () => respond({ error: "x" }, 500));
+    act(() => void store.setProfile({ age: 70, pregnant: null, breastfeeding: null, conditions: [] }));
+    await flush();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    noFlagInRow("ขิง");
+    expect(within(row("ขิง")).getByText("ยังไม่มีข้อมูลตรวจ")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /พบธงเตือน/ })).toBeNull();
+    expect(screen.getByText("ธงเก่า")).toBeInTheDocument();
+  });
+
+  test("ไม่มีธง + ตรวจล้มเหลวหลังเพิ่มยา: ไม่มีข้อความ ไม่พบธง ในหน้าเลย", async () => {
+    add("herb", "khing", "ขิง");
+    const { fetch: f } = await show(body());
+    f.mockImplementation(async () => respond({ error: "x" }, 500));
+    act(() => void add("drug", "warfarin"));
+    await flush();
+    expect(document.body.textContent).not.toContain(NO_FLAG);
+    expect(screen.getByRole("status")).toHaveTextContent("");
+  });
 });

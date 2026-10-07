@@ -34,3 +34,13 @@ export function body(flags: Flag[] = [], over: { result?: Partial<AnalyzeResult>
 }
 
 export const respond = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status });
+
+/** ใช้กับ fake timers: เดินเวลา (ผ่านช่วงหน่วง 300 ms) แล้วรอ promise ของ fetch/json ให้จบ */
+export async function flush(ms = 300) {
+  const { act } = await import("@testing-library/preact");
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(ms);
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(0);
+  });
+}

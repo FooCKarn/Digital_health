@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { buildPayload, groupFlags, itemStatus, notCheckedLabels, unsentRefs } from "./panel";
+import { buildPayload, groupFlags, itemStatus, notCheckedLabels, rowView, SEVERITIES, unknownConditions, unsentRefs } from "./panel";
+import { body, flag } from "../test/fixtures";
 
 const item = (o: Partial<any>): any => ({ id: "i1", kind: "herb", ref: "khing", label: "ขิง", start_date: "2026-10-05", end_date: null, ...o });
 const profile: any = { age: null, pregnant: null, breastfeeding: null, conditions: [] };
@@ -117,5 +118,35 @@ describe("review fixes", () => {
     const g = groupFlags({ flags: [{ flag_id: "a", severity: "weird" }, { flag_id: "b", severity: "info" }, { flag_id: "c", severity: "x" }] } as any);
     expect(g.other.map((f) => f.flag_id)).toEqual(["a", "c"]);
     expect(g.info).toHaveLength(1);
+  });
+});
+
+describe("rowView (ใช้ผลเฉพาะเมื่อ current)", () => {
+  const none = new Set<string>();
+  const ok = (b: ReturnType<typeof body>, current = true, loading = false) => ({ result: b.result, summary: b.summary, current, loading });
+  const herb = item({});
+  const drug = item({ id: "d", kind: "drug", ref: "warfarin" });
+  const withDrug = (b: ReturnType<typeof body>) => ({ ...b, summary: { ...b.summary, drugs_as_entered: ["warfarin"] } });
+
+  test("ควรเตือน: ผลไม่ current ห้ามให้ no_flag/ระดับ", () => {
+    expect(rowView(herb, ok(body(), false, true), none)).toBe("pending");
+    expect(rowView(herb, ok(body(), false, false), none)).toBe("no_data");
+    expect(rowView(herb, ok(body([flag({ severity: "avoid" })]), false, false), none)).toBe("no_data");
+    expect(rowView(herb, { result: null, summary: null, current: false, loading: false }, none)).toBe("no_data");
+  });
+  test("ไม่ควรเตือน: ผล current แสดงสถานะตามปกติ", () => {
+    expect(rowView(herb, ok(body()), none)).toBe("no_flag");
+    expect(rowView(herb, ok(body([flag({ severity: "info" }), flag({ flag_id: "f2", severity: "avoid" })])), none)).toBe("avoid");
+    expect(rowView(herb, ok(body([flag({ severity: "weird" as any })])), none)).toBe("see_panel");
+  });
+  test("ยา: ไม่เคยได้ no_flag; unknown = no_data; ไม่ได้ส่ง = no_data", () => {
+    expect(rowView(drug, ok(withDrug(body())), none)).toBe("see_panel");
+    expect(rowView(drug, ok(withDrug(body([], { coverage: { unknown_inputs: ["Warfarin"] } }))), none)).toBe("no_data");
+    expect(rowView(drug, ok(body()), none)).toBe("no_data"); // ไม่อยู่ใน drugs_as_entered
+    expect(rowView(herb, ok(body()), new Set(["herb:khing"]))).toBe("no_data");
+  });
+  test("SEVERITIES เรียงจากรุนแรงสุด และ unknownConditions", () => {
+    expect(SEVERITIES).toEqual(["avoid", "caution", "info"]);
+    expect(unknownConditions({ ...profile, conditions: ["htn", "zzz"] }, ["htn"])).toEqual(["zzz"]);
   });
 });

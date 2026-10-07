@@ -9,19 +9,21 @@ export interface Analysis {
   result: AnalyzeResult | null;
   summary: Summary | null;
   stale: boolean;
+  /** true เมื่อผลที่ถืออยู่ตรวจจากข้อมูลปัจจุบันพอดี (ไม่ใช่ผลก่อนแก้ไข) */
+  current: boolean;
   error: string | null;
   retry(): void;
 }
 
 const DEBOUNCE_MS = 300;
 const FIXED = new ApiError("network").thaiMessage;
-type State = Omit<Analysis, "retry">;
+type State = Omit<Analysis, "retry" | "current"> & { key: string | null }; // key = payload ที่ใช้ได้ result นี้
 
 /** ตรวจอัตโนมัติเมื่อรายการ/โปรไฟล์เปลี่ยน ผลที่ตอบกลับหลังข้อมูลเปลี่ยนไปแล้วถูกทิ้ง (ตัวนับรุ่น gen) */
 export function useAnalysis(store: TrackerStore, today: string, knownConditions?: string[]): Analysis {
   const [, setVer] = useState(0);
   useEffect(() => store.subscribe(() => setVer((v) => v + 1)), [store]);
-  const [state, setState] = useState<State>({ status: "idle", result: null, summary: null, stale: false, error: null });
+  const [state, setState] = useState<State>({ status: "idle", result: null, summary: null, stale: false, error: null, key: null });
   const [attempt, setAttempt] = useState(0);
   const gen = useRef(0);
 
@@ -31,7 +33,7 @@ export function useAnalysis(store: TrackerStore, today: string, knownConditions?
   useEffect(() => {
     const my = ++gen.current;
     if (!key) {
-      setState({ status: "idle", result: null, summary: null, stale: false, error: null });
+      setState({ status: "idle", result: null, summary: null, stale: false, error: null, key: null });
       return;
     }
     setState((s) => ({ ...s, status: "loading", error: null }));
@@ -39,8 +41,8 @@ export function useAnalysis(store: TrackerStore, today: string, knownConditions?
     const t = setTimeout(async () => {
       try {
         const d = await analyze(JSON.parse(key), ctrl.signal);
-        if (my !== gen.current) return;
-        setState({ status: "ok", result: d.result, summary: d.summary, stale: false, error: null });
+        if (my !== gen.current || ctrl.signal.aborted) return; // ถูกแทนที่หรือ unmount แล้ว
+        setState({ status: "ok", result: d.result, summary: d.summary, stale: false, error: null, key });
       } catch (e) {
         // คำขอที่ถูกยกเลิก/ถูกแทนที่ ไม่ใช่ข้อผิดพลาดของผู้ใช้
         if (my !== gen.current || ctrl.signal.aborted) return;
@@ -51,5 +53,7 @@ export function useAnalysis(store: TrackerStore, today: string, knownConditions?
     return () => { clearTimeout(t); ctrl.abort(); };
   }, [key, attempt]);
 
-  return { ...state, retry: () => setAttempt((n) => n + 1) };
+  // เทียบกับ key ของข้อมูล ณ render นี้ จึงไม่มีช่วงเฟรมเดียวก่อน effect ที่ผลเก่าดูเหมือนปัจจุบัน
+  const { key: resultKey, ...rest } = state;
+  return { ...rest, current: rest.result !== null && resultKey === key, retry: () => setAttempt((n) => n + 1) };
 }

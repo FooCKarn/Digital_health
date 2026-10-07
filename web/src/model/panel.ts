@@ -1,4 +1,4 @@
-import type { AnalyzePayload, AnalyzeResult, Flag } from "../types";
+import type { AnalyzePayload, AnalyzeResult, Flag, Severity, Summary } from "../types";
 import { dayNumber } from "./dates";
 import type { Profile, TrackerItem } from "./tracker";
 
@@ -75,14 +75,39 @@ export function itemStatus(item: TrackerItem, result: AnalyzeResult, unsent?: Se
   return "no_flag";
 }
 
+/** ระดับที่ engine ใช้ เรียงจากรุนแรงสุด (แหล่งเดียวของลำดับ) */
+export const SEVERITIES: readonly Severity[] = ["avoid", "caution", "info"];
+export const isKnownSeverity = (s: string): s is Severity => (SEVERITIES as readonly string[]).includes(s);
+
 export interface PanelGroups { avoid: Flag[]; caution: Flag[]; info: Flag[]; other: Flag[] }
 
 /** ตาม severity ของ engine เท่านั้น เรียงตามลำดับเดิม */
 export function groupFlags(result: AnalyzeResult): PanelGroups {
   const g: PanelGroups = { avoid: [], caution: [], info: [], other: [] };
   // severity แปลกถูกแสดงในกลุ่ม other ไม่ตัดทิ้งและไม่จัดกลุ่มใหม่
-  for (const f of result.flags) (f.severity === "avoid" || f.severity === "caution" || f.severity === "info" ? g[f.severity] : g.other).push(f);
+  for (const f of result.flags) (isKnownSeverity(f.severity) ? g[f.severity] : g.other).push(f);
   return g;
+}
+
+/** สิ่งที่แถวในรายการแสดง: pending = กำลังตรวจ, see_panel = ดูธงในแผง (ยา/ระดับแปลก) */
+export type RowView = Severity | "no_flag" | "no_data" | "pending" | "see_panel";
+
+/**
+ * ใช้ผลตรวจได้เฉพาะเมื่อผลนั้นตรงกับข้อมูลปัจจุบัน (current) เท่านั้น
+ * ผลเก่า (ระหว่างตรวจใหม่หรือหลังตรวจล้มเหลว) ห้ามแสดงเป็นสถานะของแถว
+ */
+export function rowView(item: TrackerItem, a: { result: AnalyzeResult | null; summary: Summary | null; current: boolean; loading: boolean }, unsent: Set<string>): RowView {
+  if (unsent.has(key(item))) return "no_data";
+  const { result: r, summary: s } = a;
+  if (!a.current || !r || !s) return a.loading ? "pending" : "no_data";
+  const covered = item.kind === "herb" ? s.herbs.some((h) => h.id === item.ref) : s.drugs_as_entered.includes(item.ref.trim());
+  if (!covered) return "no_data";
+  const st = itemStatus(item, r, unsent);
+  if (st === "no_data") return "no_data";
+  // ผลตรวจไม่บอกว่ายาแต่ละตัวมีธงไหม จึงห้ามแสดงว่า "ยานี้ไม่พบธง"
+  if (item.kind === "drug") return "see_panel";
+  if (st === "no_flag") return "no_flag";
+  return SEVERITIES.find((k) => r.flags.some((f) => f.herb_id === item.ref && f.severity === k)) ?? "see_panel";
 }
 
 /** โรคในโปรไฟล์ที่ไม่อยู่ในรหัสของระบบ ไม่ถูกส่งไปตรวจ (ต้องบอกผู้ใช้ว่าไม่ได้ตรวจ) */

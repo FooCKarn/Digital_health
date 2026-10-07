@@ -128,3 +128,38 @@ test("แก้โปรไฟล์ = ตรวจใหม่", async () => {
   expect(f).toHaveBeenCalledTimes(2);
   expect(JSON.parse((f.mock.calls[1] as unknown as [string, RequestInit])[1].body as string).profile.age).toBe(30);
 });
+
+test("current: true เฉพาะเมื่อผลตรงกับข้อมูล ณ render นี้ (รวม render ก่อน effect ทำงาน)", async () => {
+  const f = vi.fn(async () => respond(body()));
+  vi.stubGlobal("fetch", f);
+  const log: { n: number; current: boolean; status: string }[] = [];
+  const { result } = renderHook(() => {
+    const r = useAnalysis(store, T);
+    log.push({ n: store.active().length, current: r.current, status: r.status });
+    return r;
+  });
+  await add("herb", "khing");
+  await tick();
+  await settle();
+  expect(result.current.current).toBe(true); // ไม่ควรเตือน: ผลปัจจุบัน
+  f.mockImplementation(() => new Promise(() => {}));
+  await add("drug", "warfarin");
+  const after = log.filter((e) => e.n === 2);
+  expect(after.some((e) => e.status === "ok")).toBe(true); // มี render ก่อน effect ตั้ง loading จริง
+  expect(after.every((e) => !e.current)).toBe(true);
+  expect(result.current.result).not.toBeNull();
+});
+
+test("ผลที่มาถึงหลัง unmount ไม่ถูกนำไปใช้", async () => {
+  const d = deferred();
+  const f = vi.fn().mockReturnValue(d.promise);
+  vi.stubGlobal("fetch", f);
+  const { result, unmount } = renderHook(() => useAnalysis(store, T));
+  await add("herb", "khing");
+  await tick();
+  const before = result.current;
+  unmount();
+  d.resolve(respond(body()));
+  await settle();
+  expect(result.current).toBe(before);
+});

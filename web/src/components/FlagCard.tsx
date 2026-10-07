@@ -1,12 +1,10 @@
-import type { Aggregate, Flag, Severity } from "../types";
+import { isKnownSeverity } from "../model/panel";
+import type { Aggregate, Flag } from "../types";
 import { SeverityBadge } from "./SeverityBadge";
-
-const KNOWN: Severity[] = ["avoid", "caution", "info"];
-export const isKnown = (s: string): s is Severity => (KNOWN as string[]).includes(s);
 
 // severity ที่ไม่รู้จักแสดงตามที่ engine ส่งมา ไม่แปลงเป็นระดับอื่น
 function Sev({ severity, prefix = "" }: { severity: string; prefix?: string }) {
-  if (isKnown(severity)) return <SeverityBadge kind={severity} prefix={prefix} />;
+  if (isKnownSeverity(severity)) return <SeverityBadge kind={severity} prefix={prefix} />;
   return <span class="sev-text">{`${prefix}ระดับ ${severity}`}</span>;
 }
 
