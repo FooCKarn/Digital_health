@@ -42,3 +42,47 @@ export function validateStart(startISO: string, todayISOStr: string): string | n
   if (n > 365) return "วันที่เริ่มต้องไม่เกิน 365 วันที่ผ่านมา";
   return null;
 }
+
+/** บวก/ลบวัน (n ติดลบได้) คืน YYYY-MM-DD; วันที่ผิดรูปคืน null */
+export function addDays(iso: string, n: number): string | null {
+  const t = utcDay(iso);
+  if (t === null || !Number.isInteger(n)) return null;
+  return new Date((t + n) * MS_DAY).toISOString().slice(0, 10);
+}
+
+/** วันในสัปดาห์ของวันที่ (0 = อาทิตย์) */
+export function weekday(iso: string): number {
+  const t = utcDay(iso);
+  return t === null ? NaN : new Date(t * MS_DAY).getUTCDay();
+}
+
+/** เดือนปฏิทินเป็นแถวสัปดาห์ละ 7 ช่อง (เริ่มอาทิตย์) ช่องว่างนอกเดือนเป็น null; month = 1-12 */
+export function monthGrid(year: number, month: number): (string | null)[][] {
+  const p = (n: number) => String(n).padStart(2, "0");
+  const first = `${year}-${p(month)}-01`;
+  const lead = weekday(first);
+  if (Number.isNaN(lead)) return [];
+  const len = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const cells: (string | null)[] = [
+    ...Array<null>(lead).fill(null),
+    ...Array.from({ length: len }, (_, i) => `${year}-${p(month)}-${p(i + 1)}`),
+  ];
+  while (cells.length % 7) cells.push(null);
+  return Array.from({ length: cells.length / 7 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
+}
+
+/** เลื่อนเดือน: คืน [ปี, เดือน 1-12] */
+export function shiftMonth(year: number, month: number, delta: number): [number, number] {
+  const i = year * 12 + (month - 1) + delta;
+  return [Math.floor(i / 12), (i % 12) + 1];
+}
+
+export const THAI_MONTHS = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+export const THAI_WEEKDAYS = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+
+/** "8 ตุลาคม 2569" (พ.ศ.) */
+export function thaiDate(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m || utcDay(iso) === null) return iso;
+  return `${+m[3]} ${THAI_MONTHS[+m[2] - 1]} ${+m[1] + 543}`;
+}

@@ -1,36 +1,25 @@
 import { useRef, useState } from "preact/hooks";
 import type { Analysis } from "../hooks/useAnalysis";
 import { MOODS, RANGES, VITAL_LABEL, series, takenInWindow, type DiaryStore, type VitalKey } from "../model/diary";
-import { dayNumber } from "../model/dates";
+import { dayNumber, thaiDate } from "../model/dates";
 import type { TrackerStore } from "../model/tracker";
 import { downloadJSON } from "../download";
 import { groupFlags } from "../model/panel";
 import { Trend } from "./Trend";
+import { Calendar } from "./Calendar";
+import { itemsOn } from "../model/calendar";
 import { openPolicy } from "./Policy";
 import { useDiary } from "../hooks/useDiary";
 
 const num = (s: string): number | null => (s.trim() === "" ? null : Number(s));
 
-/** หน้า บันทึก: บันทึกสุขภาพประจำวัน + แนวโน้ม + สรุปไว้คุยกับเภสัชกร (ไม่แปลผลค่า ไม่ตัดสินความเสี่ยง) */
+/** หน้า บันทึก: ปฏิทิน + บันทึกสุขภาพรายวัน (ย้อนหลังได้) + แนวโน้ม + สรุปไว้คุยกับเภสัชกร (ไม่แปลผลค่า ไม่ตัดสินความเสี่ยง) */
 export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; store: TrackerStore; today: string; analysis: Analysis }) {
   useDiary(diary);
-  const mine = diary.entryOn(today);
-  const [mood, setMood] = useState<number | null>(mine?.mood ?? null);
-  const [symptom, setSymptom] = useState(mine?.symptom ?? "");
-  const [sys, setSys] = useState(mine?.sys?.toString() ?? "");
-  const [dia, setDia] = useState(mine?.dia?.toString() ?? "");
-  const [glucose, setGlucose] = useState(mine?.glucose?.toString() ?? "");
-  const [weight, setWeight] = useState(mine?.weight?.toString() ?? "");
+  const [selected, setSelected] = useState(today);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const entries0 = diary.state.entries.length;
-  const [consent, setConsent] = useState(diary.state.entries.length > 0);
   const file = useRef<HTMLInputElement>(null);
-
-  const save = (e: Event) => {
-    e.preventDefault();
-    const r = diary.saveEntry({ date: today, mood, symptom: symptom.trim() || null, sys: num(sys), dia: num(dia), glucose: num(glucose), weight: num(weight) });
-    setMsg(r.ok ? { ok: true, text: "บันทึกของวันนี้แล้ว" } : { ok: false, text: r.message });
-  };
 
   const entries = diary.state.entries;
   const items = store.active();
@@ -53,46 +42,12 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
         <p><a href="#policy" onClick={openPolicy}>อ่านเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัวฉบับเต็ม</a></p>
       </details>
 
-      <form class="card" onSubmit={save} noValidate>
-        <h3>วันนี้เป็นอย่างไรบ้าง</h3>
-        <div role="radiogroup" aria-label="ความรู้สึกวันนี้" class="moods">
-          {MOODS.map((m) => (
-            <button key={m.v} type="button" role="radio" aria-checked={mood === m.v} class="mood" onClick={() => setMood(mood === m.v ? null : m.v)}>
-              <span aria-hidden="true" class="mood-n">{m.v}</span>{m.th}
-            </button>
-          ))}
-        </div>
-        <div class="field">
-          <label for="d-symptom">อาการหรือสิ่งที่อยากจดไว้ (ไม่บังคับ)</label>
-          <input id="d-symptom" type="text" maxLength={200} value={symptom} onInput={(e) => setSymptom(e.currentTarget.value)} />
-        </div>
-        <label class="check">
-          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.currentTarget.checked)} />
-          <span>ฉันต้องการบันทึกค่าสุขภาพ (ความดัน น้ำตาล น้ำหนัก) ไว้ในเบราว์เซอร์เครื่องนี้</span>
-        </label>
-        {consent && (
-          <div class="vitals">
-            <div class="field">
-              <span id="bp-l" class="lbl">ความดัน (mmHg) ตัวบน / ตัวล่าง</span>
-              <div class="bp" role="group" aria-labelledby="bp-l">
-                <input aria-label="ความดันตัวบน" inputMode="numeric" type="number" min={RANGES.sys[0]} max={RANGES.sys[1]} value={sys} onInput={(e) => setSys(e.currentTarget.value)} />
-                <span aria-hidden="true">/</span>
-                <input aria-label="ความดันตัวล่าง" inputMode="numeric" type="number" min={RANGES.dia[0]} max={RANGES.dia[1]} value={dia} onInput={(e) => setDia(e.currentTarget.value)} />
-              </div>
-            </div>
-            <div class="field">
-              <label for="d-glucose">{`${VITAL_LABEL.glucose.th} (${VITAL_LABEL.glucose.unit})`}</label>
-              <input id="d-glucose" inputMode="decimal" type="number" step="any" value={glucose} onInput={(e) => setGlucose(e.currentTarget.value)} />
-            </div>
-            <div class="field">
-              <label for="d-weight">{`${VITAL_LABEL.weight.th} (${VITAL_LABEL.weight.unit})`}</label>
-              <input id="d-weight" inputMode="decimal" type="number" step="any" value={weight} onInput={(e) => setWeight(e.currentTarget.value)} />
-            </div>
-          </div>
-        )}
-        {msg && <p class={msg.ok ? "ok" : "err"} role={msg.ok ? "status" : "alert"}>{msg.text}</p>}
-        <button type="submit" class="primary wide">บันทึกวันนี้</button>
-      </form>
+      <section class="card" aria-labelledby="cal-h">
+        <h3 id="cal-h" class="sr-only">ปฏิทินบันทึก</h3>
+        <Calendar items={store.state.items} diary={diary.state} today={today} selected={selected} onSelect={(d) => { setSelected(d); setMsg(null); }} />
+      </section>
+
+      <DayPanel key={selected} diary={diary} store={store} date={selected} today={today} onMsg={setMsg} msg={msg} />
 
       <section class="card" aria-labelledby="trend-h">
         <h3 id="trend-h">แนวโน้มที่คุณบันทึก</h3>
@@ -173,5 +128,92 @@ function MoodDots({ diary, today }: { diary: DiaryStore; today: string }) {
     <div class="mooddots" role="img" aria-label={`ความรู้สึก 7 วันล่าสุด: ${days.map((x) => (x.mood === null ? "ไม่ได้บันทึก" : MOODS[x.mood - 1].th)).join(", ")}`}>
       {days.map((x) => <span key={x.d} class="dot" data-m={x.mood ?? 0}>{x.mood ?? "·"}</span>)}
     </div>
+  );
+}
+
+/** แผงของวันที่เลือก: ฟอร์มบันทึก + ปุ่มกดว่าใช้แล้ว (key = วันที่ ฟอร์มจึงเริ่มใหม่เมื่อเปลี่ยนวัน) */
+function DayPanel({ diary, store, date, today, msg, onMsg }: {
+  diary: DiaryStore; store: TrackerStore; date: string; today: string;
+  msg: { ok: boolean; text: string } | null; onMsg: (m: { ok: boolean; text: string } | null) => void;
+}) {
+  const isToday = date === today;
+  const when = isToday ? "วันนี้" : `วันที่ ${thaiDate(date)}`;
+  const mine = diary.entryOn(date);
+  const [mood, setMood] = useState<number | null>(mine?.mood ?? null);
+  const [symptom, setSymptom] = useState(mine?.symptom ?? "");
+  const [sys, setSys] = useState(mine?.sys?.toString() ?? "");
+  const [dia, setDia] = useState(mine?.dia?.toString() ?? "");
+  const [glucose, setGlucose] = useState(mine?.glucose?.toString() ?? "");
+  const [weight, setWeight] = useState(mine?.weight?.toString() ?? "");
+  const [consent, setConsent] = useState(diary.state.entries.length > 0);
+  const used = itemsOn(store.state.items, date);
+
+  const save = (e: Event) => {
+    e.preventDefault();
+    const r = diary.saveEntry({ date, mood, symptom: symptom.trim() || null, sys: num(sys), dia: num(dia), glucose: num(glucose), weight: num(weight) });
+    onMsg(r.ok ? { ok: true, text: `บันทึกของ${when}แล้ว` } : { ok: false, text: r.message });
+  };
+
+  return (
+    <form class="card day-panel" onSubmit={save} noValidate aria-labelledby="day-h">
+      <h3 id="day-h">{isToday ? "วันนี้เป็นอย่างไรบ้าง" : `บันทึกของ${when}`}</h3>
+
+      {used.length > 0 && <p class="meta">{`กดรายการที่ใช้แล้วใน${when} (กดซ้ำเพื่อยกเลิก)`}</p>}
+      {used.length > 0 && (
+        <div class="day-items" role="group" aria-label={`รายการที่ใช้อยู่ใน${when}`}>
+          {used.map((i) => {
+            const on = diary.isTaken(i.id, date);
+            return (
+              <button key={i.id} type="button" class="check-btn" aria-pressed={on} aria-label={`ใช้ ${i.label} แล้วใน${when}`} onClick={() => diary.toggleTaken(i.id, date)}>
+                {i.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <div role="radiogroup" aria-label={`ความรู้สึก${when}`} class="moods">
+        {MOODS.map((m) => (
+          <button key={m.v} type="button" role="radio" aria-checked={mood === m.v} class="mood" onClick={() => setMood(mood === m.v ? null : m.v)}>
+            <span aria-hidden="true" class="mood-n">{m.v}</span>{m.th}
+          </button>
+        ))}
+      </div>
+      <div class="field">
+        <label for="d-symptom">อาการหรือสิ่งที่อยากจดไว้ (ไม่บังคับ)</label>
+        <input id="d-symptom" type="text" maxLength={200} value={symptom} onInput={(e) => setSymptom(e.currentTarget.value)} />
+      </div>
+      <label class="check">
+        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.currentTarget.checked)} />
+        <span>ฉันต้องการบันทึกค่าสุขภาพ (ความดัน น้ำตาล น้ำหนัก) ไว้ในเบราว์เซอร์เครื่องนี้</span>
+      </label>
+      {consent && (
+        <div class="vitals">
+          <div class="field">
+            <span id="bp-l" class="lbl">ความดัน (mmHg) ตัวบน / ตัวล่าง</span>
+            <div class="bp" role="group" aria-labelledby="bp-l">
+              <input aria-label="ความดันตัวบน" inputMode="numeric" type="number" min={RANGES.sys[0]} max={RANGES.sys[1]} value={sys} onInput={(e) => setSys(e.currentTarget.value)} />
+              <span aria-hidden="true">/</span>
+              <input aria-label="ความดันตัวล่าง" inputMode="numeric" type="number" min={RANGES.dia[0]} max={RANGES.dia[1]} value={dia} onInput={(e) => setDia(e.currentTarget.value)} />
+            </div>
+          </div>
+          <div class="field">
+            <label for="d-glucose">{`${VITAL_LABEL.glucose.th} (${VITAL_LABEL.glucose.unit})`}</label>
+            <input id="d-glucose" inputMode="decimal" type="number" step="any" value={glucose} onInput={(e) => setGlucose(e.currentTarget.value)} />
+          </div>
+          <div class="field">
+            <label for="d-weight">{`${VITAL_LABEL.weight.th} (${VITAL_LABEL.weight.unit})`}</label>
+            <input id="d-weight" inputMode="decimal" type="number" step="any" value={weight} onInput={(e) => setWeight(e.currentTarget.value)} />
+          </div>
+        </div>
+      )}
+      {msg && <p class={msg.ok ? "ok" : "err"} role={msg.ok ? "status" : "alert"}>{msg.text}</p>}
+      <button type="submit" class="primary wide">{isToday ? "บันทึกวันนี้" : `บันทึกวันที่ ${thaiDate(date)}`}</button>
+      {mine && (
+        <button type="button" class="wide" onClick={() => { if (window.confirm(`ลบบันทึกของ${when}?`)) { diary.removeEntry(date); onMsg({ ok: true, text: `ลบบันทึกของ${when}แล้ว` }); } }}>
+          {`ลบบันทึกของ${when}`}
+        </button>
+      )}
+    </form>
   );
 }
