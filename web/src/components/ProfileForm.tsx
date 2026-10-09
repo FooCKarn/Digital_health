@@ -23,6 +23,7 @@ function YesNo({ id, label, value, onChange }: { id: string; label: string; valu
         <option value="yes">ใช่</option>
         <option value="no">ไม่ใช่</option>
       </select>
+      {value === null && <p class="meta unspec">ยังไม่ระบุ: ระบบจะไม่ตรวจข้อนี้</p>}
     </div>
   );
 }
@@ -37,6 +38,7 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
   const [ageErr, setAgeErr] = useState("");
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState("");
+  const [q, setQ] = useState("");
   const ageRef = useRef<HTMLInputElement>(null);
 
   const submit = (e: Event) => {
@@ -47,33 +49,61 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
     const r = store.setProfile({ age: a, pregnant, breastfeeding, conditions: conds });
     if (r.ok) setSaved("บันทึกแล้ว ระบบจะตรวจใหม่ในหน้า ช่วงนี้"); else setErr(r.message);
   };
+  const all = Object.entries(conditions);
+  const needle = q.trim().toLowerCase();
   const toggle = (c: string, on: boolean) => setConds((xs) => (on ? [...xs, c] : xs.filter((x) => x !== c)));
 
   return (
-    <form class="profile-form" onSubmit={submit} onInput={() => setSaved("")} onChange={() => setSaved("")} noValidate aria-labelledby="profile-h">
+    <form class="profile-form card" onSubmit={submit} onInput={() => setSaved("")} onChange={() => setSaved("")} noValidate aria-labelledby="profile-h">
       <h3 id="profile-h">ข้อมูลสุขภาพที่ใช้ตรวจ</h3>
       <p class="meta">ไม่ระบุ = ระบบจะแจ้งว่าไม่ได้ตรวจเงื่อนไขนั้น (ไม่ถือว่า ไม่ใช่)</p>
-      <div class="field">
+      <div class="field age-field">
         <label for="pf-age">อายุ (ปี)</label>
-        <input ref={ageRef} id="pf-age" type="text" inputMode="numeric" autoComplete="off" value={age} aria-invalid={!!ageErr}
-          aria-describedby={ageErr ? "pf-age-err" : undefined} onInput={(e) => { setAge(e.currentTarget.value); setAgeErr(""); }} />
+        <div class="suffix">
+          <input ref={ageRef} id="pf-age" type="text" inputMode="numeric" autoComplete="off" maxLength={3} value={age} aria-invalid={!!ageErr}
+            aria-describedby={ageErr ? "pf-age-err" : undefined} onInput={(e) => { setAge(e.currentTarget.value); setAgeErr(""); }} />
+          <span aria-hidden="true">ปี</span>
+        </div>
+        <p class="meta">เว้นว่าง = ไม่ระบุ</p>
         {ageErr && <p class="err" role="alert" id="pf-age-err">{ageErr}</p>}
       </div>
       <YesNo id="pf-preg" label="ตั้งครรภ์" value={pregnant} onChange={setPregnant} />
       <YesNo id="pf-bf" label="ให้นมบุตร" value={breastfeeding} onChange={setBreastfeeding} />
-      <fieldset>
+      <fieldset class="cond">
         <legend>โรคประจำตัว/สภาวะ</legend>
-        {Object.entries(conditions).map(([code, name]) => (
-          <label key={code} class="check">
-            <input type="checkbox" checked={conds.includes(code)} onChange={(e) => toggle(code, e.currentTarget.checked)} />
-            {name}
-          </label>
-        ))}
+        <label for="cond-q">ค้นหาโรค/สภาวะ</label>
+        <input id="cond-q" type="search" autoComplete="off" value={q} onInput={(e) => setQ(e.currentTarget.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }} />
+        <p class="meta" aria-live="polite">{`เลือกแล้ว ${conds.length} จาก ${all.length}`}</p>
+        {conds.length > 0 && (
+          <ul class="chosen" aria-label="โรค/สภาวะที่เลือกไว้">
+            {conds.map((c) => (
+              <li key={c} class="chip-sel">
+                <span>{conditions[c]}</span>
+                <button type="button" aria-label={`เอาออก ${conditions[c]}`} onClick={() => toggle(c, false)}>×</button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <details class="cond-all" open={needle !== ""}>
+          <summary>{`ดูและเลือกจากรายการทั้งหมด (${all.length})`}</summary>
+          <div class="chips">
+            {all.map(([code, name]) => (
+              <label key={code} class="chip-opt" hidden={needle !== "" && !name.toLowerCase().includes(needle)}>
+                <input type="checkbox" class="sr-only" checked={conds.includes(code)} onChange={(e) => toggle(code, e.currentTarget.checked)} />
+                <span>{name}</span>
+              </label>
+            ))}
+          </div>
+          {needle !== "" && all.every(([, n]) => !n.toLowerCase().includes(needle)) && <p class="meta">ไม่พบรายการที่ตรงกับคำค้น</p>}
+        </details>
         {unknown.length > 0 && <p class="warn">{`ระบบไม่รู้จัก (ไม่ได้ตรวจ และจะถูกนำออกเมื่อบันทึก): ${unknown.join(", ")}`}</p>}
       </fieldset>
       {err && <p class="err" role="alert">{err}</p>}
-      <button type="submit" class="primary">บันทึกข้อมูลสุขภาพ</button>
-      <p role="status" class="meta">{saved}</p>
+      <div class="savebar">
+        <button type="submit" class="primary">บันทึกข้อมูลสุขภาพ</button>
+        <p role="status" class="meta">{saved}</p>
+      </div>
     </form>
   );
 }

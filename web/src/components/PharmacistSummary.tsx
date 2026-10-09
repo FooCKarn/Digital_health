@@ -6,7 +6,7 @@ import { NO_FLAG, NO_FLAG_NOTE, NOT_CHECKED, PHARMACIST } from "../texts";
 import type { Flag, Meta } from "../types";
 import { Disclaimer } from "./Disclaimer";
 import { ScopeChip } from "./ScopeChip";
-import { SEVERITY_TEXT } from "./SeverityBadge";
+import { SEVERITY_TEXT, SeverityBadge } from "./SeverityBadge";
 
 const yn = (v: Profile["pregnant"]) => (v === null ? "ไม่ระบุ" : v === "yes" ? "ใช่" : "ไม่ใช่");
 const sev = (s: string) => (isKnownSeverity(s) ? SEVERITY_TEXT[s] : `ระดับ ${s}`);
@@ -30,13 +30,13 @@ function FlagTable({ flags }: { flags: Flag[] }) {
         <tbody>
           {flags.map((f) => (
             <tr key={f.flag_id}>
-              <td>{sev(f.severity)}</td>
-              <td>{f.message_th}</td>
-              <td>{f.evidence_tier}</td>
-              <td>{`${f.source_page}${f.pdf_page ? ` (PDF ${f.pdf_page})` : ""}`}</td>
-              <td>{f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจ"}</td>
-              <td>{f.rule_id}</td>
-              <td>{f.evidence_quote ? `“${f.evidence_quote}”` : "-"}</td>
+              <td data-label={head[0]}>{isKnownSeverity(f.severity) ? <SeverityBadge kind={f.severity} /> : sev(f.severity)}</td>
+              <td data-label={head[1]} class="msg-cell">{f.message_th}</td>
+              <td data-label={head[2]}>{f.evidence_tier}</td>
+              <td data-label={head[3]}>{`${f.source_page}${f.pdf_page ? ` (PDF ${f.pdf_page})` : ""}`}</td>
+              <td data-label={head[4]}>{f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจ"}</td>
+              <td data-label={head[5]}>{f.rule_id}</td>
+              <td data-label={head[6]}>{f.evidence_quote ? `“${f.evidence_quote}”` : "-"}</td>
             </tr>
           ))}
         </tbody>
@@ -53,7 +53,7 @@ export function PharmacistSummary({ analysis: a, meta, profile }: { analysis: An
   const herbs = s?.herbs.map((h) => `${h.name_th || h.id}${h.part ? ` (${h.part})` : ""}${h.days_in_use ? ` ${h.days_in_use} วัน` : ""}`) ?? [];
 
   return (
-    <section class="pharm-summary" aria-labelledby="pharm-h">
+    <section class="pharm-summary card" aria-labelledby="pharm-h">
       <h2 id="pharm-h">ใบสรุปสำหรับเภสัชกร</h2>
       <div class="scope">
         <ScopeChip coverage={a.current && a.result ? a.result.coverage : meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />

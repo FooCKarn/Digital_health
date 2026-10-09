@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useLayoutEffect, useRef, useState } from "preact/hooks";
 import { downloadJSON } from "../download";
 import type { Analysis } from "../hooks/useAnalysis";
 import { useStore } from "../hooks/useStore";
@@ -18,6 +18,15 @@ export function MyData({ store, meta, today, analysis: a, onClearAll }: {
   const [formKey, setFormKey] = useState(0); // ล้าง state ของฟอร์มหลังนำเข้า/ลบ
   const [msg, setMsg] = useState<Msg>(null);
   const [confirming, setConfirming] = useState(false);
+  const delBtn = useRef<HTMLButtonElement>(null);
+  const cancelBtn = useRef<HTMLButtonElement>(null);
+  const wasConfirming = useRef(false);
+  // เปิดกล่องยืนยันแล้วโฟกัสที่ ยกเลิก (ไม่ใช่ปุ่มลบ); ยกเลิกแล้วคืนโฟกัสให้ปุ่ม ลบข้อมูลทั้งหมด
+  useLayoutEffect(() => {
+    if (confirming) cancelBtn.current?.focus();
+    else if (wasConfirming.current) delBtn.current?.focus();
+    wasConfirming.current = confirming;
+  }, [confirming]);
   const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? id;
   const flags = a.current && a.result ? a.result.flags : [];
 
@@ -50,39 +59,51 @@ export function MyData({ store, meta, today, analysis: a, onClearAll }: {
   return (
     <section class="my-data" aria-labelledby="mydata-h">
       <h2 id="mydata-h" class="noprint">ข้อมูลของฉัน</h2>
-      <div class="noprint">
-        <p class="meta">ข้อมูลอยู่ในเครื่องของคุณเท่านั้น ไม่ถูกส่งไปเก็บที่เซิร์ฟเวอร์ (ส่งไปตรวจแล้วไม่เก็บ)</p>
+      <div class="noprint card privacy-card">
+        <p><strong>ข้อมูลอยู่ในเครื่องของคุณเท่านั้น</strong> <span class="meta">ไม่ถูกส่งไปเก็บที่เซิร์ฟเวอร์ (ส่งไปตรวจแล้วไม่เก็บ)</span></p>
         <p class="meta">กรอกเท่าที่จำเป็นต่อการตรวจ ห้ามใส่ชื่อจริง เลขประจำตัว หรือข้อมูลที่ระบุตัวตนได้</p>
+      </div>
+      <div class="noprint">
         <ProfileForm key={formKey} store={store} conditions={meta.conditions} />
       </div>
 
       <PharmacistSummary analysis={a} meta={meta} profile={store.state.profile} />
 
-      <section class="noprint" aria-labelledby="backup-h">
+      <section class="noprint card" aria-labelledby="backup-h">
         <h3 id="backup-h">สำรอง ย้ายเครื่อง หรือลบข้อมูล</h3>
-        <p class="row-actions">
-          <button type="button" onClick={() => downloadJSON(`herbguard-${today}.json`, store.exportJSON())}>ส่งออกข้อมูล (JSON)</button>
-        </p>
-        <label for="import-file">นำเข้าข้อมูลจากไฟล์ JSON</label>
-        <input id="import-file" type="file" accept=".json,application/json" onChange={(e) => void importFile(e.currentTarget)} />
-        <p class="meta">ไฟล์ต้องถูกต้องทั้งไฟล์ ไม่นำเข้าบางส่วน และจะแทนที่ข้อมูลเดิม</p>
-        {!confirming ? (
-          <p><button type="button" onClick={() => setConfirming(true)}>ลบข้อมูลทั้งหมด</button></p>
-        ) : (
-          <div class="warn" role="group" aria-label="ยืนยันการลบ">
-            <p>ลบรายการ ประวัติ และข้อมูลสุขภาพทั้งหมดในเครื่องนี้ ย้อนกลับไม่ได้</p>
-            <p class="row-actions">
-              <button type="button" onClick={clear}>ยืนยันลบข้อมูลทั้งหมด</button>
-              <button type="button" onClick={() => setConfirming(false)}>ยกเลิก</button>
-            </p>
-          </div>
-        )}
+        <div class="data-row">
+          <button type="button" class="wide-sm" onClick={() => downloadJSON(`herbguard-${today}.json`, store.exportJSON())}>ส่งออกข้อมูล (JSON)</button>
+          <p class="meta">ดาวน์โหลดเป็นไฟล์ไว้สำรองหรือย้ายไปเครื่องอื่น</p>
+        </div>
+        <div class="data-row">
+          <label class="file-btn" for="import-file">
+            นำเข้าข้อมูลจากไฟล์ JSON
+            <input id="import-file" class="sr-only" type="file" accept=".json,application/json" onChange={(e) => void importFile(e.currentTarget)} />
+          </label>
+          <p class="meta">ไฟล์ต้องถูกต้องทั้งไฟล์ ไม่นำเข้าบางส่วน และจะแทนที่ข้อมูลเดิม</p>
+        </div>
+        <div class="data-row danger-zone">
+          {!confirming ? (
+            <button ref={delBtn} type="button" onClick={() => setConfirming(true)}>ลบข้อมูลทั้งหมด</button>
+          ) : (
+            <div class="confirm-del" role="group" aria-label="ยืนยันการลบ">
+              <p>ลบรายการ ประวัติ และข้อมูลสุขภาพทั้งหมดในเครื่องนี้ ย้อนกลับไม่ได้</p>
+              <div class="row-actions">
+                <button type="button" class="danger" onClick={clear}>ยืนยันลบข้อมูลทั้งหมด</button>
+                <button ref={cancelBtn} type="button" onClick={() => setConfirming(false)}>ยกเลิก</button>
+              </div>
+            </div>
+          )}
+        </div>
         {msg && (msg.ok ? <p role="status">{msg.text}</p> : <p class="err" role="alert">{msg.text}</p>)}
       </section>
 
-      <details class="opt-box noprint">
-        <summary>เพิ่มเติม: อธิบายชั้นหลักฐาน · ช่วยเราปรับปรุง</summary>
+      <details class="opt-box noprint card">
+        <summary>อธิบายชั้นหลักฐาน (A/B/C)</summary>
         <Glossary />
+      </details>
+      <details class="opt-box noprint card">
+        <summary>ช่วยเราปรับปรุง (ทดลองใช้)</summary>
         {/* ไม่ remount ตามผล: การ์ดล้างเฉพาะคำตอบต่อธงเมื่อชุดธงของผลปัจจุบันเปลี่ยน */}
         <FeedbackCard flags={flags} current={a.current && !!a.result} herbName={herbName} />
       </details>
