@@ -4,7 +4,7 @@ import { validateStart } from "../model/dates";
 import type { Meta } from "../types";
 import { ParseBox } from "./ParseBox";
 
-type Pick = { kind: "herb" | "drug"; ref: string; label: string };
+type Pick = { kind: "herb" | "drug" | "formula"; ref: string; label: string };
 
 /** onAdded: ชื่อรายการที่เพิ่มสำเร็จ (ให้หน้าแม่ประกาศ) */
 export function AddSheet({ meta, store, today, onClose, onAdded }: { meta: Meta; store: TrackerStore; today: string; onClose: () => void; onAdded?: (labels: string[]) => void }) {
@@ -18,6 +18,7 @@ export function AddSheet({ meta, store, today, onClose, onAdded }: { meta: Meta;
 
   const needle = q.trim().toLowerCase();
   const herbs = meta.herbs.filter((h) => !needle || h.name_th.toLowerCase().includes(needle) || h.id.toLowerCase().includes(needle));
+  const formulas = (meta.formulas ?? []).filter((f) => !needle || f.name_th.toLowerCase().includes(needle) || f.id.toLowerCase().includes(needle));
   const drugs = meta.drugs.filter((d) => !needle || d.toLowerCase().includes(needle));
   const typed = q.trim();
   const canType = typed.length > 0 && !meta.drugs.some((d) => d.toLowerCase() === typed.toLowerCase());
@@ -41,10 +42,12 @@ export function AddSheet({ meta, store, today, onClose, onAdded }: { meta: Meta;
         <p class="meta">พิมพ์ชื่อยาที่ไม่มีในรายการได้ ถ้าไม่รู้จักชื่อนั้นจะขึ้นว่า ยังไม่มีข้อมูลตรวจ</p>
         <div role="group" aria-label="รายการที่เลือกได้" class="pick-list">
           {herbs.map((h) => <PickBtn key={`h-${h.id}`} on={pick?.kind === "herb" && pick.ref === h.id} text={`${h.name_th} (สมุนไพร)`} onPick={() => setPick({ kind: "herb", ref: h.id, label: h.name_th })} />)}
+          {formulas.map((f) => <PickBtn key={`f-${f.id}`} on={pick?.kind === "formula" && pick.ref === f.id} text={`${f.name_th} (ตำรับ)`} onPick={() => setPick({ kind: "formula", ref: f.id, label: f.name_th })} />)}
           {drugs.map((d) => <PickBtn key={`d-${d}`} on={pick?.kind === "drug" && pick.ref === d} text={`${d} (ยา)`} onPick={() => setPick({ kind: "drug", ref: d, label: d })} />)}
           {canType && <PickBtn on={pick?.kind === "drug" && pick.ref === typed} text={`ใช้ชื่อยา “${typed}” ที่พิมพ์เอง`} onPick={() => setPick({ kind: "drug", ref: typed, label: typed })} />}
         </div>
         {pick && <p>{`เลือกแล้ว: ${pick.label}`}</p>}
+        {pick?.kind === "formula" && <p class="meta">{meta.formulas?.find((f) => f.id === pick.ref)?.note_th}</p>}
         {itemErr && <p class="err" role="alert">{itemErr}</p>}
         <label for="sheet-date">วันที่เริ่มใช้</label>
         <input id="sheet-date" type="date" max={today} value={date} aria-invalid={!!dateErr} aria-describedby={dateErr ? "sheet-date-err" : undefined}

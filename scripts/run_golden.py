@@ -10,9 +10,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "engine"))
 from check import check  # noqa: E402
+from formulas import formula_entries  # noqa: E402
 
 load = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E731
 HERBS, DRUGS, CONFIG = load("data/herbs.json"), load("data/drug_class_map.json"), load("data/config.json")
+HERBS = {**HERBS, "herbs": HERBS["herbs"] + formula_entries(load("data/formula_guidelines.json"))}  # ตำรับเข้ามาทางแถวที่แปลงแล้ว
 TAGS = load("data/mechanism_tags.json")["tags"]
 CASES = {c["id"]: c for c in load("docs/golden_cases.json")["cases"]}
 ORDER = CONFIG["severity_order"]

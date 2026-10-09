@@ -1,0 +1,137 @@
+{
+  "note": "สถิติภาพรวมระดับประเทศจากเอกสาร ใช้เป็นบริบทประกอบเท่านั้น ไม่ใช่ข้อมูลข้อห้ามหรือคำเตือน และไม่บอกว่าสมุนไพรใดมีความเสี่ยงมากหรือน้อย จำนวนรายงานอาการไม่พึงประสงค์ขึ้นกับการรายงาน ไม่ใช่อัตราการเกิดเหตุ engine ไม่อ่านไฟล์นี้",
+  "engine_use": false,
+  "source": {
+    "doc": "Health at a Glance 2026: Thai Traditional Medicine",
+    "publisher": "กรมการแพทย์แผนไทยและการแพทย์ทางเลือก กระทรวงสาธารณสุข",
+    "published": "มิถุนายน 2569",
+    "page_offset": 3,
+    "page_offset_note": "หน้า PDF = หน้าพิมพ์ + 3",
+    "indicator_source_th": "รายละเอียดตัวชี้วัดกระทรวงสาธารณสุข ปีงบประมาณ พ.ศ. 2568 กองยุทธศาสตร์และแผนงาน สำนักงานปลัดกระทรวงสาธารณสุข"
+  },
+  "adr_reports": {
+    "metric_th": "จำนวนรายงานอาการไม่พึงประสงค์ (ADR) จากการใช้ยาสมุนไพร",
+    "unit_th": "รายการ",
+    "provider_th": "ศูนย์เฝ้าระวังความปลอดภัยด้านผลิตภัณฑ์สุขภาพ กองยุทธศาสตร์และแผนงาน สำนักงานคณะกรรมการอาหารและยา",
+    "source_page": 12,
+    "pdf_page": 15,
+    "rows": [
+      {
+        "year_be": 2564,
+        "reports": 91,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 12,
+        "pdf_page": 15
+      },
+      {
+        "year_be": 2565,
+        "reports": 253,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 12,
+        "pdf_page": 15
+      },
+      {
+        "year_be": 2566,
+        "reports": 189,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 12,
+        "pdf_page": 15
+      },
+      {
+        "year_be": 2567,
+        "reports": 116,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 12,
+        "pdf_page": 15
+      },
+      {
+        "year_be": 2568,
+        "reports": 83,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 12,
+        "pdf_page": 15
+      }
+    ],
+    "largest_subgroup_per_year": {
+      "read_from_image": true,
+      "rows": [
+        {
+          "year_be": 2564,
+          "group_th": "ยาแผนโบราณและยาสมุนไพรทั่วไป",
+          "reports": 53
+        },
+        {
+          "year_be": 2565,
+          "group_th": "ยาแผนโบราณและยาสมุนไพรทั่วไป",
+          "reports": 160
+        },
+        {
+          "year_be": 2566,
+          "group_th": "ผลิตภัณฑ์ที่มีกัญชา",
+          "reports": 80
+        },
+        {
+          "year_be": 2567,
+          "group_th": "ยาแผนโบราณและยาสมุนไพรทั่วไป",
+          "reports": 46
+        },
+        {
+          "year_be": 2568,
+          "group_th": "ยาแผนโบราณและยาสมุนไพรทั่วไป",
+          "reports": 53
+        }
+      ],
+      "note_th": "เอกสารแสดงเพียงหนึ่งกลุ่มย่อยต่อปี อ่านจากอินโฟกราฟิก ผู้ตรวจควรเทียบกับต้นฉบับ"
+    }
+  },
+  "herbal_share_of_prescriptions": {
+    "metric_th": "ร้อยละของผู้รับบริการ (ครั้ง) ที่ได้รับสั่งจ่ายยาสมุนไพรเดี่ยวหรือตำรับ (รหัสขึ้นต้นด้วย 41 หรือ 42) เทียบกับการสั่งจ่ายทั้งหมด",
+    "unit_th": "ร้อยละ",
+    "provider_th": "ระบบคลังข้อมูลด้านการแพทย์และสุขภาพ (HDC) ข้อมูล ณ วันที่ 18 พฤษภาคม 2569",
+    "source_page": 18,
+    "pdf_page": 21,
+    "rows": [
+      {
+        "year_be": 2565,
+        "herbal_percent": 11.93,
+        "other_percent": 88.07,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 18,
+        "pdf_page": 21
+      },
+      {
+        "year_be": 2566,
+        "herbal_percent": 13.69,
+        "other_percent": 86.31,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 18,
+        "pdf_page": 21
+      },
+      {
+        "year_be": 2567,
+        "herbal_percent": 14.3,
+        "other_percent": 85.7,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 18,
+        "pdf_page": 21
+      },
+      {
+        "year_be": 2568,
+        "herbal_percent": 15.57,
+        "other_percent": 84.43,
+        "verified": false,
+        "verified_by": null,
+        "source_page": 18,
+        "pdf_page": 21
+      }
+    ]
+  }
+}

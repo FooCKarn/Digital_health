@@ -5,6 +5,7 @@ export const T = "2026-10-07";
 
 export const META: Meta = {
   herbs: [{ id: "khing", name_th: "ขิง", parts: [] }, { id: "fathalai", name_th: "ฟ้าทะลายโจร", parts: [] }],
+  formulas: [{ id: "tonic", name_th: "ตำรับทดสอบ", note_th: "คำอธิบายขอบเขตทดสอบ" }],
   drugs: ["warfarin"],
   conditions: { htn: "ความดันโลหิตสูง" },
   coverage: { herbs_in_db: 12, herbs_in_book: 50, drug_classes_in_db: 7 },

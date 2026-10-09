@@ -24,7 +24,7 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
         <span class={f.verified ? "chip" : "chip draft"}>{f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}</span>
         <span class="chip">{`กฎ ${f.rule_id}`}</span>
       </p>
-      {f.evidence_quote && <Evidence quote={f.evidence_quote} page={f.source_page} pdfPage={f.pdf_page} />}
+      {f.evidence_quote && <Evidence quote={f.evidence_quote} page={f.source_page} pdfPage={f.pdf_page} doc={f.source_doc_th} />}
       {ask && (
         <button type="button" class="askflag noprint" aria-label={`ถามเรื่องธงนี้: ${ask.herbName(f.herb_id)}`} onClick={() => ask.ask(f)}>ถามเรื่องธงนี้</button>
       )}
@@ -33,14 +33,16 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
 }
 
 /** "ดูหลักฐาน" (พับไว้): วลีสั้น + หน้าในหนังสือ ใช้ทั้งการ์ดธงและคำตอบแชต */
-export function Evidence({ summary = "ดูหลักฐาน", quote, page, pdfPage, children }: {
-  summary?: string; quote: string; page: number | string; pdfPage: number | null; children?: ComponentChildren;
+const DEFAULT_DOC = "หนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first)";
+
+export function Evidence({ summary = "ดูหลักฐาน", quote, page, pdfPage, doc = DEFAULT_DOC, children }: {
+  summary?: string; quote: string; page: number | string; pdfPage: number | null; doc?: string; children?: ComponentChildren;
 }) {
   return (
     <details class="evd">
       <summary>{summary}</summary>
       <blockquote>{`“${quote}”`}</blockquote>
-      <p class="meta">{`หนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) หน้า ${page}${pdfPage ? ` (หน้า ${pdfPage} ในไฟล์ PDF)` : ""} · วลีสั้นที่คัดมาใช้ตรวจเทียบ ข้อความเต็มและบริบทอยู่ในเล่ม`}</p>
+      <p class="meta">{`${doc} หน้า ${page}${pdfPage ? ` (หน้า ${pdfPage} ในไฟล์ PDF)` : ""} · วลีสั้นที่คัดมาใช้ตรวจเทียบ ข้อความเต็มและบริบทอยู่ในเล่ม`}</p>
       {children}
     </details>
   );

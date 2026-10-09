@@ -27,7 +27,7 @@ export function MyData({ store, meta, today, analysis: a, onClearAll }: {
     else if (wasConfirming.current) delBtn.current?.focus();
     wasConfirming.current = confirming;
   }, [confirming]);
-  const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? id;
+  const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? meta.formulas?.find((f) => f.id === id)?.name_th ?? id;
   const flags = a.current && a.result ? a.result.flags : [];
 
   const importFile = async (input: HTMLInputElement) => {

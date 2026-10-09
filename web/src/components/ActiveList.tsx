@@ -2,7 +2,7 @@ import { useRef } from "preact/hooks";
 import type { Analysis } from "../hooks/useAnalysis";
 import { dayNumber } from "../model/dates";
 import { rowView, unsentRefs } from "../model/panel";
-import type { TrackerStore } from "../model/tracker";
+import { kindLabel, type TrackerStore } from "../model/tracker";
 import { SeverityBadge } from "./SeverityBadge";
 import type { DiaryStore } from "../model/diary";
 import { useDiary } from "../hooks/useDiary";
@@ -27,7 +27,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
               <li key={i.id} class="active-row">
                 <div>
                   <strong>{i.label}</strong>
-                  <div class="meta">{`${i.kind === "herb" ? "สมุนไพร" : "ยา"} · วันที่ ${dayNumber(i.start_date, today)}`}</div>
+                  <div class="meta">{`${kindLabel(i.kind)} · วันที่ ${dayNumber(i.start_date, today)}`}</div>
                 </div>
                 {v === "pending" ? <span class="pending">กำลังตรวจ…</span>
                   : v === "see_panel" ? <span class="see-panel">ดูธงในแผงด้านบน</span>

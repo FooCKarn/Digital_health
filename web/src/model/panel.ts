@@ -1,6 +1,6 @@
 import type { AnalyzePayload, AnalyzeResult, Flag, Severity, Summary } from "../types";
 import { dayNumber } from "./dates";
-import type { Profile, TrackerItem } from "./tracker";
+import { isHerbish, type Profile, type TrackerItem } from "./tracker";
 
 export type { AnalyzePayload };
 
@@ -17,7 +17,7 @@ const key = (i: TrackerItem) => `${i.kind}:${i.ref}`;
 function select(active: TrackerItem[]) {
   const herbRefs: string[] = [];
   for (const i of active) {
-    if (i.kind === "herb" && i.ref.length >= 1 && i.ref.length <= MAX_HERB_LEN && !herbRefs.includes(i.ref) && herbRefs.length < MAX_HERBS) herbRefs.push(i.ref);
+    if (isHerbish(i.kind) && i.ref.length >= 1 && i.ref.length <= MAX_HERB_LEN && !herbRefs.includes(i.ref) && herbRefs.length < MAX_HERBS) herbRefs.push(i.ref);
   }
   const drugs: string[] = [];
   for (const i of active) {
@@ -32,7 +32,7 @@ export function unsentRefs(active: TrackerItem[]): Set<string> {
   const { herbRefs, drugs } = select(active);
   const out = new Set<string>();
   for (const i of active) {
-    const sent = i.kind === "herb" ? herbRefs.includes(i.ref) : drugs.includes(i.ref.trim());
+    const sent = isHerbish(i.kind) ? herbRefs.includes(i.ref) : drugs.includes(i.ref.trim());
     if (!sent) out.add(key(i));
   }
   return out;
@@ -45,7 +45,7 @@ export function buildPayload(active: TrackerItem[], profile: Profile, todayISOSt
   const herbs = herbRefs.map((id) => {
     let best = 0;
     for (const i of active) {
-      if (i.kind === "herb" && i.ref === id) best = Math.max(best, Math.min(Math.max(dayNumber(i.start_date, todayISOStr) || 1, 1), MAX_DAYS)); // id ซ้ำ = เก็บค่าวันที่มากกว่า
+      if (isHerbish(i.kind) && i.ref === id) best = Math.max(best, Math.min(Math.max(dayNumber(i.start_date, todayISOStr) || 1, 1), MAX_DAYS)); // id ซ้ำ = เก็บค่าวันที่มากกว่า
     }
     return { id, days_in_use: best };
   });
@@ -71,7 +71,7 @@ export function itemStatus(item: TrackerItem, result: AnalyzeResult, unsent?: Se
   if (unsent?.has(key(item))) return "no_data"; // ไม่ได้ส่งไปตรวจ
   const unknown = result.coverage.unknown_inputs.map(norm);
   if (unknown.includes(norm(item.ref))) return "no_data";
-  if (item.kind === "herb" && result.flags.some((f) => f.herb_id === item.ref)) return "flagged";
+  if (isHerbish(item.kind) && result.flags.some((f) => f.herb_id === item.ref)) return "flagged";
   return "no_flag";
 }
 
@@ -100,7 +100,7 @@ export function rowView(item: TrackerItem, a: { result: AnalyzeResult | null; su
   if (unsent.has(key(item))) return "no_data";
   const { result: r, summary: s } = a;
   if (!a.current || !r || !s) return a.loading ? "pending" : "no_data";
-  const covered = item.kind === "herb" ? s.herbs.some((h) => h.id === item.ref) : s.drugs_as_entered.includes(item.ref.trim());
+  const covered = isHerbish(item.kind) ? s.herbs.some((h) => h.id === item.ref) : s.drugs_as_entered.includes(item.ref.trim());
   if (!covered) return "no_data";
   const st = itemStatus(item, r, unsent);
   if (st === "no_data") return "no_data";
