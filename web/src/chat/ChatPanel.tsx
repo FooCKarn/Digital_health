@@ -34,7 +34,7 @@ function Msg({ m }: { m: ChatMsg }) {
       {m.t}
       {m.old && <span class="stl">{STALE_LINE}</span>}
       {m.cites.filter((c) => c.evidence_quote).slice(0, 6).map((c, i) => (
-        <Evidence key={i} summary={`ดูหลักฐาน: ${c.herb_name_th}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page}>
+        <Evidence key={i} summary={`ดูหลักฐาน: ${c.herb_name_th}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={c.source_doc_th}>
           <p class="meta">{`รหัสรายการ ${c.item_id} · ${c.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}`}</p>
         </Evidence>
       ))}

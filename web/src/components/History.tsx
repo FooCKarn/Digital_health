@@ -1,6 +1,6 @@
 import { useRef } from "preact/hooks";
 import { useStore } from "../hooks/useStore";
-import type { TrackerStore } from "../model/tracker";
+import { kindLabel, type TrackerStore } from "../model/tracker";
 
 // วันที่แบบไทย คำนวณจากสตริง YYYY-MM-DD ด้วย UTC (ไม่ผูกเขตเวลา)
 const fmt = (iso: string) =>
@@ -23,7 +23,7 @@ export function History({ store }: { store: TrackerStore }) {
               <div>
                 <strong>{i.label}</strong>
                 <div class="meta">
-                  {`${i.kind === "herb" ? "สมุนไพร" : "ยา"} · ใช้ `}
+                  {`${kindLabel(i.kind)} · ใช้ `}
                   <time dateTime={i.start_date}>{fmt(i.start_date)}</time>
                   {" ถึง "}
                   <time dateTime={i.end_date!}>{fmt(i.end_date!)}</time>

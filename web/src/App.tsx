@@ -69,7 +69,7 @@ export function App() {
         <details class="opt-box noprint">
           <summary>เกี่ยวกับเครื่องมือนี้</summary>
           <p>HerbGuard TTM เป็นต้นแบบช่วยดูว่าสมุนไพรไทยที่ใช้ร่วมกับยาแผนปัจจุบันมีธงเตือนอะไรบ้าง ตัดสินด้วยกฎที่เขียนเป็นโค้ด ไม่ได้ให้ AI ตัดสิน</p>
-          <p>แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ)</p>
+          <p>แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ) ส่วนข้อห้ามของ “ตำรับยาบำรุงโลหิต” มาจากแนวทางการตั้งตำรับยาบำรุงโลหิตของสถาบันการแพทย์แผนไทย</p>
           <p>ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบธงเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร</p>
         </details>
         <Policy />
@@ -93,7 +93,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   const fab = useRef<HTMLButtonElement>(null);
   const openChat = (prefill?: string) => setChatOpen((o) => ({ n: (o?.n ?? 0) + 1, prefill }));
   const closeChat = () => { setChatOpen(null); fab.current?.focus(); };
-  const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? id;
+  const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? meta.formulas?.find((f) => f.id === id)?.name_th ?? id;
   const askFlag = useMemo(() => ({ herbName, ask: (f: { herb_id: string }) => openChat(`อธิบายธงของ${herbName(f.herb_id)}`) }), [meta]);
 
   // แท็บแบบ roving tabindex: ลูกศรซ้าย/ขวา (วน), Home, End เหมือนหน้าเดิม

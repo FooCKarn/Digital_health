@@ -1,4 +1,4 @@
-"""Rule engine แกน (R1, R2 ชั้น A, R4) ตาม docs/rules-spec.md
+"""Rule engine แกน (R1, R2 ชั้น A, R4) ตาม docs/rules-spec.md (ข้อห้ามของตำรับเข้ามาทางแถวที่ formulas.py แปลงแล้ว ใช้ R1 เดิม)
 
 ฟังก์ชันล้วน: check(inp, herbs, drug_map, config) -> result ไม่เรียก LLM ไม่มี side effect
 ทำแล้ว: R1, R2 ชั้น A, R3, R4 (ใบสรุปอยู่ที่ summary.py) ยังไม่ทำ: R2 ชั้น C (ยังไม่มี effect_groups.json), R5, R6
@@ -19,6 +19,9 @@ def _classes_for(drug: str, drug_map: dict) -> list[str] | None:
     return None
 
 
+DEFAULT_SOURCE_LABEL = "เล่มแนวทางฯ"
+
+
 def _flag(rule_id, item, herb, evidence_tier="A", **extra):
     return {
         "rule_id": rule_id,
@@ -26,11 +29,13 @@ def _flag(rule_id, item, herb, evidence_tier="A", **extra):
         "evidence_tier": evidence_tier,
         "mechanism_tag": item.get("mechanism_tag"),
         "herb_id": herb["id"],
-        "message_th": f"เล่มแนวทางฯ ระบุ ({herb['name_th']}): {item['text']}",
+        "message_th": f"{herb.get('source_label_th', DEFAULT_SOURCE_LABEL)} ระบุ ({herb['name_th']}): {item['text']}",
         "source_page": item["source_page"],
         "pdf_page": item.get("pdf_page"),  # หน้าในไฟล์ PDF (หน้าพิมพ์ + 8) ไว้ให้ผู้ตรวจเปิดหาในเล่ม
         "evidence_quote": item.get("evidence_quote"),  # วลีสั้นจากหนังสือ ไว้ตรวจเทียบ (กฎข้อ 9: ห้ามยาว ดู test_data)
         "verified": item["verified"],
+        # เอกสารต้นทางของหน้าที่อ้าง: มีเฉพาะธงของตำรับ (ธงสมุนไพรอ้างเล่ม TTM first เป็นค่าเริ่มต้นของหน้าเว็บ ผลเดิมไม่เปลี่ยน)
+        **({"source_doc_th": herb["source_doc_th"]} if herb.get("source_doc_th") else {}),
         **extra,
     }
 
@@ -145,7 +150,7 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | Non
         "swaps": [],  # R6 ยังไม่ทำ
         "pharmacist_review_required": bool(drug_classes & set(config["pharmacist_review_classes"]["value"])),
         "coverage": {
-            "herbs_in_db": len(by_id),
+            "herbs_in_db": sum(1 for h in by_id.values() if h.get("kind") != "formula"),  # ตำรับไม่นับเป็นสมุนไพรในขอบเขต
             "drug_classes_in_db": len({c for e in drug_map["entries"] for c in e["class"]}),
             "unknown_inputs": unknown,
             "not_checked": sorted(not_checked),

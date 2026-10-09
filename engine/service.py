@@ -10,6 +10,7 @@ from pathlib import Path
 import llm
 import rag
 from check import check
+from formulas import formula_entries
 from summary import pharmacist_summary
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -17,13 +18,19 @@ _load = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E7
 HERBS, DRUGS, CONFIG = _load("data/herbs.json"), _load("data/drug_class_map.json"), _load("data/config.json")
 CONDS = _load("data/conditions.json")["conditions"]
 TAGS = _load("data/mechanism_tags.json")["tags"]
-RAG = rag.build_index(HERBS, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"], CONFIG["rag_kind_keywords"]["value"])
+FORMULA_DOC = _load("data/formula_guidelines.json")
+FORMULAS = formula_entries(FORMULA_DOC)
+# ตำรับเข้ามาทางแถวที่แปลงแล้วและใช้ R1 เดิม; HERBS (ชุดสมุนไพรจริง) ใช้นับขอบเขตความครอบคลุมเท่านั้น
+ALL = {**HERBS, "herbs": HERBS["herbs"] + FORMULAS}
+RAG = rag.build_index(ALL, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"], CONFIG["rag_kind_keywords"]["value"])
 HERB_IDS = {h["id"] for h in HERBS["herbs"]}
+ENTRY_IDS = {h["id"] for h in ALL["herbs"]}
 
 
 def meta() -> dict:
     return {
         "herbs": [{"id": h["id"], "name_th": h["name_th"], "parts": h["parts"]} for h in HERBS["herbs"]],
+        "formulas": [{"id": f["id"], "name_th": f["name_th"], "note_th": f["scope_note_th"]} for f in FORMULAS],
         "drugs": [e["names"][0] for e in DRUGS["entries"]],
         "conditions": CONDS,
         "coverage": {"herbs_in_db": len(HERB_IDS), "herbs_in_book": 50,
@@ -81,8 +88,8 @@ def validate(payload, min_herbs: int = 1) -> dict:
 
 def run(payload) -> dict:
     inp = validate(payload)
-    result = check(inp, HERBS, DRUGS, CONFIG, TAGS)
-    return {"result": result, "summary": pharmacist_summary(inp, result, HERBS, CONFIG)}
+    result = check(inp, ALL, DRUGS, CONFIG, TAGS)
+    return {"result": result, "summary": pharmacist_summary(inp, result, ALL, CONFIG)}
 
 
 ROLES = {"citizen": "ประชาชน", "pharmacist": "เภสัชกร", "other": "อื่น ๆ"}
@@ -130,8 +137,8 @@ def parse(payload) -> dict:
 def explain(payload) -> dict:
     """LLM จุดที่ 2: คำนวณผลตรวจใหม่ฝั่งเซิร์ฟเวอร์ (ไม่เชื่อผลจากไคลเอนต์) แล้วเรียบเรียง; ไม่ผ่านตัวตรวจ = template"""
     inp = validate(payload)
-    result = check(inp, HERBS, DRUGS, CONFIG, TAGS)
-    return {"explanation": llm.explain(inp, result, HERBS, DRUGS, CONFIG)}
+    result = check(inp, ALL, DRUGS, CONFIG, TAGS)
+    return {"explanation": llm.explain(inp, result, ALL, DRUGS, CONFIG)}
 
 
 def ask(payload) -> dict:
@@ -144,10 +151,10 @@ def ask(payload) -> dict:
     if not isinstance(q, str) or not 1 <= len(q.strip()) <= 300 or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", q):
         raise ValueError("question ต้องเป็นข้อความ 1-300 ตัวอักษร")
     ctx = payload.get("context_herbs", [])
-    if not isinstance(ctx, list) or len(ctx) > 5 or not all(isinstance(c, str) and c in HERB_IDS for c in ctx):
+    if not isinstance(ctx, list) or len(ctx) > 5 or not all(isinstance(c, str) and c in ENTRY_IDS for c in ctx):
         raise ValueError("context_herbs ไม่ถูกต้อง")
     inp = validate({k: payload[k] for k in ("herbs", "drugs", "profile") if k in payload}, min_herbs=0)
-    result = check(inp, HERBS, DRUGS, CONFIG, TAGS) if inp["herbs"] else None
+    result = check(inp, ALL, DRUGS, CONFIG, TAGS) if inp["herbs"] else None
     answer = rag.answer(q.strip(), result, ctx, [h["id"] for h in inp["herbs"]], RAG, CONFIG,
                         use_llm=os.environ.get("HERBGUARD_CHAT_LLM") == "1")
     return {"answer": answer}

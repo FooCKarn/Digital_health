@@ -58,6 +58,7 @@ def build_index(herbs_db: dict, drug_map: dict, conds: dict, synonyms: dict, kin
                     "item_id": f"{h['id']}.{kind}.{n}", "herb_id": h["id"], "herb_name_th": h["name_th"], "kind": kind,
                     "text_th": it["text"], "condition": it.get("condition"), "drug_class": cls,
                     "source_page": it["source_page"], "pdf_page": it.get("pdf_page"), "evidence_quote": it.get("evidence_quote"),
+                    "source_doc_th": h.get("source_doc_th"),
                     "evidence_tier": it.get("evidence_tier", "A"),  # ทุกรายการใน herbs.json มาจากเล่มโดยตรง = ชั้น A
                     "verified": it.get("verified", False),
                     "_grams": grams(f"{h['name_th']} {it['text']} {label} {extra}"),
@@ -166,12 +167,18 @@ def classify(question: str, config: dict) -> str:
 
 # ---------- คำตอบ ----------
 def _cite(c: dict) -> dict:
-    return {k: c[k] for k in ("item_id", "herb_id", "herb_name_th", "source_page", "pdf_page", "evidence_quote", "verified")}
+    out = {k: c[k] for k in ("item_id", "herb_id", "herb_name_th", "source_page", "pdf_page", "evidence_quote", "verified")}
+    if c.get("source_doc_th"):  # เฉพาะตำรับ (สมุนไพรเดิมอ้างเล่ม TTM first เป็นค่าเริ่มต้นของหน้าเว็บ)
+        out["source_doc_th"] = c["source_doc_th"]
+    return out
 
 
 def _flag_cite(f: dict, index: dict) -> dict:
-    return {"item_id": f"flag:{f['flag_id']}", "herb_id": f["herb_id"], "herb_name_th": index["herb_names"].get(f["herb_id"], f["herb_id"]),
-            "source_page": f["source_page"], "pdf_page": f.get("pdf_page"), "evidence_quote": f.get("evidence_quote"), "verified": f["verified"]}
+    out = {"item_id": f"flag:{f['flag_id']}", "herb_id": f["herb_id"], "herb_name_th": index["herb_names"].get(f["herb_id"], f["herb_id"]),
+           "source_page": f["source_page"], "pdf_page": f.get("pdf_page"), "evidence_quote": f.get("evidence_quote"), "verified": f["verified"]}
+    if f.get("source_doc_th"):
+        out["source_doc_th"] = f["source_doc_th"]
+    return out
 
 
 def _lines(chunks: list) -> str:

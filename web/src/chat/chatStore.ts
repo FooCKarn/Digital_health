@@ -31,6 +31,7 @@ function toCite(c: unknown): Cite | null {
     pdf_page: typeof o.pdf_page === "number" ? o.pdf_page : null,
     evidence_quote: txt(o.evidence_quote, 1000) ? o.evidence_quote : null,
     verified: o.verified === true,
+    ...(txt(o.source_doc_th, 300) && o.source_doc_th ? { source_doc_th: o.source_doc_th } : {}),
   };
 }
 

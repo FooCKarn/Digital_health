@@ -1,0 +1,402 @@
+{
+  "note": "ข้อมูลประกอบการจัดลำดับว่าสมุนไพรใดควรเข้าฐานข้อมูลก่อน ไม่ใช่ข้อมูลข้อห้ามหรือคำเตือน engine ไม่อ่านไฟล์นี้ ตัวเลขเป็นสถิติการจ่ายยา/ส่งออกจากรายงาน ไม่ได้บอกว่าสมุนไพรใดมีความเสี่ยงหรือไม่ herb_id จับคู่เฉพาะเมื่อชื่อไทยตรงกับ name_th ใน data/herbs.json ทุกตัว (ไม่เทียบเคียงชนิดใกล้เคียง เช่น กระชายดำ/กระชายขาว ไม่ใช่ กระชาย)",
+  "engine_use": false,
+  "source": {
+    "doc": "รายงานการสาธารณสุขไทย ด้านการแพทย์แผนไทย การแพทย์พื้นบ้าน และการแพทย์ทางเลือก พ.ศ. 2564-2567",
+    "publisher": "กรมการแพทย์แผนไทยและการแพทย์ทางเลือก กระทรวงสาธารณสุข",
+    "year_be": 2568,
+    "page_offset": 8,
+    "page_offset_note": "หน้า PDF = หน้าพิมพ์ + 8",
+    "attribution_note": "เอกสารระบุว่านำข้อมูลไปเผยแพร่ได้ ขอให้อ้างอิงแหล่งที่มา"
+  },
+  "dispensing_top5_opd": {
+    "metric_th": "จำนวนครั้งการจ่ายยาสมุนไพรตามบัญชียาหลักแห่งชาติ แผนกผู้ป่วยนอกของสถานพยาบาลรัฐ 5 อันดับต่อปี",
+    "unit_th": "ครั้ง",
+    "source_page": 5,
+    "pdf_page": 13,
+    "rows": [
+      {
+        "year_be": 2564,
+        "rank": 1,
+        "name_th": "ขมิ้นชัน",
+        "count": 2075148,
+        "kind": "single_herb_product",
+        "herb_id": "khamin_chan",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2564,
+        "rank": 2,
+        "name_th": "ฟ้าทะลายโจร",
+        "count": 2048472,
+        "kind": "single_herb_product",
+        "herb_id": "fa_thalai_jone",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2564,
+        "rank": 3,
+        "name_th": "มะขามแขก",
+        "count": 1018518,
+        "kind": "single_herb_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2564,
+        "rank": 4,
+        "name_th": "ประสะมะแว้ง",
+        "count": 939105,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2564,
+        "rank": 5,
+        "name_th": "เถาวัลย์เปรียง",
+        "count": 878545,
+        "kind": "single_herb_product",
+        "herb_id": "thao_wan_priang",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2565,
+        "rank": 1,
+        "name_th": "ฟ้าทะลายโจร",
+        "count": 3443568,
+        "kind": "single_herb_product",
+        "herb_id": "fa_thalai_jone",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2565,
+        "rank": 2,
+        "name_th": "แก้ไอมะขามป้อม",
+        "count": 3319559,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2565,
+        "rank": 3,
+        "name_th": "ประสะมะแว้ง",
+        "count": 1866470,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2565,
+        "rank": 4,
+        "name_th": "ขมิ้นชัน",
+        "count": 1820772,
+        "kind": "single_herb_product",
+        "herb_id": "khamin_chan",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2565,
+        "rank": 5,
+        "name_th": "ยาอมมะแว้ง",
+        "count": 1518069,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2566,
+        "rank": 1,
+        "name_th": "ฟ้าทะลายโจร",
+        "count": 1993394,
+        "kind": "single_herb_product",
+        "herb_id": "fa_thalai_jone",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2566,
+        "rank": 2,
+        "name_th": "ประสะมะแว้ง",
+        "count": 1866234,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2566,
+        "rank": 3,
+        "name_th": "ขมิ้นชัน",
+        "count": 1745573,
+        "kind": "single_herb_product",
+        "herb_id": "khamin_chan",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2566,
+        "rank": 4,
+        "name_th": "แก้ไอมะขามป้อม",
+        "count": 1496530,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2566,
+        "rank": 5,
+        "name_th": "ยาอมมะแว้ง",
+        "count": 1467103,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2567,
+        "rank": 1,
+        "name_th": "ประสะมะแว้ง",
+        "count": 2134809,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2567,
+        "rank": 2,
+        "name_th": "ฟ้าทะลายโจร",
+        "count": 1995636,
+        "kind": "single_herb_product",
+        "herb_id": "fa_thalai_jone",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2567,
+        "rank": 3,
+        "name_th": "ขมิ้นชัน",
+        "count": 1840707,
+        "kind": "single_herb_product",
+        "herb_id": "khamin_chan",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2567,
+        "rank": 4,
+        "name_th": "ไพล",
+        "count": 1698296,
+        "kind": "single_herb_product",
+        "herb_id": "phlai",
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "year_be": 2567,
+        "rank": 5,
+        "name_th": "แก้ไอผสมมะขามป้อม",
+        "count": 1509857,
+        "kind": "formula_product",
+        "herb_id": null,
+        "source_page": 5,
+        "pdf_page": 13,
+        "verified": false,
+        "verified_by": null
+      }
+    ]
+  },
+  "herbal_champions": {
+    "metric_th": "สมุนไพรเศรษฐกิจ Herbal Champions 15 รายการ (มูลค่าส่งออกวัตถุดิบและสารสกัด) เก็บเฉพาะรายชื่อ",
+    "source_page": 38,
+    "pdf_page": 46,
+    "rows": [
+      {
+        "name_th": "ขิง",
+        "herb_id": "khing",
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "ว่านหางจระเข้",
+        "herb_id": null,
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "กระชายดำ",
+        "herb_id": null,
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "กระชายขาว",
+        "herb_id": null,
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "กวาวเครือขาว",
+        "herb_id": null,
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "มะขามป้อม",
+        "herb_id": "makham_pom",
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "กัญชง",
+        "herb_id": null,
+        "controlled_herb": true,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "มะระขี้นก",
+        "herb_id": "mara_khi_nok",
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "กัญชา",
+        "herb_id": null,
+        "controlled_herb": true,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "บัวบก",
+        "herb_id": "bua_bok",
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "ขมิ้นชัน",
+        "herb_id": "khamin_chan",
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "กระท่อม",
+        "herb_id": null,
+        "controlled_herb": true,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "ฟ้าทะลายโจร",
+        "herb_id": "fa_thalai_jone",
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "ไพล",
+        "herb_id": "phlai",
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      },
+      {
+        "name_th": "เพชรสังฆาต",
+        "herb_id": null,
+        "controlled_herb": false,
+        "source_page": 38,
+        "pdf_page": 46,
+        "verified": false,
+        "verified_by": null
+      }
+    ]
+  }
+}

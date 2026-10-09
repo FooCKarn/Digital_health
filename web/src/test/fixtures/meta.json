@@ -152,6 +152,13 @@
    ]
   }
  ],
+ "formulas": [
+  {
+   "id": "blood_tonic_women",
+   "name_th": "ตำรับยาบำรุงโลหิต",
+   "note_th": "ใช้เมื่อผลิตภัณฑ์ที่คุณใช้เป็นตำรับยาบำรุงโลหิตตามแนวทางของกรมฯ ซึ่งมีกลุ่มตัวยารสร้อนเป็นส่วนประกอบที่จำเป็น"
+  }
+ ],
  "drugs": [
   "warfarin",
   "aspirin",
@@ -190,7 +197,10 @@
   "strep_group_a_sore_throat": "เจ็บคอจากเชื้อ Streptococcus group A",
   "post_strep_nephritis": "เคยเป็นไตอักเสบจากเชื้อ Streptococcus group A",
   "rheumatic_heart_disease": "โรคหัวใจรูห์มาติค",
-  "severe_bacterial_throat_infection": "เจ็บคอจากแบคทีเรียอาการรุนแรง (ตุ่มหนอง ไข้สูง หนาวสั่น)"
+  "severe_bacterial_throat_infection": "เจ็บคอจากแบคทีเรียอาการรุนแรง (ตุ่มหนอง ไข้สูง หนาวสั่น)",
+  "fever": "มีไข้",
+  "allergy_to_ingredient": "มีประวัติแพ้ตัวยาในตำรับที่เลือก",
+  "pollen_allergy": "แพ้ละอองเกสรดอกไม้"
  },
  "coverage": {
   "herbs_in_db": 21,

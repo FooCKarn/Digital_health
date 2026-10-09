@@ -1,6 +1,9 @@
 import { isValidISODate, startForDay, validateStart } from "./dates";
 
-export type ItemKind = "herb" | "drug";
+export type ItemKind = "herb" | "drug" | "formula";
+/** สมุนไพรและตำรับส่งไปตรวจในอาร์เรย์ herbs เดียวกัน (โควตา 50 ร่วมกัน) */
+export const isHerbish = (k: ItemKind) => k !== "drug";
+export const kindLabel = (k: ItemKind) => (k === "herb" ? "สมุนไพร" : k === "formula" ? "ตำรับ" : "ยา");
 export interface TrackerItem { id: string; kind: ItemKind; ref: string; label: string; start_date: string; end_date: string | null }
 export interface Profile { age: number | null; pregnant: "yes" | "no" | null; breastfeeding: "yes" | "no" | null; conditions: string[] }
 export interface TrackerState { v: 1; items: TrackerItem[]; profile: Profile }
@@ -15,7 +18,7 @@ const bytes = (t: string) => new TextEncoder().encode(t).length;
 const MAX_ITEMS = 200;
 const MAX_TEXT = 100;
 const MAX_CONDITIONS = 50;
-const refMax = (k: ItemKind) => (k === "herb" ? 50 : MAX_TEXT);
+const refMax = (k: ItemKind) => (k === "drug" ? MAX_TEXT : 50);
 
 const emptyProfile = (): Profile => ({ age: null, pregnant: null, breastfeeding: null, conditions: [] });
 const emptyState = (): TrackerState => ({ v: 1, items: [], profile: emptyProfile() });
@@ -51,11 +54,11 @@ function parseState(raw: unknown, today: string, known: string[] | null, onLoad 
     if (!isObj(it)) return BAD;
     const { id, kind, ref, label } = it;
     const start_date = fix(it.start_date), end_date = fix(it.end_date);
-    if (!str(id, 64) || ids.has(id) || (kind !== "herb" && kind !== "drug") || !str(ref, refMax(kind)) || !str(label, MAX_TEXT)) return BAD;
+    if (!str(id, 64) || ids.has(id) || (kind !== "herb" && kind !== "drug" && kind !== "formula") || !str(ref, refMax(kind)) || !str(label, MAX_TEXT)) return BAD;
     if (!isValidISODate(start_date) || !(end_date === null || isValidISODate(end_date))) return "วันที่ในไฟล์ไม่ถูกต้อง";
     // ไม่ปฏิเสธวันเริ่มเก่า (สำรองข้อมูลอายุเกินปีต้องกู้ได้) แต่ปฏิเสธอนาคต
     if (start_date > today || (end_date !== null && (end_date < start_date || end_date > today))) return "วันที่ในไฟล์ไม่ถูกต้อง";
-    if (end_date === null) { if (kind === "herb") herbs++; else drugs++; }
+    if (end_date === null) { if (isHerbish(kind)) herbs++; else drugs++; }
     ids.add(id);
     items.push({ id, kind, ref, label, start_date, end_date });
   }
@@ -121,8 +124,9 @@ export class TrackerStore {
     if (dateErr) return { ok: false, message: dateErr };
     const act = this.active();
     if (act.some((i) => i.kind === input.kind && i.ref === input.ref)) return { ok: false, message: "มีรายการนี้อยู่แล้ว" };
-    if (act.filter((i) => i.kind === input.kind).length >= (input.kind === "herb" ? MAX_HERBS : MAX_DRUGS))
-      return { ok: false, message: input.kind === "herb" ? "ใช้สมุนไพรพร้อมกันได้ไม่เกิน 50 ชนิด" : "ใช้ยาพร้อมกันได้ไม่เกิน 30 รายการ" };
+    const herbish = isHerbish(input.kind);
+    if (act.filter((i) => isHerbish(i.kind) === herbish).length >= (herbish ? MAX_HERBS : MAX_DRUGS))
+      return { ok: false, message: herbish ? "ใช้สมุนไพรและตำรับพร้อมกันได้รวมไม่เกิน 50 รายการ" : "ใช้ยาพร้อมกันได้ไม่เกิน 30 รายการ" };
     if (this._state.items.length >= MAX_ITEMS) return { ok: false, message: "จำนวนรายการเต็มแล้ว" };
     const item: TrackerItem = { id: newId(), kind: input.kind, ref: input.ref, label, start_date: input.start_date, end_date: null };
     this.commit({ ...this._state, items: [...this._state.items, item] });

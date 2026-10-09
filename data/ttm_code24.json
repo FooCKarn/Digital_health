@@ -1,0 +1,447 @@
+{
+  "note": "โครงสร้างรหัสยาแผนไทย 24 หลักและตารางรหัสรูปแบบยา 35 รูปแบบ ข้อมูลอ้างอิงสำหรับตัวถอดรหัส (engine/code24.py) ไม่ใช่ข้อมูลข้อห้ามหรือคำเตือน ไม่ได้ต่อกับกฎใด ๆ ไม่มีตารางรหัสตัวยาสำคัญ (9 หลัก) เพราะคู่มือเก็บไว้ในไฟล์อิเล็กทรอนิกส์ภายนอก ทุกแถว verified:false",
+  "engine_use": false,
+  "source": {
+    "doc": "คู่มือรหัสยาแผนไทย 24 หลัก สำหรับหน่วยบริการสาธารณสุขของรัฐ",
+    "publisher": "สถาบันการแพทย์แผนไทย กรมการแพทย์แผนไทยและการแพทย์ทางเลือก",
+    "edition": "ฉบับปรับปรุง มีนาคม 2568",
+    "page_offset": 7,
+    "page_offset_note": "หน้า PDF = หน้าพิมพ์ + 7"
+  },
+  "length": 24,
+  "fields": [
+    {
+      "id": "drug_type",
+      "positions": [
+        1,
+        1
+      ],
+      "meaning_th": "ประเภทของยา",
+      "fixed": "4",
+      "fixed_meaning_th": "ยาแผนไทย",
+      "source_page": 5,
+      "pdf_page": 12
+    },
+    {
+      "id": "formula_type",
+      "positions": [
+        2,
+        2
+      ],
+      "meaning_th": "ประเภทตำรับยา",
+      "values": {
+        "1": "ยาเดี่ยว",
+        "2": "ยาตำรับ"
+      },
+      "source_page": 5,
+      "pdf_page": 12
+    },
+    {
+      "id": "main_ingredient",
+      "positions": [
+        3,
+        11
+      ],
+      "meaning_th": "รหัสตัวยาสำคัญตามลำดับที่รวบรวมในบัญชียาแผนไทย (9 หลัก)",
+      "source_page": 5,
+      "pdf_page": 12
+    },
+    {
+      "id": "strength_marker",
+      "positions": [
+        12,
+        12
+      ],
+      "meaning_th": "ขนาดความแรงของยาแผนไทย",
+      "fixed": "9",
+      "source_page": 5,
+      "pdf_page": 12
+    },
+    {
+      "id": "strength_group",
+      "positions": [
+        13,
+        13
+      ],
+      "meaning_th": "กลุ่มยาตามน้ำหนักต่อหน่วยหรือความเข้มข้น",
+      "values": {
+        "1": {
+          "unit": "mg/unit",
+          "name_th": "มิลลิกรัมต่อหน่วย",
+          "range_th": "ตัวเลข 001-999"
+        },
+        "2": {
+          "unit": "g/unit",
+          "name_th": "กรัมต่อหน่วย",
+          "range_th": "ตัวเลข 001-999"
+        },
+        "3": {
+          "unit": "% w/w",
+          "name_th": "ร้อยละโดยน้ำหนักต่อน้ำหนัก",
+          "range_th": "ร้อยละ 001-100"
+        },
+        "4": {
+          "unit": "% v/v",
+          "name_th": "ร้อยละโดยปริมาตรต่อปริมาตร",
+          "range_th": "ร้อยละ 001-100"
+        },
+        "5": {
+          "unit": "% w/v",
+          "name_th": "ร้อยละโดยน้ำหนักต่อปริมาตร",
+          "range_th": "ร้อยละ 001-100"
+        },
+        "6": {
+          "unit": "% v/w",
+          "name_th": "ร้อยละโดยปริมาตรต่อน้ำหนัก",
+          "range_th": "ร้อยละ 001-100"
+        }
+      },
+      "source_page": 5,
+      "pdf_page": 12
+    },
+    {
+      "id": "strength_value",
+      "positions": [
+        14,
+        16
+      ],
+      "meaning_th": "ขนาดความแรง 3 หลัก ปัดเศษตั้งแต่ 0.5 ขึ้นไปเป็นจำนวนเต็ม; ถ้าความเข้มข้นน้อยกว่า 1% ให้หลักที่ 14 เป็น 9 แทนจุดทศนิยม แล้วตามด้วยตัวเลข 2 หลัก",
+      "decimal_marker": "9",
+      "source_page": 6,
+      "pdf_page": 13
+    },
+    {
+      "id": "strength_special",
+      "positions": [
+        12,
+        16
+      ],
+      "meaning_th": "รหัสพิเศษของความแรง",
+      "values": {
+        "99999": "ยาแผนไทยที่ไม่สามารถระบุความแรงได้",
+        "00000": "ยาแผนไทยที่ไม่ทราบความแรง"
+      },
+      "source_page": 6,
+      "pdf_page": 13
+    },
+    {
+      "id": "dosage_form",
+      "positions": [
+        17,
+        19
+      ],
+      "meaning_th": "รูปแบบยาแผนไทย (35 รูปแบบ)",
+      "source_page": 8,
+      "pdf_page": 15
+    },
+    {
+      "id": "manufacturer",
+      "positions": [
+        20,
+        24
+      ],
+      "meaning_th": "ผู้ผลิต (5 หลัก): ภาครัฐใช้รหัสสถานพยาบาล ภาคเอกชนใช้รหัสที่กำหนดจากฐานข้อมูลผู้ผลิตที่ขึ้นทะเบียนกับ อย.",
+      "source_page": 8,
+      "pdf_page": 15
+    }
+  ],
+  "dosage_forms": [
+    {
+      "code": "201",
+      "name_th": "ยาแคปซูล",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "203",
+      "name_th": "ยาเม็ด",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "204",
+      "name_th": "ยาเม็ดเคลือบออกฤทธิ์ที่ลำไส้",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "208",
+      "name_th": "ยาเม็ดฟู่",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "215",
+      "name_th": "ยาลูกกลอน",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "304",
+      "name_th": "ยาน้ำแขวนตะกอน",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "341",
+      "name_th": "ยาชง",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "401",
+      "name_th": "ครีม",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "402",
+      "name_th": "เจล",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "404",
+      "name_th": "โลชั่น",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "406",
+      "name_th": "ขี้ผึ้ง",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "419",
+      "name_th": "ทิงเจอร์",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "420",
+      "name_th": "ยาแผ่นแปะ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "441",
+      "name_th": "ยาพอก",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "442",
+      "name_th": "ยาประคบ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "502",
+      "name_th": "ยาครีมสำหรับป้ายปาก",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "503",
+      "name_th": "สารละลายสำหรับป้ายปาก",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "504",
+      "name_th": "ยาบ้วนปาก",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "508",
+      "name_th": "ยาพ่นปาก",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "702",
+      "name_th": "ยาพ่นจมูก",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "704",
+      "name_th": "ยาดม",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "841",
+      "name_th": "ยาเหน็บ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "941",
+      "name_th": "ยาต้ม",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "942",
+      "name_th": "ยาเข้าน้ำมัน (ยาหุง)",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "943",
+      "name_th": "ยาดอง",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "944",
+      "name_th": "ยาแช่",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "945",
+      "name_th": "ยาผง",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "946",
+      "name_th": "ยาแท่ง",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "947",
+      "name_th": "ยาน้ำ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "948",
+      "name_th": "ยากลั่น",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "949",
+      "name_th": "ยาอาบ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "950",
+      "name_th": "ยาชะ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "951",
+      "name_th": "ยาอบ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "952",
+      "name_th": "ยาสูบ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "code": "999",
+      "name_th": "อื่นๆ",
+      "source_page": 8,
+      "pdf_page": 15,
+      "verified": false,
+      "verified_by": null
+    }
+  ],
+  "worked_example": {
+    "code": "410000000239140020111460",
+    "name_th": "เถาวัลย์เปรียง ยาแคปซูล 400 มิลลิกรัม ผู้ผลิตรหัส 11460",
+    "expect": {
+      "formula_type": "1",
+      "strength_group": "1",
+      "strength_value": 400,
+      "dosage_form": "201",
+      "manufacturer": "11460"
+    },
+    "source_page": 27,
+    "pdf_page": 34,
+    "verified": false,
+    "verified_by": null
+  },
+  "verified": false,
+  "verified_by": null
+}

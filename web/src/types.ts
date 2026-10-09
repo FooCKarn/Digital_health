@@ -16,6 +16,8 @@ export interface Flag {
   drug_class?: string | null;
   condition?: string;
   group?: string;
+  /** เอกสารต้นทางของหน้าที่อ้าง (มีเฉพาะธงของตำรับ ธงสมุนไพรอ้างเล่ม TTM first เป็นค่าเริ่มต้น) */
+  source_doc_th?: string;
 }
 
 export interface Aggregate {
@@ -61,6 +63,8 @@ export interface Summary {
 
 export interface Meta {
   herbs: { id: string; name_th: string; parts: string[] }[];
+  /** ตำรับ (ไม่นับเป็นสมุนไพรในขอบเขต) */
+  formulas: { id: string; name_th: string; note_th: string }[];
   drugs: string[];
   conditions: Record<string, string>; // รหัส -> ชื่อไทย (data/conditions.json)
   coverage: { herbs_in_db: number; herbs_in_book: number; drug_classes_in_db: number };
@@ -87,6 +91,7 @@ export interface Cite {
   pdf_page: number | null;
   evidence_quote: string | null;
   verified: boolean;
+  source_doc_th?: string;
 }
 
 export interface AskAnswer {

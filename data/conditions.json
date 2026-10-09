@@ -1,5 +1,5 @@
 {
-  "note": "ทีมตั้งเอง ไม่ใช่มาตรฐาน: รหัสเงื่อนไขกลางและชื่อไทยสำหรับแสดงใน UI (pregnancy/breastfeeding ใช้ช่องติ๊กแยกใน profile ไม่ได้อยู่ใน conditions[])",
+  "note": "ทีมตั้งเอง ไม่ใช่มาตรฐาน: รหัสเงื่อนไขกลางและชื่อไทยสำหรับแสดงใน UI (pregnancy/breastfeeding ใช้ช่องติ๊กแยกใน profile ไม่ได้อยู่ใน conditions[]) เพิ่ม 2026-10-09 (fever, allergy_to_ingredient, pollen_allergy) สำหรับข้อห้ามของตำรับยาบำรุงโลหิต ชื่อไทยทีมตั้งเอง อ้างจากถ้อยคำในแนวทางฯ ผู้เชี่ยวชาญควรตรวจ",
   "conditions": {
     "allergy_to_herb": "มีประวัติแพ้สมุนไพรที่เลือก",
     "eye_inflammation": "ตาบวมหรือตาอักเสบ",
@@ -29,6 +29,9 @@
     "strep_group_a_sore_throat": "เจ็บคอจากเชื้อ Streptococcus group A",
     "post_strep_nephritis": "เคยเป็นไตอักเสบจากเชื้อ Streptococcus group A",
     "rheumatic_heart_disease": "โรคหัวใจรูห์มาติค",
-    "severe_bacterial_throat_infection": "เจ็บคอจากแบคทีเรียอาการรุนแรง (ตุ่มหนอง ไข้สูง หนาวสั่น)"
+    "severe_bacterial_throat_infection": "เจ็บคอจากแบคทีเรียอาการรุนแรง (ตุ่มหนอง ไข้สูง หนาวสั่น)",
+    "fever": "มีไข้",
+    "allergy_to_ingredient": "มีประวัติแพ้ตัวยาในตำรับที่เลือก",
+    "pollen_allergy": "แพ้ละอองเกสรดอกไม้"
   }
 }

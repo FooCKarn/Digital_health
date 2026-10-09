@@ -1,0 +1,290 @@
+{
+  "note": "รายการยาสมุนไพรที่ใช้แทนยาแผนปัจจุบันตามตัวชี้วัดของกระทรวงสาธารณสุข แยกตามกลุ่มอาการ เป็นข้อมูลระดับผลิตภัณฑ์ที่ใช้ในสถานพยาบาลรัฐ ไม่ใช่การแนะนำให้ผู้ใช้ใช้ยา ไม่ใช่ข้อมูลข้อห้ามหรือคำเตือน และยังไม่ผ่านการจับคู่รหัสอาการ (symptom_id) engine ไม่อ่านไฟล์นี้ (กฎ R6 ต้องใช้ข้อมูลอาการต่อสมุนไพรที่ตรวจแล้ว ห้ามเอารายการนี้ไปเสนอให้ผู้ใช้โดยตรง) ชื่อกลุ่มอาการอ่านจากภาพในเอกสาร (ไม่มีในชั้นข้อความ) ผู้ตรวจควรเทียบกับต้นฉบับ",
+  "engine_use": false,
+  "source": {
+    "doc": "Health at a Glance 2026: Thai Traditional Medicine",
+    "publisher": "กรมการแพทย์แผนไทยและการแพทย์ทางเลือก กระทรวงสาธารณสุข",
+    "published": "มิถุนายน 2569",
+    "page_offset": 3,
+    "page_offset_note": "หน้า PDF = หน้าพิมพ์ + 3",
+    "indicator_source_th": "รายละเอียดตัวชี้วัดกระทรวงสาธารณสุข ปีงบประมาณ พ.ศ. 2568 กองยุทธศาสตร์และแผนงาน สำนักงานปลัดกระทรวงสาธารณสุข"
+  },
+  "match_basis": "herb_id จับคู่เมื่อตัดคำนำหน้า ยา และส่วนต่อท้ายหลัง / แล้วตรงกับ name_th ใน data/herbs.json ทุกตัวอักษร นอกนั้นเป็น null (ตำรับ/ผลิตภัณฑ์ไม่ผูกกับสมุนไพรเดี่ยว)",
+  "groups": [
+    {
+      "group_no": 1,
+      "name_th": "กลุ่มอาการปวดกล้ามเนื้อและปวดข้อ",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ยาเถาวัลย์เปรียง",
+          "herb_id": "thao_wan_priang",
+          "controlled_herb": false
+        },
+        {
+          "name_th": "สหัสธารา",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ไพล",
+          "herb_id": "phlai",
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ลูกประคบ",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาพริก",
+          "herb_id": null,
+          "controlled_herb": false
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 2,
+      "name_th": "กลุ่มอาการไข้หวัด ไอ เสมหะ และโควิด-19",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ฟ้าทะลายโจร/สารสกัด",
+          "herb_id": "fa_thalai_jone",
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาประสะมะแว้ง",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาแก้ไอมะขามป้อม",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาตรีผลา",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาปราบชมพูทวีป",
+          "herb_id": null,
+          "controlled_herb": false
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 3,
+      "name_th": "กลุ่มอาการท้องอืด",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ขมิ้นชัน",
+          "herb_id": "khamin_chan",
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ธาตุอบเชย",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ขิง",
+          "herb_id": "khing",
+          "controlled_herb": false
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 4,
+      "name_th": "กลุ่มอาการท้องผูกและริดสีดวงทวาร",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ยาผสมเพชรสังฆาต",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาเพชรสังฆาต",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "มะขามแขก",
+          "herb_id": null,
+          "controlled_herb": false
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 5,
+      "name_th": "กลุ่มอาการวิงเวียน คลื่นไส้ และอาเจียน",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ขมิ้นชัน",
+          "herb_id": "khamin_chan",
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ธาตุอบเชย",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ขิง",
+          "herb_id": "khing",
+          "controlled_herb": false
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 6,
+      "name_th": "กลุ่มอาการอัมพฤกษ์-อัมพาต",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ตำรับยาแก้ลมแก้เส้น",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาทำลายพระสุเมรุ",
+          "herb_id": null,
+          "controlled_herb": false
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 7,
+      "name_th": "กลุ่มอาการทางผิวหนังและบาดแผล",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ยาพญายอ",
+          "herb_id": "phaya_yo",
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาว่านหางจระเข้",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาเปลือกมังคุด",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาทิงเจอร์ทองพันชั่ง",
+          "herb_id": null,
+          "controlled_herb": false
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 8,
+      "name_th": "อาการนอนไม่หลับ",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ยาศุขไสยาศน์",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาหอมเทพจิตร",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "น้ำมันกัญชา THC 2.0 mg/ml",
+          "herb_id": null,
+          "controlled_herb": true
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 9,
+      "name_th": "กลุ่มอาการท้องเสีย",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ฟ้าทะลายโจร",
+          "herb_id": "fa_thalai_jone",
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยากล้วย",
+          "herb_id": null,
+          "controlled_herb": false
+        },
+        {
+          "name_th": "ยาเหลืองปิดสมุทร",
+          "herb_id": null,
+          "controlled_herb": false
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    },
+    {
+      "group_no": 10,
+      "name_th": "กลุ่มอาการเบื่ออาหาร",
+      "title_read_from_image": true,
+      "source_page": 18,
+      "pdf_page": 21,
+      "items": [
+        {
+          "name_th": "ยามะระขี้นก",
+          "herb_id": "mara_khi_nok",
+          "controlled_herb": false
+        },
+        {
+          "name_th": "น้ำมันกัญชา THC 2.0 mg/ml",
+          "herb_id": null,
+          "controlled_herb": true
+        }
+      ],
+      "verified": false,
+      "verified_by": null
+    }
+  ]
+}
