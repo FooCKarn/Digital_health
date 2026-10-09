@@ -115,3 +115,87 @@ button.wide { width: 100%; margin-top: var(--sp-3); }
 .day-items { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0 var(--sp-3); }
 .day-panel .wide + .wide { margin-top: var(--sp-2); }
 @media (max-width: 400px) { .cal-grid, .cal-row { gap: 2px; } .cal-day { min-height: 52px; border-radius: 10px; } }
+
+/* ===== หน้า ข้อมูลของฉัน ===== */
+.my-data { display: grid; gap: var(--sp-4); overflow-wrap: anywhere; }
+.my-data > * { min-width: 0; }
+.my-data > section, .my-data > div, .my-data > details { margin: 0; }
+.my-data > h2 { margin: var(--sp-2) 0 0; }
+.privacy-card p { margin: 0 0 var(--sp-1); }
+.profile-form h3, .pharm-summary h2 { margin-top: 0; }
+.profile-form .field { margin: var(--sp-3) 0; }
+.profile-form label { display: block; font-weight: 500; margin-bottom: var(--sp-1); }
+.profile-form select { width: 100%; box-sizing: border-box; }
+.suffix { display: flex; align-items: center; gap: var(--sp-2); }
+.suffix input { width: 120px; }
+.unspec { margin: var(--sp-1) 0 0; }
+.age-field .meta, .unspec { font-size: .85rem; }
+
+/* โรคประจำตัว: ช่องค้นหา + แถบที่เลือก + ชิป */
+fieldset.cond { border: 0; padding: 0; margin: var(--sp-4) 0 0; min-width: 0; }
+fieldset.cond legend { font-weight: 700; padding: 0; margin-bottom: var(--sp-2); }
+fieldset.cond input[type="search"] { width: 100%; box-sizing: border-box; }
+.chosen { list-style: none; margin: var(--sp-2) 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.chip-sel { display: inline-flex; align-items: center; gap: var(--sp-1); padding: 0 var(--sp-1) 0 var(--sp-3); min-height: 40px; border-radius: 999px; background: var(--c-accent-green); border: 1px solid var(--c-line); }
+.chip-sel button { min-height: 40px; min-width: 40px; padding: 0; border-radius: 50%; border-color: transparent; background: transparent; font-size: 1.2rem; line-height: 1; }
+.cond-all { margin-top: var(--sp-2); border: 1px solid var(--c-line); border-radius: 14px; background: var(--c-bg); }
+.cond-all > summary { padding: 0 var(--sp-3); min-height: 48px; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3) var(--sp-3); }
+.chips label.chip-opt { display: inline-block; margin: 0; font-weight: 400; position: relative; }
+.chips label.chip-opt[hidden] { display: none; }
+.chip-opt span { display: inline-flex; align-items: center; min-height: 48px; padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--c-muted); background: var(--c-surface); color: var(--c-text); cursor: pointer; }
+.chip-opt input:checked + span { background: var(--c-primary); color: var(--c-on-primary); border-color: var(--c-primary); font-weight: 700; }
+.chip-opt input:checked + span::before { content: "✓ "; white-space: pre; }
+.chip-opt input:focus-visible + span { outline: 3px solid var(--c-focus); outline-offset: 2px; }
+
+/* แถบบันทึก (ท้ายฟอร์ม ไม่ลอย เพื่อไม่ทับช่องกรอกและปุ่มแชต) */
+.savebar { margin-top: var(--sp-4); }
+.savebar button { width: 100%; }
+.savebar p { margin: var(--sp-1) 0 0; min-height: 1.6em; }
+@media (max-width: 600px) { .my-data { padding-bottom: var(--sp-5); } }
+
+/* สำรอง/ลบ */
+.data-row { padding: var(--sp-3) 0; border-top: 1px solid var(--c-line); }
+.data-row:first-of-type { border-top: 0; }
+.data-row .meta { margin: var(--sp-1) 0 0; }
+.file-btn { position: relative; display: inline-flex; align-items: center; min-height: 48px; padding: 4px 16px; border-radius: 14px; border: 1px solid var(--c-primary); color: var(--c-primary); background: var(--c-surface); cursor: pointer; }
+.file-btn:focus-within { outline: 3px solid var(--c-focus); outline-offset: 2px; }
+.danger-zone .confirm-del { padding: var(--sp-3); border-radius: 14px; color: var(--c-avoid-fg); background: var(--c-avoid-bg); border: 2px solid var(--c-avoid-fg); }
+.danger-zone .confirm-del p { margin: 0 0 var(--sp-2); font-weight: 700; }
+button.danger { background: var(--c-avoid-fg); color: var(--c-avoid-bg); border-color: var(--c-avoid-fg); font-weight: 700; }
+@media (max-width: 600px) { .data-row > button, .file-btn, .confirm-del .row-actions { width: 100%; box-sizing: border-box; } .confirm-del .row-actions { flex-direction: column; } .file-btn { justify-content: center; } }
+
+/* ส่วนขยาย (details) เป็นการ์ด */
+.my-data > details.card { padding: 0; }
+.my-data > details.card > summary { padding: 0 var(--sp-4); min-height: 56px; }
+.my-data > details.card > :not(summary) { margin-left: var(--sp-4); margin-right: var(--sp-4); }
+.my-data > details.card[open] { padding-bottom: var(--sp-4); }
+.feedback .field select, .feedback .field textarea, .feedback .field input[type="text"] { width: 100%; box-sizing: border-box; }
+@media (max-width: 600px) { .feedback .row-actions { flex-direction: column; } .feedback .row-actions button { width: 100%; } }
+
+/* ใบสรุปเภสัชกร: ตารางเป็นการ์ดบนจอเล็ก (ยังเป็น <table> จริง) */
+.pharm-summary .scope { margin-top: 0; }
+.pharm-summary .row-actions { flex-wrap: wrap; }
+@media (max-width: 600px) {
+  .pharm-summary .tablewrap { overflow-x: visible; }
+  .pharm-summary table, .pharm-summary tbody, .pharm-summary tr, .pharm-summary td { display: block; width: 100%; box-sizing: border-box; }
+  .pharm-summary thead { position: absolute; left: -9999px; }
+  .pharm-summary table { font-size: 1rem; }
+  .pharm-summary tr { margin: var(--sp-3) 0; padding: var(--sp-3); border-radius: 12px; background: var(--c-bg); }
+  .pharm-summary td { border: 0 !important; padding: var(--sp-1) 0 !important; }
+  .pharm-summary td::before { content: attr(data-label); display: block; font-weight: 700; color: var(--c-muted); font-size: .85rem; }
+  .pharm-summary .row-actions { flex-direction: column; }
+  .pharm-summary .row-actions button { width: 100%; }
+}
+@media print {
+  .pharm-summary table { display: table; }
+  .pharm-summary thead { position: static; display: table-header-group; }
+  .pharm-summary tbody { display: table-row-group; }
+  .pharm-summary tr { display: table-row; break-inside: avoid; background: none; padding: 0; margin: 0; }
+  .pharm-summary td { display: table-cell; width: auto; }
+  .pharm-summary td::before { display: none; }
+  .card { box-shadow: none; }
+}
+.pharm-summary td .badge { white-space: nowrap; }
+.pharm-summary td:first-child { min-width: 9.5rem; }
+@media (max-width: 600px) { .pharm-summary td:first-child { min-width: 0; } }
