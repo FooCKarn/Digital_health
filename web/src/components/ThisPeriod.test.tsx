@@ -52,10 +52,10 @@ test("(ฉ) ยาที่อยู่ใน unknown_inputs ได้ 'ยั�
   expect(w.querySelector("[data-kind='no_flag']")).toBeNull();
   expect(w.textContent).not.toContain("ไม่พบธง");
   // ผลตรวจไม่มีธงเลย: ห้ามชี้ไปแผงที่ว่าง และห้ามสื่อว่ายานี้ไม่มีธง/ปลอดภัย
-  expect(within(w).getByText("ผลตรวจไม่ได้แยกผลรายยา")).toBeInTheDocument();
+  expect(within(w).getByText("ผลตรวจไม่ได้แยกรายตัวยา")).toBeInTheDocument();
   expect(w.textContent).not.toContain("ดูธงในแผงด้านบน");
   expect(w.textContent).not.toContain("ปลอดภัย");
-  expect(screen.getByText(/ยังไม่ได้ตรวจ \(ไม่มีในฐานข้อมูล\): ยาแปลก/)).toBeInTheDocument();
+  expect(screen.getByText(/ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล: ยาแปลก/)).toBeInTheDocument();
 });
 
 test("(ช) กลุ่ม avoid เปิด กลุ่มอื่นพับ, กลุ่ม other แสดง, แบนเนอร์เด่นเมื่อมี avoid, ขอบเขตอยู่เหนือธงแรก", async () => {
@@ -74,7 +74,7 @@ test("(ช) กลุ่ม avoid เปิด กลุ่มอื่นพั
   expect(g("other").open).toBe(false);
   expect(within(g("other")).getByText("ธงแปลก")).toBeInTheDocument();
   expect(g("other").querySelector("summary")!.textContent).toContain("ธงอื่น ๆ");
-  expect(screen.getByText(/ควรหลีกเลี่ยง 1 รายการ/, { selector: ".banner-avoid *, .banner-avoid" })).toBeInTheDocument();
+  expect(screen.getByText(/1 รายการที่ควรหลีกเลี่ยง/, { selector: ".banner-avoid *, .banner-avoid" })).toBeInTheDocument();
   const chip = container.querySelector(".scope-chip")!;
   const first = container.querySelector(".flag-card")!;
   expect(chip.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

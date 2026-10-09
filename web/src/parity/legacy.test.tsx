@@ -309,7 +309,7 @@ test("7) ชื่อยาที่พิมพ์เองฝัง HTML/ส�
   fireEvent.click(within(d).getByRole("button", { name: /ใช้ชื่อยา/ }));
   fireEvent.click(within(d).getByRole("button", { name: "เพิ่ม" }));
   await waitFor(() => expect(analyzeCalls.at(-1)).toEqual(fx("khing_unknown_drug").payload), SLOW);
-  await screen.findByText(/ยังไม่ได้ตรวจ \(ไม่มีในฐานข้อมูล\)/, {}, SLOW);
+  await screen.findByText(/ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล/, {}, SLOW);
   expect(document.querySelector("img, script:not([type])")).toBeNull();
   expect((window as { __xss?: number }).__xss).toBeUndefined();
   expect(view().textContent).toContain("<img src=x");

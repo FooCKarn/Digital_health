@@ -155,7 +155,7 @@ export class TrackerStore {
   importJSON(text: string): { ok: true } | { ok: false; message: string } {
     if (typeof text !== "string" || bytes(text) > MAX_IMPORT_BYTES) return { ok: false, message: "ไฟล์ใหญ่เกิน 256 KB" };
     let raw: unknown;
-    try { raw = JSON.parse(text); } catch { return { ok: false, message: "ไฟล์ไม่ใช่ JSON ที่อ่านได้" }; }
+    try { raw = JSON.parse(text); } catch { return { ok: false, message: "อ่านไฟล์ไม่ได้ ใช้ไฟล์ที่ส่งออกจากแอปนี้เท่านั้น" }; }
     const r = parseState(raw, this.today(), this.known);
     if (typeof r === "string") return { ok: false, message: r };
     this.commit(r);

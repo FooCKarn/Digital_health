@@ -6,7 +6,7 @@ import { buildPayload } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Explanation } from "../types";
 
-const FIXED = "ใช้ AI ไม่ได้ในขณะนี้ ข้อความธงด้านบนยังใช้ได้ตามปกติ";
+const FIXED = "ตอนนี้ใช้ AI ไม่ได้ ข้อความธงด้านบนยังอ่านได้เหมือนเดิม";
 const LABEL = {
   llm: "AI เรียบเรียงจากผลตรวจนี้ (ผ่านตัวตรวจข้อความแล้ว)",
   template: "ข้อความสำรองจากฐานข้อมูล (AI ไม่ได้ใช้หรือข้อความไม่ผ่านการตรวจ)",
@@ -34,7 +34,7 @@ export function ExplainBox({ store, today, known, analysis }: { store: TrackerSt
 
   return (
     <section class="explain-box">
-      <button type="button" aria-disabled={b.busy} onClick={go}>ตัวเลือก: ให้ AI เรียบเรียงภาษา</button>
+      <button type="button" aria-disabled={b.busy} onClick={go}>ให้ AI อธิบายผลเป็นภาษาง่าย ๆ (ไม่บังคับ)</button>
       {b.busy && <span role="status">กำลังเรียบเรียง…</span>}
       {err?.key === key && <p class="err" role="alert">{err.msg}</p>}
       {ex && (

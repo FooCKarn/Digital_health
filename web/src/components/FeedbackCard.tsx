@@ -73,7 +73,7 @@ export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Fl
         <div class="field" key={f.flag_id}>
           <label for={`fb-f${i}`}>{`ความเห็นต่อธงที่ ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`}</label>
           <select id={`fb-f${i}`} value={answers[f.flag_id] ?? ""} onChange={(e) => { const v = e.currentTarget.value as Answer; setAnswer(f.flag_id, v); }}>
-            <option value="">— ยังไม่ตอบ —</option>
+            <option value="">ยังไม่ตอบ</option>
             <option value="true">เห็นด้วย</option>
             <option value="false">ไม่เห็นด้วย</option>
             <option value="unsure">ไม่แน่ใจ</option>
@@ -87,7 +87,7 @@ export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Fl
       </div>
       <p class="row-actions">
         <button type="button" aria-disabled={busy} onClick={send}>ส่งความเห็น</button>
-        <button type="button" onClick={() => downloadJSON("feedback.json", JSON.stringify(collect(), null, 2))}>ดาวน์โหลดคำตอบ (JSON)</button>
+        <button type="button" onClick={() => downloadJSON("feedback.json", JSON.stringify(collect(), null, 2))}>ดาวน์โหลดคำตอบเป็นไฟล์</button>
       </p>
       <p class="meta" role="status">{msg}</p>
     </div>

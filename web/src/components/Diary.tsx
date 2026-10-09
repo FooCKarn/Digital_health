@@ -29,15 +29,15 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
   return (
     <section class="diary" aria-labelledby="diary-h">
       <h2 id="diary-h">บันทึกสุขภาพของฉัน</h2>
-      <p class="meta">เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ระบบไม่ส่งขึ้นเซิร์ฟเวอร์และไม่แปลผลค่า ใช้ข้อมูลสมมติเท่านั้นในต้นแบบนี้</p>
+      <p class="meta">เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่ส่งไปที่ไหน และไม่มีการแปลผลค่าให้ ต้นแบบนี้ให้ใช้ข้อมูลสมมติ</p>
 
       <details class="card privacy" open={entries0 === 0}>
         <summary><strong>ข้อมูลของฉันอยู่ที่ไหน</strong></summary>
         <ul>
-          <li>บันทึกสุขภาพและรายการที่ใช้เก็บในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่มีบัญชีผู้ใช้ และทีมงานมองไม่เห็นข้อมูลนี้</li>
-          <li>ถ้าล้างข้อมูลเบราว์เซอร์ ใช้โหมดส่วนตัว หรือเปลี่ยนเครื่อง ข้อมูลจะหาย กู้คืนให้ไม่ได้ ใช้ปุ่ม ส่งออกไฟล์ เพื่อสำรองไว้</li>
-          <li>เมื่อกดตรวจ ระบบส่งชื่อสมุนไพร/ยา และข้อมูลโปรไฟล์ไปคำนวณที่เซิร์ฟเวอร์ ส่วนค่าสุขภาพและอาการที่จดไม่ถูกส่ง ช่องแชตและช่อง AI แปลงข้อความจะส่งข้อความที่คุณพิมพ์</li>
-          <li>ถ้าใช้เครื่องร่วมกับคนอื่น ควรลบบันทึกหลังใช้ ต้นแบบนี้ให้กรอกเฉพาะข้อมูลสมมติ</li>
+          <li>บันทึกสุขภาพและรายการที่ใช้อยู่ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่มีบัญชีผู้ใช้ ทีมงานเปิดดูข้อมูลของคุณไม่ได้</li>
+          <li>ล้างข้อมูลเบราว์เซอร์ ใช้โหมดส่วนตัว หรือเปลี่ยนเครื่อง ข้อมูลก็หายและกู้คืนไม่ได้ อยากเก็บไว้ให้กด ส่งออกไฟล์</li>
+          <li>ตอนตรวจ จะส่งชื่อสมุนไพร ชื่อยา และข้อมูลโปรไฟล์ไปคำนวณที่เซิร์ฟเวอร์ ส่วนค่าสุขภาพกับอาการที่จดไว้ไม่ถูกส่ง แต่แชตและช่อง AI จะส่งข้อความที่คุณพิมพ์</li>
+          <li>ถ้าใช้เครื่องร่วมกับคนอื่น ลบบันทึกทิ้งหลังใช้ด้วย และต้นแบบนี้ให้กรอกเฉพาะข้อมูลสมมติ</li>
         </ul>
         <p><a href="#policy" onClick={openPolicy}>อ่านเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัวฉบับเต็ม</a></p>
       </details>
@@ -56,14 +56,14 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
             <MoodDots diary={diary} today={today} />
             {(["sys", "glucose", "weight"] as VitalKey[]).map((k) => <Trend key={k} k={k} points={series(entries, k)} />)}
             {(["sys", "glucose", "weight"] as VitalKey[]).every((k) => series(entries, k).length === 0) && <p class="meta">ยังไม่มีค่าสุขภาพที่บันทึก</p>}
-            <p class="meta">กราฟแสดงเฉพาะค่าที่คุณกรอกเอง ระบบไม่บอกว่าค่าใดสูงหรือต่ำเกินไป หากกังวลโปรดปรึกษาแพทย์หรือเภสัชกร</p>
+            <p class="meta">กราฟมาจากค่าที่คุณกรอกเองเท่านั้น ไม่ได้บอกว่าค่าไหนสูงหรือต่ำเกินไป ถ้ากังวลให้ถามแพทย์หรือเภสัชกร</p>
           </>
         )}
       </section>
 
       <section class="card" aria-labelledby="intake-h">
         <h3 id="intake-h">การใช้ใน 7 วันที่ผ่านมา</h3>
-        {items.length === 0 ? <p class="empty-note">ยังไม่มีสมุนไพรหรือยาที่กำลังใช้ เพิ่มได้ที่หน้า ช่วงนี้</p> : (
+        {items.length === 0 ? <p class="empty-note">ยังไม่มีสมุนไพรหรือยาที่ใช้อยู่ เพิ่มได้ที่หน้า ช่วงนี้</p> : (
           <ul class="plain-list">
             {items.map((i) => {
               const w = takenInWindow(diary.state.taken[i.id] ?? [], i.start_date, today);
@@ -71,7 +71,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
             })}
           </ul>
         )}
-        <p class="meta">นับจากที่คุณกดบันทึกเอง ไม่ใช่การตรวจว่าใช้ถูกขนาดหรือไม่</p>
+        <p class="meta">นับจากที่คุณกดเอง ไม่ได้ตรวจว่าใช้ถูกขนาดหรือไม่</p>
       </section>
 
       <section class="card print-me" aria-labelledby="pharm-h">
@@ -92,7 +92,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
             </li>
           ))}
         </ul>
-        <p class="meta">ไม่ใช่การวินิจฉัย แสดงเพื่อให้เภสัชกรเห็นข้อมูลที่คุณจดไว้</p>
+        <p class="meta">ไม่ใช่การวินิจฉัย เป็นแค่ข้อมูลที่คุณจดไว้ ให้เภสัชกรดูประกอบ</p>
         <div class="row-actions noprint">
           <button type="button" onClick={() => window.print()}>พิมพ์</button>
         </div>
@@ -103,7 +103,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
         <div class="row-actions">
           <button type="button" onClick={() => downloadJSON("herbguard-diary.json", diary.exportJSON())}>ส่งออกไฟล์</button>
           <button type="button" onClick={() => file.current?.click()}>นำเข้าไฟล์</button>
-          <button type="button" onClick={() => { if (window.confirm("ลบบันทึกสุขภาพและประวัติการกดใช้ทั้งหมดในเครื่องนี้? ย้อนกลับไม่ได้")) { diary.clearAll(); setMsg({ ok: true, text: "ลบบันทึกสุขภาพแล้ว" }); } }}>ลบบันทึกทั้งหมด</button>
+          <button type="button" onClick={() => { if (window.confirm("ลบบันทึกสุขภาพและประวัติการกดใช้ทั้งหมดในเครื่องนี้ใช่ไหม ลบแล้วเอาคืนไม่ได้")) { diary.clearAll(); setMsg({ ok: true, text: "ลบบันทึกสุขภาพแล้ว" }); } }}>ลบบันทึกทั้งหมด</button>
         </div>
         <input ref={file} type="file" accept="application/json" hidden aria-label="เลือกไฟล์บันทึกสุขภาพ" onChange={async (e) => {
           const f = e.currentTarget.files?.[0]; if (!f) return;
@@ -111,7 +111,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
           setMsg(r.ok ? { ok: true, text: "นำเข้าแล้ว" } : { ok: false, text: r.message });
           e.currentTarget.value = "";
         }} />
-        {store.persistent && !diary.persistent && <p class="warn" role="status">เบราว์เซอร์ไม่อนุญาตให้บันทึก ข้อมูลจะหายเมื่อปิดหน้านี้ ส่งออกไฟล์ไว้ถ้าต้องการเก็บ</p>}
+        {store.persistent && !diary.persistent && <p class="warn" role="status">เบราว์เซอร์ไม่ให้บันทึกข้อมูล ปิดหน้านี้แล้วจะหาย ส่งออกไฟล์ไว้ถ้าอยากเก็บ</p>}
       </section>
     </section>
   );

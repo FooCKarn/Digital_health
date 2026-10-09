@@ -64,7 +64,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
           {!a.current && a.status === "loading" && <p class="status-line">กำลังตรวจ…</p>}
           {a.current && none && <p class="nonote">{NO_FLAG_NOTE}</p>}
           {groups.avoid.length > 0 && (
-            <div class="banner-avoid">{`มีรายการที่${GROUP_TITLE.avoid} ${groups.avoid.length} รายการ โปรดอ่านก่อนใช้และปรึกษาเภสัชกร`}</div>
+            <div class="banner-avoid">{`มี ${groups.avoid.length} รายการที่${GROUP_TITLE.avoid} อ่านรายละเอียดและถามเภสัชกรก่อนใช้`}</div>
           )}
           {s.draft_notice_th && <p class="warn">{s.draft_notice_th}</p>}
           {r.pharmacist_review_required && <p class="warn">{PHARMACIST}</p>}
@@ -83,7 +83,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
             );
           })}
           {r.coverage.unknown_inputs.length > 0 && (
-            <p class="warn">{`ยังไม่ได้ตรวจ (ไม่มีในฐานข้อมูล): ${r.coverage.unknown_inputs.join(", ")} · ระบบไม่เดา โปรดปรึกษาเภสัชกร`}</p>
+            <p class="warn">{`ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล: ${r.coverage.unknown_inputs.join(", ")} · ไม่ได้เดาให้ ลองถามเภสัชกร`}</p>
           )}
           {r.coverage.not_checked.length > 0 && (
             <p class="warn">{`ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก): ${notCheckedLabels(r, NOT_CHECKED).join(", ")}`}</p>

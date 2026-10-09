@@ -86,7 +86,7 @@ export function PharmacistSummary({ analysis: a, meta, profile }: { analysis: An
           <ul>{s.follow_up_questions_th.map((q, i) => <li key={i}>{q}</li>)}</ul>
           <p>{`ยังไม่ได้ตรวจ: ${notChecked.join(", ") || "-"}`}</p>
           <p class="noprint row-actions">
-            <button type="button" onClick={() => downloadJSON("pharmacist_summary.json", JSON.stringify(s, null, 2))}>ดาวน์โหลดใบสรุป (JSON)</button>
+            <button type="button" onClick={() => downloadJSON("pharmacist_summary.json", JSON.stringify(s, null, 2))}>ดาวน์โหลดใบสรุปเป็นไฟล์</button>
             <button type="button" onClick={() => window.print()}>พิมพ์ / บันทึกเป็น PDF</button>
           </p>
         </>
