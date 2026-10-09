@@ -38,7 +38,7 @@ export function AddSheet({ meta, store, today, onClose, onAdded }: { meta: Meta;
       <form onSubmit={submit} noValidate>
         <label for="sheet-q">ค้นหา หรือพิมพ์ชื่อยา</label>
         <input id="sheet-q" ref={first} type="search" value={q} onInput={(e) => setQ(e.currentTarget.value)} />
-        <p class="meta">พิมพ์ชื่อยาที่ไม่อยู่ในรายการได้ หากระบบไม่รู้จักจะแสดงว่า ยังไม่มีข้อมูลตรวจ</p>
+        <p class="meta">พิมพ์ชื่อยาที่ไม่มีในรายการได้ ถ้าไม่รู้จักชื่อนั้นจะขึ้นว่า ยังไม่มีข้อมูลตรวจ</p>
         <div role="group" aria-label="รายการที่เลือกได้" class="pick-list">
           {herbs.map((h) => <PickBtn key={`h-${h.id}`} on={pick?.kind === "herb" && pick.ref === h.id} text={`${h.name_th} (สมุนไพร)`} onPick={() => setPick({ kind: "herb", ref: h.id, label: h.name_th })} />)}
           {drugs.map((d) => <PickBtn key={`d-${d}`} on={pick?.kind === "drug" && pick.ref === d} text={`${d} (ยา)`} onPick={() => setPick({ kind: "drug", ref: d, label: d })} />)}

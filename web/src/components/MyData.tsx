@@ -40,7 +40,7 @@ export function MyData({ store, meta, today, analysis: a, onClearAll }: {
     try { text = await f.text(); } catch { return fail("อ่านไฟล์ไม่ได้"); }
     const p = store.state.profile;
     const hasData = store.state.items.length > 0 || p.age !== null || p.pregnant !== null || p.breastfeeding !== null || p.conditions.length > 0;
-    if (hasData && !confirm("นำเข้าจะแทนที่ข้อมูลเดิมทั้งหมด ดำเนินการต่อ?")) return;
+    if (hasData && !confirm("นำเข้าแล้วข้อมูลเดิมจะถูกแทนที่ทั้งหมด ทำต่อไหม")) return;
     const r = store.importJSON(text);
     if (!r.ok) return fail(r.message);
     setFormKey((k) => k + 1);
@@ -72,15 +72,15 @@ export function MyData({ store, meta, today, analysis: a, onClearAll }: {
       <section class="noprint card" aria-labelledby="backup-h">
         <h3 id="backup-h">สำรอง ย้ายเครื่อง หรือลบข้อมูล</h3>
         <div class="data-row">
-          <button type="button" class="wide-sm" onClick={() => downloadJSON(`herbguard-${today}.json`, store.exportJSON())}>ส่งออกข้อมูล (JSON)</button>
+          <button type="button" class="wide-sm" onClick={() => downloadJSON(`herbguard-${today}.json`, store.exportJSON())}>ส่งออกข้อมูลเป็นไฟล์</button>
           <p class="meta">ดาวน์โหลดเป็นไฟล์ไว้สำรองหรือย้ายไปเครื่องอื่น</p>
         </div>
         <div class="data-row">
           <label class="file-btn" for="import-file">
-            นำเข้าข้อมูลจากไฟล์ JSON
+            นำเข้าข้อมูลจากไฟล์
             <input id="import-file" class="sr-only" type="file" accept=".json,application/json" onChange={(e) => void importFile(e.currentTarget)} />
           </label>
-          <p class="meta">ไฟล์ต้องถูกต้องทั้งไฟล์ ไม่นำเข้าบางส่วน และจะแทนที่ข้อมูลเดิม</p>
+          <p class="meta">ถ้าไฟล์มีส่วนที่ผิดจะไม่นำเข้าเลย และข้อมูลเดิมจะถูกแทนที่ทั้งหมด</p>
         </div>
         <div class="data-row danger-zone">
           {!confirming ? (

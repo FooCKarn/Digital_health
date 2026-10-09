@@ -58,9 +58,9 @@ describe("เลือกโรค/สภาวะแบบชิป", () => {
   test("ตั้งครรภ์/ให้นมบุตรยังเป็น select 3 ค่า และบอกชัดเมื่อยังไม่ระบุ", async () => {
     const user = userEvent.setup();
     show();
-    expect(screen.getAllByText("ยังไม่ระบุ: ระบบจะไม่ตรวจข้อนี้")).toHaveLength(2);
+    expect(screen.getAllByText("ยังไม่ระบุ: จะไม่ตรวจข้อนี้")).toHaveLength(2);
     await user.selectOptions(screen.getByLabelText("ตั้งครรภ์"), "ไม่ใช่");
-    expect(screen.getAllByText("ยังไม่ระบุ: ระบบจะไม่ตรวจข้อนี้")).toHaveLength(1);
+    expect(screen.getAllByText("ยังไม่ระบุ: จะไม่ตรวจข้อนี้")).toHaveLength(1);
     expect(screen.getByLabelText("ตั้งครรภ์").tagName).toBe("SELECT");
   });
 });
@@ -80,7 +80,7 @@ describe("สำรอง/ลบข้อมูล", () => {
 
   test("ปุ่มนำเข้าเป็น label ไทยผูกกับ input[type=file] (ไม่มีข้อความ Choose File ภาษาอังกฤษ)", () => {
     show();
-    const input = screen.getByLabelText("นำเข้าข้อมูลจากไฟล์ JSON") as HTMLInputElement;
+    const input = screen.getByLabelText("นำเข้าข้อมูลจากไฟล์") as HTMLInputElement;
     expect(input.type).toBe("file");
     expect(input).toHaveClass("sr-only");
     expect(input.closest("label")).toHaveClass("file-btn");

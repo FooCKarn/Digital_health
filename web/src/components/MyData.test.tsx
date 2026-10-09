@@ -115,7 +115,7 @@ describe("ส่งออก/นำเข้า/ลบ", () => {
     const first = show();
     vi.useFakeTimers();
     try {
-      fireEvent.click(screen.getByRole("button", { name: "ส่งออกข้อมูล (JSON)" }));
+      fireEvent.click(screen.getByRole("button", { name: "ส่งออกข้อมูลเป็นไฟล์" }));
       expect(click).toHaveBeenCalled();
       expect(inDom).toBe(true); // บางเบราว์เซอร์ต้องมีลิงก์ในหน้าก่อนคลิก
       expect(document.querySelector("a[download]")).toBeNull(); // แล้วถูกเอาออก
@@ -129,7 +129,7 @@ describe("ส่งออก/นำเข้า/ลบ", () => {
 
     const other = new TrackerStore(memStorage(), () => T, { knownConditions: Object.keys(META.conditions) });
     show(ana(), other);
-    fireEvent.change(screen.getByLabelText("นำเข้าข้อมูลจากไฟล์ JSON"), { target: { files: [new File([text], "d.json", { type: "application/json" })] } });
+    fireEvent.change(screen.getByLabelText("นำเข้าข้อมูลจากไฟล์"), { target: { files: [new File([text], "d.json", { type: "application/json" })] } });
     await screen.findByText("นำเข้าข้อมูลแล้ว");
     expect(other.state).toEqual(store.state);
   });
@@ -138,10 +138,10 @@ describe("ส่งออก/นำเข้า/ลบ", () => {
     herb();
     const before = JSON.stringify(store.state);
     show();
-    const input = screen.getByLabelText("นำเข้าข้อมูลจากไฟล์ JSON");
+    const input = screen.getByLabelText("นำเข้าข้อมูลจากไฟล์");
     vi.stubGlobal("confirm", () => true);
     fireEvent.change(input, { target: { files: [new File(["{not json"], "x.json")] } });
-    expect(await screen.findByRole("alert")).toHaveTextContent("นำเข้าไม่สำเร็จ: ไฟล์ไม่ใช่ JSON ที่อ่านได้ (ข้อมูลเดิมไม่เปลี่ยน)");
+    expect(await screen.findByRole("alert")).toHaveTextContent("นำเข้าไม่สำเร็จ: อ่านไฟล์ไม่ได้ ใช้ไฟล์ที่ส่งออกจากแอปนี้เท่านั้น (ข้อมูลเดิมไม่เปลี่ยน)");
     fireEvent.change(input, { target: { files: [new File(['{"v":2}'], "x.json")] } });
     expect(await screen.findByText(/เวอร์ชันที่ไม่รองรับ/)).toBeInTheDocument();
     expect(JSON.stringify(store.state)).toBe(before);
@@ -154,7 +154,7 @@ describe("ส่งออก/นำเข้า/ลบ", () => {
     show();
     const confirm = vi.fn(() => false);
     vi.stubGlobal("confirm", confirm);
-    fireEvent.change(screen.getByLabelText("นำเข้าข้อมูลจากไฟล์ JSON"), { target: { files: [new File([good], "x.json")] } });
+    fireEvent.change(screen.getByLabelText("นำเข้าข้อมูลจากไฟล์"), { target: { files: [new File([good], "x.json")] } });
     await waitFor(() => expect(confirm).toHaveBeenCalled());
     expect(JSON.stringify(store.state)).toBe(before);
   };
@@ -173,7 +173,7 @@ describe("ส่งออก/นำเข้า/ลบ", () => {
     show();
     const confirm = vi.fn(() => false);
     vi.stubGlobal("confirm", confirm);
-    fireEvent.change(screen.getByLabelText("นำเข้าข้อมูลจากไฟล์ JSON"), { target: { files: [new File([good], "x.json")] } });
+    fireEvent.change(screen.getByLabelText("นำเข้าข้อมูลจากไฟล์"), { target: { files: [new File([good], "x.json")] } });
     await screen.findByText("นำเข้าข้อมูลแล้ว");
     expect(confirm).not.toHaveBeenCalled();
   });
@@ -238,7 +238,7 @@ describe("ใบสรุปเภสัชกร", () => {
     expect(within(r).getByText("ใช้มานานเท่าไร")).toBeInTheDocument();
     expect(within(r).getByText("ยังไม่ได้ตรวจ: ยาแปลก, อายุ")).toBeInTheDocument();
     expect(within(r).getByText("มีข้อมูลร่าง")).toBeInTheDocument();
-    const dl = within(r).getByRole("button", { name: "ดาวน์โหลดใบสรุป (JSON)" });
+    const dl = within(r).getByRole("button", { name: "ดาวน์โหลดใบสรุปเป็นไฟล์" });
     expect(dl.closest(".noprint")).not.toBeNull();
     const pr = within(r).getByRole("button", { name: "พิมพ์ / บันทึกเป็น PDF" });
     const print = vi.fn();
@@ -262,7 +262,7 @@ describe("ใบสรุปเภสัชกร", () => {
     expect(within(r).queryByRole("table")).toBeNull();
     expect(within(r).queryByText("ธงเก่า")).toBeNull();
     expect(within(r).queryByText(b.summary.headline_th)).toBeNull();
-    expect(within(r).queryByRole("button", { name: "ดาวน์โหลดใบสรุป (JSON)" })).toBeNull();
+    expect(within(r).queryByRole("button", { name: "ดาวน์โหลดใบสรุปเป็นไฟล์" })).toBeNull();
     expect(within(r).getByText(/กำลังตรวจ/)).toBeInTheDocument();
     expect(within(r).getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา")).toBeInTheDocument();
   });

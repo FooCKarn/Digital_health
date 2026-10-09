@@ -89,7 +89,7 @@ describe("แท็บ ช่วงนี้ · บันทึก · ที่�
   test("ข้อมูลที่บันทึกไว้เสีย: แจ้งในหน้า ช่วงนี้ ปิดได้; ที่เก็บปกติไม่มีแบนเนอร์หาย", async () => {
     localStorage.setItem("hg_tracker_v1", "{broken");
     await mount();
-    expect(screen.getByText("ข้อมูลที่บันทึกไว้เสียหาย เริ่มใหม่ให้แล้ว")).toBeInTheDocument();
+    expect(screen.getByText("ข้อมูลที่เก็บไว้เสียหาย จึงเริ่มต้นใหม่ให้")).toBeInTheDocument();
     expect(screen.queryByText(/ข้อมูลจะหายเมื่อปิดหน้านี้/)).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "ปิดข้อความ ข้อมูลเสียหาย" }));
     expect(screen.queryByText(/เสียหาย/)).toBeNull();

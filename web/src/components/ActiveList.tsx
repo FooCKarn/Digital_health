@@ -31,7 +31,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
                 </div>
                 {v === "pending" ? <span class="pending">กำลังตรวจ…</span>
                   : v === "see_panel" ? <span class="see-panel">ดูธงในแผงด้านบน</span>
-                  : v === "drug_unsplit" ? <span class="see-panel">ผลตรวจไม่ได้แยกผลรายยา</span>
+                  : v === "drug_unsplit" ? <span class="see-panel">ผลตรวจไม่ได้แยกรายตัวยา</span>
                   : <SeverityBadge kind={v} />}
                 {diary && (
                   <div class="checkin">

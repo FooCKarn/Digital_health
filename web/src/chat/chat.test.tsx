@@ -8,7 +8,7 @@ import type { AskAnswer, Cite, Meta } from "../types";
 import base from "../styles/base.css?raw";
 import { CHAT_KEY, CHAT_MAX, ChatStore } from "./chatStore";
 
-const STL = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล — ถามอีกครั้งเมื่อผลใหม่ขึ้นเพื่อคำตอบล่าสุด";
+const STL = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล ถามอีกครั้งเมื่อผลใหม่ขึ้น จะได้คำตอบที่ตรงกับข้อมูลล่าสุด";
 const FOLLOW = ["ทำไมถึงขึ้นธง", "ควรถามเภสัชกรว่าอะไร", "ข้อมูลนี้มาจากไหน", "คำถามที่สี่"];
 const MCHAT: Meta = { ...META, chat_followups_th: FOLLOW };
 const HEADLINE = "พบธงเตือน 1 รายการจากฐานข้อมูลนี้";
@@ -364,7 +364,7 @@ describe("19) API ล้มเหลว + ปุ่มกำลังทำง�
     askQueue.push(() => { throw new TypeError("Failed to fetch"); });
     const e = await errN("รางจืดกับยาเบาหวาน", 1);
     expect(e).toHaveAttribute("role", "alert");
-    expect(e).toHaveTextContent("ถามไม่สำเร็จ: ระบบขัดข้องหรือเชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง");
+    expect(e).toHaveTextContent("ถามไม่สำเร็จ: เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง");
     expect(panel().querySelectorAll(".cmsg.u")).toHaveLength(1);
     expect(stored().msgs.map((m: { r: string }) => m.r)).toEqual(["u"]); // ข้อความผิดพลาดไม่ลงประวัติ
   });
@@ -506,13 +506,13 @@ describe("22) ล้างประวัติระหว่างรอ + ข
   });
 
   test.each([
-    ["22.2 500 -> ข้อความไทยตายตัว ไม่โชว์รหัสภายใน", () => respond({ error: "server_error", detail: "KeyError: boom" }, 500), "ระบบขัดข้อง", /server_error|KeyError|500/],
-    ["22.3 ตอบ 200 แต่ไม่ใช่ JSON -> ข้อความไทยตายตัว", () => new Response("not json", { status: 200 }), "ระบบขัดข้อง", /JSON|SyntaxError/],
-    ["22.3b ตอบ 200 แต่รูปผิด -> ข้อความไทยตายตัว", () => respond({ answer: { text: 1 } }), "ระบบขัดข้อง", /undefined|text_th/],
+    ["22.2 500 -> ข้อความไทยตายตัว ไม่โชว์รหัสภายใน", () => respond({ error: "server_error", detail: "KeyError: boom" }, 500), "เชื่อมต่อไม่ได้", /server_error|KeyError|500/],
+    ["22.3 ตอบ 200 แต่ไม่ใช่ JSON -> ข้อความไทยตายตัว", () => new Response("not json", { status: 200 }), "เชื่อมต่อไม่ได้", /JSON|SyntaxError/],
+    ["22.3b ตอบ 200 แต่รูปผิด -> ข้อความไทยตายตัว", () => respond({ answer: { text: 1 } }), "เชื่อมต่อไม่ได้", /undefined|text_th/],
     ["22.4 400 ข้อความไม่ใช่ไทย -> คำถามหรือข้อมูลไม่ถูกต้อง", () => respond({ error: "bad thing" }, 400), "คำถามหรือข้อมูลไม่ถูกต้อง", /bad thing/],
     ["22.5 400 ข้อความไทยจากเซิร์ฟเวอร์ -> แสดงตามเดิม", () => respond({ error: "question ต้องเป็นข้อความ 1-300 ตัวอักษร" }, 400), "question ต้องเป็นข้อความ 1-300 ตัวอักษร", /bad_request/],
     ["22.6 503 -> คงข้อความไทยจากเซิร์ฟเวอร์", () => respond({ error: "llm_unavailable", message: "บริการ AI ใช้ไม่ได้ชั่วคราว" }, 503), "บริการ AI ใช้ไม่ได้ชั่วคราว", /llm_unavailable/],
-    ["22.6b 503 ข้อความไม่ใช่ไทย -> ข้อความไทยตายตัว", () => respond({ error: "llm_unavailable", message: "GEMINI down" }, 503), "ระบบขัดข้อง", /GEMINI|llm_unavailable/],
+    ["22.6b 503 ข้อความไม่ใช่ไทย -> ข้อความไทยตายตัว", () => respond({ error: "llm_unavailable", message: "GEMINI down" }, 503), "เชื่อมต่อไม่ได้", /GEMINI|llm_unavailable/],
   ] as const)("%s", async (_n, reply, want, never) => {
     await mount();
     fireEvent.click(fab());

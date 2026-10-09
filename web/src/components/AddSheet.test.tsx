@@ -124,7 +124,7 @@ test("ParseBox: รหัสสมุนไพรที่ไม่อยู่�
   await within(d).findByRole("checkbox", { name: /ขิง/ });
   expect(within(d).getAllByRole("checkbox")).toHaveLength(1);
   expect(d.textContent).not.toContain("evil_id");
-  expect(within(d).getByText(/ส่งรายการที่ระบบไม่รู้จักกลับมา 2 รายการ/)).toBeInTheDocument();
+  expect(within(d).getByText(/ส่งชื่อที่ไม่อยู่ในฐานข้อมูลมา 2 รายการ/)).toBeInTheDocument();
 });
 
 test("ParseBox: เพิ่มบางส่วนล้มเหลว -> รายการที่สำเร็จถูกเอาติ๊กออก ลองใหม่ไม่ซ้ำ", async () => {
@@ -162,7 +162,7 @@ test("/api/parse 503 -> ข้อความไทยตายตัว ไม�
   const d = await open(user);
   await user.type(within(d).getByLabelText(/พิมพ์ข้อความ/), "ขิง");
   await user.click(within(d).getByRole("button", { name: "แยกรายการด้วย AI" }));
-  expect(await within(d).findByText("ใช้ AI ไม่ได้ในขณะนี้ กรอกเองได้ตามปกติ")).toBeInTheDocument();
+  expect(await within(d).findByText("ตอนนี้ใช้ AI ไม่ได้ กรอกเองได้เหมือนเดิม")).toBeInTheDocument();
   expect(d.textContent).not.toContain("SECRET-DETAIL");
   expect(within(d).getByLabelText("ค้นหา หรือพิมพ์ชื่อยา")).toBeInTheDocument();
 });
@@ -182,7 +182,7 @@ test("ปุ่มที่กำลังทำงานเป็น aria-disab
 });
 
 describe("ExplainBox", () => {
-  const explainBtn = () => screen.queryByRole("button", { name: "ตัวเลือก: ให้ AI เรียบเรียงภาษา" });
+  const explainBtn = () => screen.queryByRole("button", { name: "ให้ AI อธิบายผลเป็นภาษาง่าย ๆ (ไม่บังคับ)" });
 
   test("ซ่อนเมื่อผลที่แสดงยังไม่ใช่ผลปัจจุบัน (กำลังตรวจครั้งแรก/ไม่มีสมุนไพร)", async () => {
     setup();
@@ -197,8 +197,8 @@ describe("ExplainBox", () => {
       handlers["/api/explain"] = () => respond({ explanation: ex });
       const user = userEvent.setup();
       const { unmount } = render(<ThisPeriod store={store} meta={META} today={T} />);
-      await user.click(await screen.findByRole("button", { name: "ตัวเลือก: ให้ AI เรียบเรียงภาษา" }));
-      expect(await screen.findByText("ใช้ AI ไม่ได้ในขณะนี้ ข้อความธงด้านบนยังใช้ได้ตามปกติ")).toBeInTheDocument();
+      await user.click(await screen.findByRole("button", { name: "ให้ AI อธิบายผลเป็นภาษาง่าย ๆ (ไม่บังคับ)" }));
+      expect(await screen.findByText("ตอนนี้ใช้ AI ไม่ได้ ข้อความธงด้านบนยังอ่านได้เหมือนเดิม")).toBeInTheDocument();
       unmount();
     }
   });
@@ -208,7 +208,7 @@ describe("ExplainBox", () => {
     handlers["/api/analyze"] = () => respond(body([flag()]));
     handlers["/api/explain"] = () => respond({ explanation: { source: "template", rejected_reason: "x", summary_th: "<img src=x onerror=alert(1)>สรุป", items: [{ flag_id: "f1", text_th: "<b>ตัวหนา</b>" }], disclaimer_th: "ไม่ใช่การวินิจฉัย" } });
     const user = setup();
-    await user.click(await screen.findByRole("button", { name: "ตัวเลือก: ให้ AI เรียบเรียงภาษา" }));
+    await user.click(await screen.findByRole("button", { name: "ให้ AI อธิบายผลเป็นภาษาง่าย ๆ (ไม่บังคับ)" }));
     const box = (await screen.findByText(/ข้อความสำรองจากฐานข้อมูล/)).closest("section") as HTMLElement;
     expect(box.querySelector("img, b")).toBeNull();
     expect(box).toHaveTextContent("<img src=x onerror=alert(1)>สรุป");
@@ -222,7 +222,7 @@ describe("ExplainBox", () => {
     handlers["/api/analyze"] = () => respond(body([flag()]));
     handlers["/api/explain"] = () => respond({ explanation: { source: "llm", rejected_reason: null, summary_th: "สรุปทดสอบ", items: [], disclaimer_th: "d" } });
     const user = setup();
-    await user.click(await screen.findByRole("button", { name: "ตัวเลือก: ให้ AI เรียบเรียงภาษา" }));
+    await user.click(await screen.findByRole("button", { name: "ให้ AI อธิบายผลเป็นภาษาง่าย ๆ (ไม่บังคับ)" }));
     expect(await screen.findByText("สรุปทดสอบ")).toBeInTheDocument();
     store.addItem({ kind: "drug", ref: "warfarin", label: "warfarin", start_date: T });
     await waitFor(() => expect(screen.queryByText("สรุปทดสอบ")).toBeNull());

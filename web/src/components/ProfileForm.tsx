@@ -23,7 +23,7 @@ function YesNo({ id, label, value, onChange }: { id: string; label: string; valu
         <option value="yes">ใช่</option>
         <option value="no">ไม่ใช่</option>
       </select>
-      {value === null && <p class="meta unspec">ยังไม่ระบุ: ระบบจะไม่ตรวจข้อนี้</p>}
+      {value === null && <p class="meta unspec">ยังไม่ระบุ: จะไม่ตรวจข้อนี้</p>}
     </div>
   );
 }
@@ -47,7 +47,7 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
     const a = parseAge(age);
     if (a === undefined) { setAgeErr(AGE_ERR); ageRef.current?.focus(); return; }
     const r = store.setProfile({ age: a, pregnant, breastfeeding, conditions: conds });
-    if (r.ok) setSaved("บันทึกแล้ว ระบบจะตรวจใหม่ในหน้า ช่วงนี้"); else setErr(r.message);
+    if (r.ok) setSaved("บันทึกแล้ว ผลตรวจในหน้า ช่วงนี้ จะอัปเดตตามให้"); else setErr(r.message);
   };
   const all = Object.entries(conditions);
   const needle = q.trim().toLowerCase();
@@ -56,7 +56,7 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
   return (
     <form class="profile-form card" onSubmit={submit} onInput={() => setSaved("")} onChange={() => setSaved("")} noValidate aria-labelledby="profile-h">
       <h3 id="profile-h">ข้อมูลสุขภาพที่ใช้ตรวจ</h3>
-      <p class="meta">ไม่ระบุ = ระบบจะแจ้งว่าไม่ได้ตรวจเงื่อนไขนั้น (ไม่ถือว่า ไม่ใช่)</p>
+      <p class="meta">ถ้าไม่ระบุ จะแจ้งว่าไม่ได้ตรวจเรื่องนั้น และไม่นับว่า ไม่ใช่</p>
       <div class="field age-field">
         <label for="pf-age">อายุ (ปี)</label>
         <div class="suffix">

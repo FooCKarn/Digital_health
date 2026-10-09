@@ -11,7 +11,7 @@ import { toMsg, type ChatMsg, type ChatStore } from "./chatStore";
 // ข้อความตายตัวจากหน้าเดิม (public/index.html)
 const NOTICE = "ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้เท่านั้น · ห้ามพิมพ์ข้อมูลส่วนตัว";
 // หน้าใหม่ตรวจซ้ำอัตโนมัติ (ไม่มีปุ่ม ตรวจ) จึงไม่ใช้ถ้อยคำเดิม "กดตรวจใหม่"
-const STALE_LINE = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล — ถามอีกครั้งเมื่อผลใหม่ขึ้นเพื่อคำตอบล่าสุด";
+const STALE_LINE = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล ถามอีกครั้งเมื่อผลใหม่ขึ้น จะได้คำตอบที่ตรงกับข้อมูลล่าสุด";
 const CHANGED = "ผลตรวจเปลี่ยนแล้ว คำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน";
 const SRC_LABEL: Record<string, string> = {
   database: "ข้อความจากฐานข้อมูล", llm: "AI เรียบเรียงจากข้อความที่ค้นได้", refusal: "ตอบไม่ได้ / ไม่มีข้อมูล", emergency: "ข้อควรทราบเร่งด่วน",
@@ -22,7 +22,7 @@ const FIXED = new ApiError("server").thaiMessage;
 function errText(e: unknown): string {
   if (e instanceof ApiError && (e.kind === "bad_request" || e.kind === "unavailable") && e.thaiMessage !== FIXED) return e.thaiMessage;
   if (e instanceof ApiError && e.kind === "bad_request") return "คำถามหรือข้อมูลไม่ถูกต้อง";
-  return "ระบบขัดข้องหรือเชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง";
+  return "เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง";
 }
 
 function Msg({ m }: { m: ChatMsg }) {

@@ -5,7 +5,7 @@ import { startForDay } from "../model/dates";
 import type { TrackerStore } from "../model/tracker";
 import type { Meta, ParseProposal } from "../types";
 
-const FIXED = "ใช้ AI ไม่ได้ในขณะนี้ กรอกเองได้ตามปกติ";
+const FIXED = "ตอนนี้ใช้ AI ไม่ได้ กรอกเองได้เหมือนเดิม";
 
 type Row = { key: string; kind: "herb" | "drug"; ref: string; label: string; day?: number };
 
@@ -33,7 +33,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
     setMsg("กำลังแปลง…");
     try {
       setProp(await parseText(text.trim()));
-      setMsg("AI เสนอรายการต่อไปนี้ โปรดเทียบกับข้อความที่พิมพ์ แล้วติ๊กรายการที่ต้องการก่อนกดยืนยัน (ยังไม่มีอะไรถูกเพิ่ม)");
+      setMsg("AI แยกได้ตามนี้ ลองเทียบกับที่พิมพ์ แล้วติ๊กอันที่ใช่ก่อนกดยืนยัน (ยังไม่มีอะไรถูกเพิ่ม)");
     } catch {
       setMsg(FIXED);
     }
@@ -55,7 +55,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
 
   return (
     <section class="parse-box" aria-labelledby="parse-h">
-      <h3 id="parse-h">ตัวเลือก: ให้ AI แยกรายการจากข้อความ</h3>
+      <h3 id="parse-h">ให้ AI ช่วยแยกรายการจากข้อความ (ไม่บังคับ)</h3>
       <label for="parse-text">พิมพ์ข้อความ เช่น ใช้ขิงมา 3 วัน และกินยา warfarin</label>
       <textarea ref={box} id="parse-text" rows={3} maxLength={1000} value={text} onInput={(e) => setText(e.currentTarget.value)} />
       <button type="button" aria-disabled={parse.busy} onClick={send}>แยกรายการด้วย AI</button>
@@ -75,7 +75,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
             </ul>
           )}
           {prop.unmatched.length > 0 && <p class="warn">{`ไม่พบในฐานข้อมูล/ไม่แน่ใจ (ไม่ถูกเสนอให้เพิ่ม): ${prop.unmatched.join(", ")}`}</p>}
-          {dropped > 0 && <p class="warn">{`AI ส่งรายการที่ระบบไม่รู้จักกลับมา ${dropped} รายการ (ตัดทิ้งแล้ว) โปรดเทียบกับข้อความที่พิมพ์`}</p>}
+          {dropped > 0 && <p class="warn">{`AI ส่งชื่อที่ไม่อยู่ในฐานข้อมูลมา ${dropped} รายการ ตัดออกแล้ว ลองเทียบกับที่พิมพ์ดู`}</p>}
           {rows.length > 0 && <button type="button" class="primary" aria-disabled={chosen.length === 0} onClick={confirmAll}>{`ยืนยันเพิ่ม ${chosen.length} รายการ`}</button>}
           {errs.map((e) => <p class="err" role="alert" key={e}>{e}</p>)}
         </div>
