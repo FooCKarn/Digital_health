@@ -55,7 +55,7 @@ button.wide { width: 100%; margin-top: var(--sp-3); }
 .bp { display: flex; align-items: center; gap: var(--sp-2); }
 .bp input { width: 96px; }
 .trend { margin: var(--sp-3) 0; color: var(--c-primary); }
-.trend svg { width: 100%; height: auto; display: block; }
+.trend svg { width: 100%; height: auto; max-height: 96px; display: block; }
 .trend figcaption { color: var(--c-text); }
 .trend-range { margin: 0; }
 .mooddots { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-3); }

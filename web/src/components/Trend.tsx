@@ -7,6 +7,13 @@ export function Trend({ k, points }: { k: VitalKey; points: { date: string; valu
   const { th, unit } = VITAL_LABEL[k];
   if (points.length === 0) return null;
   const last = points[points.length - 1];
+  if (points.length === 1) {
+    return (
+      <figure class="trend">
+        <figcaption><strong>{th}</strong> <span class="meta">{`บันทึกไว้ ${last.value} ${unit} (บันทึกแล้ว 1 ครั้ง กราฟจะขึ้นเมื่อมีตั้งแต่ 2 ครั้ง)`}</span></figcaption>
+      </figure>
+    );
+  }
   const vals = points.map((p) => p.value);
   const lo = Math.min(...vals), hi = Math.max(...vals);
   const span = hi - lo || 1;
