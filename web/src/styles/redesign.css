@@ -112,7 +112,6 @@ button.wide { width: 100%; margin-top: var(--sp-3); }
 .cal-pips b { font-size: .7rem; line-height: 1; }
 .cal-legend, .cal-sum { margin: var(--sp-2) 0 0; }
 .cal-today { margin-top: var(--sp-2); }
-.day-items { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0 var(--sp-3); }
 .day-panel .wide + .wide { margin-top: var(--sp-2); }
 @media (max-width: 400px) { .cal-grid, .cal-row { gap: 2px; } .cal-day { min-height: 52px; border-radius: 10px; } }
 
