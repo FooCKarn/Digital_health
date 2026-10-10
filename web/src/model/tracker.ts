@@ -138,6 +138,14 @@ export class TrackerStore {
     this.commit({ ...this._state, items: this._state.items.map((i) => (i.id === id ? { ...i, end_date: t } : i)) });
   }
 
+  /** แก้วันเริ่มใช้ของรายการที่เพิ่มไปแล้ว (ใช้เมื่อกรอกวันเริ่มผิด) */
+  setStartDate(id: string, start: string): { ok: true } | { ok: false; message: string } {
+    const err = validateStart(start, this.today());
+    if (err) return { ok: false, message: err };
+    this.commit({ ...this._state, items: this._state.items.map((i) => (i.id === id ? { ...i, start_date: start } : i)) });
+    return { ok: true };
+  }
+
   removeItem(id: string): void {
     this.commit({ ...this._state, items: this._state.items.filter((i) => i.id !== id) });
   }

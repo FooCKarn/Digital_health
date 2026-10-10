@@ -19,6 +19,7 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
       <Sev severity={f.severity} />
       <p class="msg">{f.message_th}</p>
       <p class="ev">
+        <span class="ev-lead">ที่มาของคำเตือนนี้</span>
         <span class="chip">{`ชั้นหลักฐาน ${f.evidence_tier}`}</span>
         <span class="chip">{`หน้า ${f.source_page}${f.pdf_page ? ` (หน้า ${f.pdf_page} ในไฟล์ PDF)` : ""}`}</span>
         <span class={f.verified ? "chip" : "chip draft"}>{f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}</span>

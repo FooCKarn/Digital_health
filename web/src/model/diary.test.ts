@@ -80,3 +80,27 @@ test("series skips nulls and keeps date order", () => {
   s.saveEntry(e({ date: "2026-10-06" }));
   expect(series(s.state.entries, "weight")).toEqual([{ date: "2026-10-05", value: 61 }, { date: "2026-10-07", value: 60 }]);
 });
+
+test("markRange ticks every day from start to today, keeps earlier ticks, rejects future end", () => {
+  const s = new DiaryStore(mem(), today);
+  s.toggleTaken("a", "2026-10-05");
+  expect(s.markRange("a", "2026-10-03", TODAY)).toBe(4);
+  expect(s.state.taken.a).toEqual(["2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07"]);
+  expect(takenInWindow(s.state.taken.a, "2026-10-03", TODAY)).toEqual({ took: 5, days: 5 });
+  expect(s.markRange("a", "2026-10-03", "2026-10-09")).toBe(0);
+});
+
+test("dose note: set, trim, clear, too long, persisted, dropped with item, old files without dose still load", () => {
+  const st = mem();
+  const s = new DiaryStore(st, today);
+  expect(s.setDose("a", "  1 เม็ด เช้า ").ok).toBe(true);
+  expect(s.doseOf("a")).toBe("1 เม็ด เช้า");
+  expect(new DiaryStore(st, today).doseOf("a")).toBe("1 เม็ด เช้า");
+  expect(s.setDose("a", "x".repeat(61)).ok).toBe(false);
+  s.dropTaken("a");
+  expect(s.doseOf("a")).toBe("");
+  s.setDose("b", "x"); s.setDose("b", " ");
+  expect(s.state.dose.b).toBeUndefined();
+  const t = new DiaryStore(mem(), today);
+  expect(t.importJSON('{"v":1,"entries":[],"taken":{}}').ok).toBe(true);
+});

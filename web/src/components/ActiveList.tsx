@@ -1,6 +1,6 @@
-import { useRef } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import type { Analysis } from "../hooks/useAnalysis";
-import { dayNumber } from "../model/dates";
+import { dayNumber, thaiDate } from "../model/dates";
 import { rowView, unsentRefs } from "../model/panel";
 import { kindLabel, type TrackerStore } from "../model/tracker";
 import { SeverityBadge } from "./SeverityBadge";
@@ -27,7 +27,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
               <li key={i.id} class="active-row">
                 <div>
                   <strong>{i.label}</strong>
-                  <div class="meta">{`${kindLabel(i.kind)} · วันที่ ${dayNumber(i.start_date, today)}`}</div>
+                  <div class="meta">{`${kindLabel(i.kind)} · เริ่มใช้ ${thaiDate(i.start_date)} (ใช้มา ${dayNumber(i.start_date, today)} วัน)`}</div>
                 </div>
                 {v === "pending" ? <span class="pending">กำลังตรวจ…</span>
                   : v === "see_panel" ? <span class="see-panel">ดูธงในแผงด้านบน</span>
@@ -42,6 +42,8 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
                     <WeekDots diary={diary} id={i.id} start={i.start_date} today={today} label={i.label} />
                   </div>
                 )}
+                {diary && <DoseNote diary={diary} id={i.id} label={i.label} />}
+                <StartEditor store={store} diary={diary} item={i} today={today} />
                 <div class="row-actions">
                   <button type="button" aria-label={`หยุดใช้ ${i.label}`} onClick={() => done(() => store.stopItem(i.id))}>หยุดใช้</button>
                   <button type="button" aria-label={`ลบ ${i.label}`} onClick={() => confirm(`ลบ ${i.label} ออกถาวร (รวมประวัติ)?`) && done(() => { store.removeItem(i.id); diary?.dropTaken(i.id); })}>ลบ</button>
@@ -51,7 +53,35 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
           })}
         </ul>
       )}
+      {diary && items.length > 0 && <p class="meta legend">จุดเรียงตามวัน (ซ้ายเก่าสุด ขวาคือวันนี้) จุดทึบคือวันที่กด “ใช้แล้ว” จุดโปร่งคือวันที่ยังไม่ได้กด</p>}
     </section>
+  );
+}
+
+/** แก้วันเริ่มใช้ที่กรอกผิด; เลือกติ๊กว่าใช้ทุกวันย้อนหลังได้ */
+function StartEditor({ store, diary, item, today }: { store: TrackerStore; diary?: DiaryStore; item: { id: string; label: string; start_date: string }; today: string }) {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState(item.start_date);
+  const [fill, setFill] = useState(true);
+  const [err, setErr] = useState("");
+  if (!open) return <button type="button" class="link-btn" aria-label={`แก้วันเริ่มใช้ ${item.label}`} onClick={() => setOpen(true)}>แก้วันเริ่มใช้</button>;
+  const save = () => {
+    const r = store.setStartDate(item.id, date);
+    if (!r.ok) return setErr(r.message);
+    if (diary && fill && dayNumber(date, today) > 1) diary.markRange(item.id, date, today);
+    setOpen(false);
+  };
+  return (
+    <div class="start-editor">
+      <label for={`se-${item.id}`}>{`เริ่มใช้ ${item.label} เมื่อ`}</label>
+      <input id={`se-${item.id}`} type="date" max={today} value={date} onInput={(e) => { setDate(e.currentTarget.value); setErr(""); }} />
+      {diary && <label class="check-line"><input type="checkbox" checked={fill} onChange={(e) => setFill(e.currentTarget.checked)} />ติ๊กว่าใช้ทุกวันตั้งแต่วันที่เริ่ม</label>}
+      {err && <p class="err" role="alert">{err}</p>}
+      <div class="row-actions">
+        <button type="button" class="primary" onClick={save}>บันทึกวันเริ่ม</button>
+        <button type="button" onClick={() => { setOpen(false); setDate(item.start_date); setErr(""); }}>ยกเลิก</button>
+      </div>
+    </div>
   );
 }
 
@@ -64,8 +94,25 @@ function WeekDots({ diary, id, start, today, label }: { diary: DiaryStore; id: s
     return diary.isTaken(id, t.toISOString().slice(0, 10));
   });
   return (
-    <span class="weekdots" role="img" aria-label={`${label} กดบันทึกว่าใช้ ${w.took} จาก ${w.days} วันล่าสุด`}>
-      {dots.map((on, k) => <i key={k} data-on={on ? "1" : "0"} />)}
+    <span class="weekline">
+      <span class="weekdots" role="img" aria-label={`${label} กดบันทึกว่าใช้ ${w.took} จาก ${w.days} วันล่าสุด`}>
+        {dots.map((on, k) => <i key={k} data-on={on ? "1" : "0"} />)}
+      </span>
+      <span class="meta" aria-hidden="true">{`${w.days} วันล่าสุด ใช้ ${w.took} วัน`}</span>
     </span>
+  );
+}
+
+/** ขนาดที่ใช้: จดไว้เอง ระบบไม่ตรวจและไม่นำไปคิดความเสี่ยง */
+function DoseNote({ diary, id, label }: { diary: DiaryStore; id: string; label: string }) {
+  const [err, setErr] = useState("");
+  return (
+    <div class="dose-note">
+      <label for={`dose-${id}`}>{`ขนาดที่ใช้ ${label} (จดไว้ดูเอง)`}</label>
+      <input id={`dose-${id}`} type="text" maxLength={60} placeholder="เช่น 1 แคปซูล เช้า-เย็น" defaultValue={diary.doseOf(id)}
+        onBlur={(e) => { const r = diary.setDose(id, e.currentTarget.value); setErr(r.ok ? "" : r.message); }} />
+      {err && <p class="err" role="alert">{err}</p>}
+      <p class="meta">จดไว้ให้เภสัชกรดูได้ ระบบยังไม่นำขนาดไปคิดธงเตือน</p>
+    </div>
   );
 }

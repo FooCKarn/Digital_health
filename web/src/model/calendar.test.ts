@@ -4,7 +4,7 @@ import type { DiaryState } from "./diary";
 import type { TrackerItem } from "./tracker";
 
 const it = (id: string, start: string, end: string | null = null): TrackerItem => ({ id, kind: "herb", ref: id, label: id, start_date: start, end_date: end });
-const d0: DiaryState = { v: 1, entries: [], taken: {} };
+const d0: DiaryState = { v: 1, entries: [], taken: {}, dose: {} };
 
 test("addDays ข้ามเดือน/ปี/ปีอธิกสุรทิน และปฏิเสธวันที่ผิด", () => {
   expect(addDays("2026-10-31", 1)).toBe("2026-11-01");
@@ -44,7 +44,7 @@ test("itemsOn: นับเฉพาะช่วงที่ใช้ รวม�
 
 test("dayInfo/monthTotals นับจากที่บันทึกเท่านั้น", () => {
   const items = [it("a", "2026-10-01")];
-  const d: DiaryState = { v: 1, entries: [{ id: "x", date: "2026-10-02", mood: 4, symptom: null, sys: null, dia: null, glucose: null, weight: null }], taken: { a: ["2026-10-02", "2026-10-05"] } };
+  const d: DiaryState = { v: 1, entries: [{ id: "x", date: "2026-10-02", mood: 4, symptom: null, sys: null, dia: null, glucose: null, weight: null }], taken: { a: ["2026-10-02", "2026-10-05"] }, dose: {} };
   expect(dayInfo(items, d, "2026-10-02")).toEqual({ date: "2026-10-02", mood: 4, hasEntry: true, active: 1, taken: 1 });
   expect(dayInfo(items, d, "2026-10-03")).toMatchObject({ hasEntry: false, taken: 0, active: 1 });
   expect(monthTotals(items, d, ["2026-10-02", "2026-10-03"])).toEqual({ entryDays: 1, takenMarks: 1 });

@@ -33,7 +33,7 @@ test("รายการที่กำลังใช้บอกชนิด�
   const store = new TrackerStore(mem(), () => T);
   store.addItem({ kind: "formula", ref: "tonic", label: "ตำรับทดสอบ", start_date: T });
   render(<ActiveList store={store} today={T} analysis={idle} />);
-  expect(screen.getByText("ตำรับ · วันที่ 1")).toBeInTheDocument();
+  expect(screen.getByText(/^ตำรับ · เริ่มใช้ .*\(ใช้มา 1 วัน\)$/)).toBeInTheDocument();
 });
 
 test("การ์ดธงอ้างเอกสารต้นทางของธงนั้น: ตำรับอ้างแนวทางตำรับ ไม่ใช่เล่ม TTM first; ธงสมุนไพรยังอ้างเล่มเดิม", () => {

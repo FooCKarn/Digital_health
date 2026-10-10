@@ -196,7 +196,7 @@ test("หยุดใช้: แถวหายจากรายการทั
 test("แถวแสดงชนิดและวันที่ N; ระหว่างตรวจ สมุนไพรใหม่แสดง กำลังตรวจ…", async () => {
   store.addItem({ kind: "herb", ref: "khing", label: "ขิง", start_date: "2026-10-01" });
   await show(body());
-  expect(within(row("ขิง")).getByText("สมุนไพร · วันที่ 7")).toBeInTheDocument();
+  expect(within(row("ขิง")).getByText(/^สมุนไพร · เริ่มใช้ .*\(ใช้มา 7 วัน\)$/)).toBeInTheDocument();
   act(() => void add("herb", "fathalai", "ฟ้าทะลายโจร"));
   expect(within(row("ฟ้าทะลายโจร")).getByText("กำลังตรวจ…")).toBeInTheDocument();
 });
