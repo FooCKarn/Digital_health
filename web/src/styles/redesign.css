@@ -1,23 +1,23 @@
 /* ดีไซน์แบบแอปติดตามสุขภาพ: การ์ดนุ่ม ไม่มีกรอบเส้นทุกชิ้น เมนูล่างมีไอคอน
    สีทั้งหมดใช้โทเคนใน tokens.css (ผ่านเทสต์คอนทราสต์); ไฟล์นี้เพิ่มเฉพาะระยะ/มุม/เงา */
-:root { --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --r-card: 18px; --shadow-1: 0 1px 2px rgba(18, 48, 58, .08), 0 4px 14px rgba(18, 48, 58, .06); }
+:root { --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --r-card: 12px; --shadow-1: none; }
 body { font-size: 17px; }
 button, [role="button"], select, input:not([type="checkbox"]):not([type="radio"]) { min-height: 48px; }
 input[type="text"], input[type="search"], input[type="number"], input[type="date"], select, textarea {
   border: 1.5px solid var(--c-muted); border-radius: 12px; padding: 6px 12px; background: var(--c-surface); color: var(--c-text);
 }
-button { border-radius: 14px; }
+button { border-radius: 10px; }
 
 /* แถบหัวแอป */
 .appbar { display: flex; align-items: center; gap: var(--sp-3); padding-top: var(--sp-4); padding-bottom: var(--sp-2); }
-.appbar h1 { margin: 0; font-size: 1.35rem; line-height: 1.25; }
+.appbar h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: 0; line-height: 1.25; }
 .appbar .meta { margin: 0; }
-.logo { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: 14px; background: var(--c-primary); color: var(--c-on-primary); }
+.logo { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: 10px; background: var(--c-primary); color: var(--c-on-primary); }
 .proto-banner { margin: 0 0 var(--sp-3); padding: 6px var(--sp-4); font-size: .88rem; color: var(--c-caution-fg); background: var(--c-caution-bg); border-radius: 10px; }
 
 /* การ์ด */
 .card, details[data-group], .sheet, .active-row {
-  background: var(--c-surface); border: 0; border-radius: var(--r-card); box-shadow: var(--shadow-1);
+  background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-card); box-shadow: var(--shadow-1);
 }
 .card { margin: var(--sp-4) 0; padding: var(--sp-4); }
 .card h3 { margin: 0 0 var(--sp-2); font-size: 1.05rem; }
@@ -25,7 +25,7 @@ details[data-group] { margin: var(--sp-3) 0; }
 details[data-group][data-group="avoid"] { border-left: 6px solid var(--c-avoid-fg); }
 details[data-group][data-group="caution"] { border-left: 6px solid var(--c-caution-fg); }
 details[data-group][data-group="info"] { border-left: 6px solid var(--c-info-fg); }
-.sheet { border: 2px solid var(--c-primary); padding: var(--sp-4); }
+.sheet { border: 1px solid var(--c-primary); padding: var(--sp-4); }
 .scope { margin-top: 0; }
 .scope-chip { font-weight: 500; }
 .disclaimer { border: 0; background: transparent; padding-left: 0; }
@@ -213,3 +213,10 @@ button.danger { background: var(--c-avoid-fg); color: var(--c-avoid-bg); border-
 .flag-card .ev { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .flag-card .ev-lead { flex-basis: 100%; font-size: .85rem; color: var(--c-muted, inherit); }
 .dose-note { display: grid; gap: 4px; padding: 6px 0; }
+
+/* มินิมอล: น้ำหนักตัวอักษรเบา ระยะหายใจเยอะ */
+body { font-weight: 400; letter-spacing: .005em; }
+h1, h2, h3 { font-weight: 600; }
+button.primary, .check-btn[aria-pressed="true"] { font-weight: 600; }
+.card { padding: var(--sp-5); }
+.card h3 { font-size: 1rem; color: var(--c-muted); font-weight: 600; }

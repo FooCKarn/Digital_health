@@ -45,8 +45,8 @@ describe("contrast (WCAG) จาก tokens.css", () => {
       expect(ratio(v[fg], v[bg])).toBeGreaterThanOrEqual(4.5);
     });
   }
-  it("primary แสงสว่างคือ #0E7490", () => {
-    expect(vars(blocks.light)["--c-primary"].toLowerCase()).toBe("#0e7490");
+  it("primary แสงสว่างคือ #1F6B45", () => {
+    expect(vars(blocks.light)["--c-primary"].toLowerCase()).toBe("#1f6b45");
   });
   it("โทเคน no_flag ไม่ใช่สีเขียว (ทั้งสองธีม)", () => {
     for (const theme of ["light", "dark"] as const) {
