@@ -69,7 +69,7 @@ test("(ช) กลุ่ม avoid เปิด กลุ่มอื่นพั
   const { container } = await show(body(flags));
   const g = (k: string) => container.querySelector<HTMLDetailsElement>(`details[data-group='${k}']`)!;
   expect(g("avoid").open).toBe(true);
-  expect(g("caution").open).toBe(false);
+  expect(g("caution").open).toBe(true); // ควรระวังเปิดไว้ ผู้ใช้ไม่พลาด
   expect(g("info").open).toBe(false);
   expect(g("other").open).toBe(false);
   expect(within(g("other")).getByText("ธงแปลก")).toBeInTheDocument();
@@ -119,11 +119,11 @@ test("(ญ) ธง verified:false แสดงสถานะร่าง แล
   const { container } = await show(body([flag({ verified: false })], { summary: { draft_notice_th: notice } }));
   expect(screen.getByText(notice)).toBeInTheDocument();
   const card = container.querySelector(".flag-card")!;
-  expect(card.textContent).toContain("ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ");
+  expect(card.textContent).toContain("ยังรอผู้เชี่ยวชาญตรวจ (ใช้สาธิต)");
   expect(card.textContent).toContain("ชั้นหลักฐาน A");
   expect(card.textContent).toContain("หน้า 12");
   expect(card.textContent).toContain("หน้า 30 ในไฟล์ PDF");
-  const ev = card.querySelector("details")!;
+  const ev = card.querySelector("details.evd")!;
   expect(ev.querySelector("summary")!.textContent).toBe("ดูหลักฐาน");
   expect(ev.textContent).toContain("วลีทดสอบ");
 });

@@ -220,3 +220,12 @@ h1, h2, h3 { font-weight: 600; }
 button.primary, .check-btn[aria-pressed="true"] { font-weight: 600; }
 .card { padding: var(--sp-5); }
 .card h3 { font-size: 1rem; color: var(--c-muted); font-weight: 600; }
+
+/* ตามแนวแอปสุขภาพ (Samsung Health / Mi Fitness): ปุ่มเพิ่มอยู่บนสุด การ์ดสั้น ข้อมูลรองพับเก็บ */
+.addbar { display: flex; align-items: center; gap: var(--sp-3); margin: var(--sp-3) 0; flex-wrap: wrap; }
+.steps { padding-left: calc(var(--sp-5) + 1em); }
+.steps li { margin: var(--sp-2) 0; }
+.next-step { margin: 4px 0 8px; font-weight: 500; }
+.pick-list .pick-h { flex-basis: 100%; margin: var(--sp-3) 0 0; font-size: .9rem; font-weight: 600; color: var(--c-muted); }
+details.manage > summary { min-height: 40px; font-size: .95rem; color: var(--c-muted); }
+details.src > summary { font-size: .9rem; color: var(--c-muted); }

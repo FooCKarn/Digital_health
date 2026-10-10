@@ -46,8 +46,11 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
         <input id="sheet-q" ref={first} type="search" value={q} onInput={(e) => setQ(e.currentTarget.value)} />
         <p class="meta">พิมพ์ชื่อยาที่ไม่มีในรายการได้ ถ้าไม่รู้จักชื่อนั้นจะขึ้นว่า ยังไม่มีข้อมูลตรวจ</p>
         <div role="group" aria-label="รายการที่เลือกได้" class="pick-list">
+          {herbs.length > 0 && <p class="pick-h">สมุนไพร</p>}
           {herbs.map((h) => <PickBtn key={`h-${h.id}`} on={pick?.kind === "herb" && pick.ref === h.id} text={`${h.name_th} (สมุนไพร)`} onPick={() => setPick({ kind: "herb", ref: h.id, label: h.name_th })} />)}
+          {formulas.length > 0 && <p class="pick-h">ตำรับยาสมุนไพร</p>}
           {formulas.map((f) => <PickBtn key={`f-${f.id}`} on={pick?.kind === "formula" && pick.ref === f.id} text={`${f.name_th} (ตำรับ)`} onPick={() => setPick({ kind: "formula", ref: f.id, label: f.name_th })} />)}
+          {drugs.length > 0 && <p class="pick-h">ยา</p>}
           {drugs.map((d) => <PickBtn key={`d-${d}`} on={pick?.kind === "drug" && pick.ref === d} text={`${d} (ยา)`} onPick={() => setPick({ kind: "drug", ref: d, label: d })} />)}
           {canType && <PickBtn on={pick?.kind === "drug" && pick.ref === typed} text={`ใช้ชื่อยา “${typed}” ที่พิมพ์เอง`} onPick={() => setPick({ kind: "drug", ref: typed, label: typed })} />}
         </div>
