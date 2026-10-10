@@ -1,4 +1,4 @@
-"""จุดใช้ LLM 5 จุด (CLAUDE.md กฎข้อ 4) ทุกจุดมีตัวตรวจแบบ deterministic ทับผลของ LLM เสมอ (จุด 4-5: brief, parse_intent ท้ายไฟล์):
+"""จุดใช้ LLM 5 จุด (CLAUDE.md กฎข้อ 4) ทุกจุดมีตัวตรวจแบบ deterministic ทับผลของ LLM เสมอ (จุด 4-5: brief, route ท้ายไฟล์):
   parse_text : ข้อความอิสระ -> รายการสมุนไพร/ยา "เสนอให้ผู้ใช้ยืนยัน" (ไม่ใช่ผลสุดท้าย)
   explain    : เรียบเรียงจาก JSON ผลตรวจ -> ถ้าไม่ผ่าน validate_explanation ใช้ template (message_th ของคำเตือน)
   answer_with_llm : แชต เรียบเรียงจากรายการที่ค้นได้ -> ถ้าไม่ผ่าน validate_answer ใช้ข้อความสกัดจากฐานข้อมูล
