@@ -25,7 +25,7 @@ function errText(e: unknown): string {
   return "เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง";
 }
 
-function Msg({ m }: { m: ChatMsg }) {
+export function Msg({ m }: { m: ChatMsg }) {
   if (m.r !== "a") return m.r === "e" ? <div class="cmsg err" role="alert">{m.t}</div> : <div class={`cmsg ${m.r}`}>{m.t}</div>;
   const em = m.src === "emergency";
   return (
@@ -47,12 +47,10 @@ export type OpenRequest = { n: number; prefill?: string } | null;
 type Props = {
   chat: ChatStore; store: TrackerStore; meta: Meta; today: string;
   open: OpenRequest; onClose(): void;
-  /** แสดงเป็นส่วนของหน้า (หน้าผู้ช่วย) ไม่ลอย: เปิดตลอด ไม่มีปุ่มปิด */
-  inline?: boolean;
 };
 
 /** แผงแชต (dialog ไม่เป็น modal) อยู่ใน DOM ตลอดเพื่อให้ aria-controls ชี้ได้ ซ่อนด้วย hidden */
-export function ChatPanel({ chat, store, meta, today, open, onClose, inline }: Props) {
+export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
   const [, setVer] = useState(0);
   useEffect(() => chat.subscribe(() => setVer((v) => v + 1)), [chat]);
   const [text, setText] = useState("");
@@ -76,7 +74,7 @@ export function ChatPanel({ chat, store, meta, today, open, onClose, inline }: P
   }, [key]);
 
   useEffect(() => {
-    if (!open || (inline && !open.n)) return; // หน้าผู้ช่วย: ไม่ดึงโฟกัสตอนเปิดหน้าเฉย ๆ
+    if (!open) return;
     if (open.prefill) setText(open.prefill);
     input.current?.focus();
   }, [open?.n]);
@@ -126,13 +124,13 @@ export function ChatPanel({ chat, store, meta, today, open, onClose, inline }: P
   const waiting = waitGen !== null && waitGen === chat.gen;
 
   return (
-    <section id="chatPanel" class={inline ? "inline" : undefined} role={inline ? "region" : "dialog"} aria-label="ผู้ช่วย AI (ต้นแบบ)" hidden={!inline && !open}
+    <section id="chatPanel" role="dialog" aria-label="ผู้ช่วย AI (ต้นแบบ)" hidden={!open}
       onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); onClose(); } }}>
       <header>
         <h2>ผู้ช่วย AI (ต้นแบบ)</h2>
         <span class="row-actions">
           <button type="button" aria-label="ล้างประวัติแชต" onClick={clear}>ล้างประวัติ</button>
-          {!inline && <button type="button" aria-label="ปิดผู้ช่วย AI" onClick={onClose}>ปิด</button>}
+          <button type="button" aria-label="ปิดผู้ช่วย AI" onClick={onClose}>ปิด</button>
         </span>
       </header>
       <p class="chat-notice">

@@ -40,7 +40,7 @@ describe("แท็บ ช่วงนี้ · ผู้ช่วย · บั�
     expect(tabs[1]).toHaveFocus();
     expect(tabs.map((t) => t.tabIndex)).toEqual([-1, 0, -1, -1]);
     expect(screen.getByRole("tabpanel")).toHaveAttribute("aria-labelledby", tabs[1].id);
-    expect(screen.getByRole("heading", { name: "สรุปวันนี้" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "ผู้ช่วย" })).toBeInTheDocument();
     key("ArrowRight");
     expect(tabs[2]).toHaveFocus();
     expect(screen.getByRole("heading", { name: "บันทึกสุขภาพของฉัน" })).toBeInTheDocument();

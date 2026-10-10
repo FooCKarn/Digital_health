@@ -108,7 +108,8 @@ export interface BriefFacts {
   not_checked_count?: number; longest_days?: number;
 }
 export interface BriefOut { source: "llm" | "template"; summary_th: string; rejected_reason: string | null }
-export interface IntentOut { action: "taken" | "not_taken" | "none"; item_ids: string[] }
+export type RouteTool = "ask" | "show_brief" | "show_check" | "mark_taken" | "mark_not_taken" | "add_items" | "set_reminder" | "go_to" | "log_mood";
+export interface RouteOut { tool: RouteTool; item_ids: string[]; time: string; page: string; mood: number }
 
 export interface ParseProposal {
   herbs: { id: string; days_in_use?: number }[];

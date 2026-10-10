@@ -106,11 +106,11 @@ def test_http_brief_without_api_key_falls_back_to_template_and_validates(base, m
     assert call(base + "/api/brief", {"item_count": 1, "taken_count": 5})[0] == 400
 
 
-def test_http_intent_without_api_key_is_503_and_bad_input_400(base, monkeypatch):
+def test_http_assistant_without_api_key_is_503_and_bad_input_400(base, monkeypatch):
     for k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "LLM_PROVIDER"):
         monkeypatch.delenv(k, raising=False)
-    assert call(base + "/api/intent", {"text": "กินขิงแล้ว", "items": [{"id": "a", "label": "ขิง"}]})[0] == 503
-    assert call(base + "/api/intent", {"text": "", "items": []})[0] == 400
+    assert call(base + "/api/assistant", {"text": "กินขิงแล้ว", "items": [{"id": "a", "label": "ขิง"}]})[0] == 503
+    assert call(base + "/api/assistant", {"text": "", "items": []})[0] == 400
 
 
 GOOD_FB = {"session_id": "abc-123", "case_id": "เคส A", "reviewer_role": "pharmacist", "comment": "ข้อความชัดเจน",

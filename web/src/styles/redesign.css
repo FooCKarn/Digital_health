@@ -273,25 +273,31 @@ details[data-group][data-group] { border-left: 1px solid var(--c-line); }
 @media (min-width: 900px) { .this-period { padding: 0; } }
 .or-line { margin: var(--sp-4) 0 0; text-align: center; }
 
-/* หน้าผู้ช่วย: สรุปวันนี้ + ทางลัด + แชตแบบอยู่ในหน้า */
-.brief h2 { margin: 0; font-size: 1.25rem; }
-.brief-list { list-style: none; margin: var(--sp-3) 0; padding: 0; display: grid; gap: var(--sp-3); }
-.brief-list li { display: grid; gap: 4px; padding: var(--sp-3) 0; border-top: 1px solid var(--c-line); }
-.brief-list li:first-child { border-top: 0; }
-.brief-list strong { font-size: .9rem; color: var(--c-muted); font-weight: 600; }
-.brief-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
-.brief-scope { margin-bottom: 0; }
-.shortcuts h3 { margin: 0 0 var(--sp-2); }
-#chatPanel.inline { position: static; width: auto; height: auto; max-height: none; min-height: 420px; margin: var(--sp-4) 0; box-shadow: none; }
-#chatPanel.inline .chat-log { min-height: 220px; max-height: 50vh; }
-@media (min-width: 900px) {
-  .assistant { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--sp-5); align-items: start; }
-}
-.ai-brief { margin: var(--sp-3) 0; }
-.intent-box form { display: flex; gap: var(--sp-2); }
-.intent-box input { flex: 1; min-width: 0; }
-.proposal { border-left: 4px solid var(--c-primary); padding: var(--sp-2) var(--sp-3); margin: var(--sp-2) 0; }
-.reminder-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
-.assistant-side > .card { margin-top: 0; }
 input[type="time"] { border: 1.5px solid var(--c-muted); border-radius: 12px; padding: 6px 12px; background: var(--c-surface); color: var(--c-text); color-scheme: light dark; }
-.assistant-side { margin-top: var(--sp-4); }
+
+/* หน้าผู้ช่วย = แชตเต็มหน้า */
+.assistant { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; min-height: calc(100vh - 220px); }
+.asst-head h2 { margin: 0; font-size: 1.25rem; }
+.asst-head .meta { margin: var(--sp-1) 0 var(--sp-3); }
+.asst-log { flex: 1; padding-bottom: var(--sp-3); }
+.asst-empty { text-align: center; padding: var(--sp-5) 0; color: var(--c-muted); }
+.asst-log .cmsg { margin: 8px 0; padding: 10px 14px; border-radius: 16px; max-width: 92%; white-space: pre-line; overflow-wrap: anywhere; }
+.asst-log .cmsg.u { margin-left: auto; background: var(--c-primary); color: var(--c-on-primary); border-bottom-right-radius: 4px; }
+.asst-log .cmsg.a { background: var(--c-surface); border: 1px solid var(--c-line); border-bottom-left-radius: 4px; }
+.asst-log .cmsg.a.emerg { background: var(--c-avoid-bg); border: 2px solid var(--c-avoid-fg); font-weight: 600; }
+.asst-log .cmsg.n { max-width: 100%; color: var(--c-muted); font-size: .88rem; text-align: center; background: none; border: 0; }
+.asst-log .cmsg.err { max-width: 100%; color: var(--c-avoid-fg); background: var(--c-avoid-bg); border: 1px solid currentColor; }
+.asst-log .cmsg .src { display: block; font-size: .8rem; color: var(--c-muted); margin-bottom: 2px; }
+.asst-log .cmsg .stl { display: block; margin-top: 4px; font-size: .85rem; font-weight: 600; color: var(--c-caution-fg); }
+.asst-log .cmsg button { margin-top: var(--sp-2); margin-right: var(--sp-2); }
+.card-msg { white-space: normal !important; }
+.card-msg ul { margin: var(--sp-2) 0; padding-left: 0; list-style: none; display: grid; gap: var(--sp-2); }
+.card-msg li span:first-child { color: var(--c-muted); font-size: .85rem; display: block; }
+.asst-flags li { display: grid; gap: 4px; justify-items: start; padding: var(--sp-2) 0; border-top: 1px solid var(--c-line); }
+.asst-chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0; }
+.asst-chips button { border-radius: 999px; min-height: 40px; padding: 0 14px; }
+.asst-form { display: flex; gap: var(--sp-2); position: sticky; bottom: 0; padding: var(--sp-2) 0; background: var(--c-bg); }
+.asst-form input { flex: 1; min-width: 0; border-radius: 999px !important; padding: 6px 16px !important; }
+.asst-form .primary { border-radius: 999px; }
+.asst-foot { margin-top: 0; }
+@media (max-width: 600px) { .asst-form { bottom: calc(64px + env(safe-area-inset-bottom)); } .assistant { min-height: calc(100vh - 260px); } }

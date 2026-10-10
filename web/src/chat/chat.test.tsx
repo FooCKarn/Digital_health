@@ -154,9 +154,9 @@ describe("15) ปุ่มลอย เปิด/ปิด โฟกัส Esc",
     await mount();
     for (const t of screen.getAllByRole("tab")) {
       fireEvent.click(t);
-      if (t.textContent === "ผู้ช่วย") { // หน้าผู้ช่วยมีแชตอยู่ในหน้า ไม่มีปุ่มลอย
+      if (t.textContent === "ผู้ช่วย") { // หน้าผู้ช่วยเป็นแชตของตัวเอง ไม่มีปุ่มลอยซ้อน
         expect(screen.queryByRole("button", { name: "เปิดผู้ช่วย AI" })).toBeNull();
-        expect(screen.getByRole("tabpanel").contains(panel())).toBe(true);
+        expect(screen.getByRole("log", { name: "บทสนทนากับผู้ช่วย" })).toBeInTheDocument();
         continue;
       }
       expect(fab()).toBeInTheDocument();

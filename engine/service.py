@@ -187,24 +187,24 @@ def brief(payload) -> dict:
     return {"brief": llm.brief(facts, ALL, DRUGS, CONFIG)}
 
 
-def intent(payload) -> dict:
-    """LLM จุดที่ 5: ข้อความสั้น -> เสนอ action (taken/not_taken) กับรายการที่ใช้อยู่ ผู้ใช้ต้องยืนยันก่อนบันทึกจริง"""
+def assistant(payload) -> dict:
+    """LLM จุดที่ 5: เลือกเครื่องมือให้ข้อความของผู้ใช้ (ผลเป็นข้อมูลที่ตรวจแล้ว ไม่มีข้อความอิสระ) หน้าเว็บเป็นผู้ลงมือและแสดงผล"""
     if not isinstance(payload, dict):
         raise ValueError("ข้อมูลต้องเป็น JSON object")
     text = payload.get("text")
-    items = payload.get("items")
-    if not isinstance(text, str) or not 1 <= len(text.strip()) <= 200 or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", text):
-        raise ValueError("text ต้องเป็นข้อความ 1-200 ตัวอักษร")
-    if not isinstance(items, list) or not 1 <= len(items) <= 80:
-        raise ValueError("items ต้องมี 1-80 รายการ")
+    items = payload.get("items", [])
+    if not isinstance(text, str) or not 1 <= len(text.strip()) <= 300 or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", text):
+        raise ValueError("text ต้องเป็นข้อความ 1-300 ตัวอักษร")
+    if not isinstance(items, list) or len(items) > 80:
+        raise ValueError("items ต้องมีไม่เกิน 80 รายการ")
     clean = []
     for i in items:
         if not (isinstance(i, dict) and isinstance(i.get("id"), str) and 1 <= len(i["id"]) <= 64 and isinstance(i.get("label"), str) and 1 <= len(i["label"]) <= 100):
             raise ValueError("items ไม่ถูกต้อง")
         clean.append({"id": i["id"], "label": i["label"]})
     try:
-        return {"intent": llm.parse_intent(text.strip(), clean)}
+        return {"route": llm.route(text.strip(), clean)}
     except llm.LLMUnavailable as e:
         raise ServiceUnavailable(str(e)) from e
     except (ValueError, KeyError, TypeError) as e:
-        raise ServiceUnavailable("AI แปลงข้อความไม่สำเร็จ กรุณากดเอง") from e
+        raise ServiceUnavailable("AI เลือกเครื่องมือไม่สำเร็จ") from e
