@@ -212,3 +212,4 @@ button.danger { background: var(--c-avoid-fg); color: var(--c-avoid-bg); border-
 .flag-card .msg { font-size: 1.05rem; line-height: 1.7; margin: 8px 0; }
 .flag-card .ev { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .flag-card .ev-lead { flex-basis: 100%; font-size: .85rem; color: var(--c-muted, inherit); }
+.dose-note { display: grid; gap: 4px; padding: 6px 0; }

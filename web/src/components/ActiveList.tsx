@@ -42,6 +42,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
                     <WeekDots diary={diary} id={i.id} start={i.start_date} today={today} label={i.label} />
                   </div>
                 )}
+                {diary && <DoseNote diary={diary} id={i.id} label={i.label} />}
                 <StartEditor store={store} diary={diary} item={i} today={today} />
                 <div class="row-actions">
                   <button type="button" aria-label={`หยุดใช้ ${i.label}`} onClick={() => done(() => store.stopItem(i.id))}>หยุดใช้</button>
@@ -99,5 +100,19 @@ function WeekDots({ diary, id, start, today, label }: { diary: DiaryStore; id: s
       </span>
       <span class="meta" aria-hidden="true">{`${w.days} วันล่าสุด ใช้ ${w.took} วัน`}</span>
     </span>
+  );
+}
+
+/** ขนาดที่ใช้: จดไว้เอง ระบบไม่ตรวจและไม่นำไปคิดความเสี่ยง */
+function DoseNote({ diary, id, label }: { diary: DiaryStore; id: string; label: string }) {
+  const [err, setErr] = useState("");
+  return (
+    <div class="dose-note">
+      <label for={`dose-${id}`}>{`ขนาดที่ใช้ ${label} (จดไว้ดูเอง)`}</label>
+      <input id={`dose-${id}`} type="text" maxLength={60} placeholder="เช่น 1 แคปซูล เช้า-เย็น" defaultValue={diary.doseOf(id)}
+        onBlur={(e) => { const r = diary.setDose(id, e.currentTarget.value); setErr(r.ok ? "" : r.message); }} />
+      {err && <p class="err" role="alert">{err}</p>}
+      <p class="meta">จดไว้ให้เภสัชกรดูได้ ระบบยังไม่นำขนาดไปคิดธงเตือน</p>
+    </div>
   );
 }

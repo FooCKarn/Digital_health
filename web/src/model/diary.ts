@@ -30,10 +30,12 @@ export interface DiaryEntry {
   mood: number | null; symptom: string | null;
   sys: number | null; dia: number | null; glucose: number | null; weight: number | null;
 }
-export interface DiaryState { v: 1; entries: DiaryEntry[]; taken: Record<string, string[]> }
+export const MAX_DOSE = 60;
+/** dose: ขนาด/ปริมาณที่ผู้ใช้จดเองต่อรายการ เป็นข้อความอิสระ ระบบไม่แปลผลและไม่ส่งขึ้นเซิร์ฟเวอร์ */
+export interface DiaryState { v: 1; entries: DiaryEntry[]; taken: Record<string, string[]>; dose: Record<string, string> }
 export type EntryInput = Omit<DiaryEntry, "id">;
 
-const empty = (): DiaryState => ({ v: 1, entries: [], taken: {} });
+const empty = (): DiaryState => ({ v: 1, entries: [], taken: {}, dose: {} });
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const bytes = (t: string) => new TextEncoder().encode(t).length;
 
@@ -86,7 +88,15 @@ function parse(raw: unknown, today: string): DiaryState | string {
     }
     taken[k] = [...days].sort();
   }
-  return { v: 1, entries: entries.sort((a, b) => a.date.localeCompare(b.date)), taken };
+  const dose: Record<string, string> = {};
+  if (raw.dose !== undefined) {
+    if (!isObj(raw.dose) || Object.keys(raw.dose).length > 300) return BAD;
+    for (const [k, v] of Object.entries(raw.dose)) {
+      if (k.length > 64 || typeof v !== "string" || v.length > MAX_DOSE) return BAD;
+      if (v.trim()) dose[k] = v.trim();
+    }
+  }
+  return { v: 1, entries: entries.sort((a, b) => a.date.localeCompare(b.date)), taken, dose };
 }
 
 export class DiaryStore {
@@ -172,11 +182,26 @@ export class DiaryStore {
 
   /** ลบเช็กอินของรายการที่ถูกลบออกจากรายการใช้ (กันข้อมูลค้าง) */
   dropTaken(itemId: string): void {
-    if (!(itemId in this._state.taken)) return;
+    if (!(itemId in this._state.taken) && !(itemId in this._state.dose)) return;
     const taken = { ...this._state.taken };
+    const dose = { ...this._state.dose };
     delete taken[itemId];
-    this.commit({ ...this._state, taken });
+    delete dose[itemId];
+    this.commit({ ...this._state, taken, dose });
   }
+
+  /** จดขนาดที่ใช้ (ข้อความอิสระ); ว่าง = ลบ */
+  setDose(itemId: string, text: string): { ok: true } | { ok: false; message: string } {
+    const t = text.trim();
+    if (!itemId || itemId.length > 64) return { ok: false, message: "รายการไม่ถูกต้อง" };
+    if (t.length > MAX_DOSE) return { ok: false, message: `จดได้ไม่เกิน ${MAX_DOSE} ตัวอักษร` };
+    const dose = { ...this._state.dose };
+    if (t) dose[itemId] = t; else delete dose[itemId];
+    this.commit({ ...this._state, dose });
+    return { ok: true };
+  }
+
+  doseOf(itemId: string): string { return this._state.dose[itemId] ?? ""; }
 
   exportJSON(): string { return JSON.stringify(this._state); }
 
