@@ -24,7 +24,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
           {items.map((i) => {
             const v = rowView(i, view, unsent);
             return (
-              <li key={i.id} class="active-row">
+              <li key={i.id} class="active-row" data-sev={v === "avoid" || v === "caution" || v === "info" ? v : undefined}>
                 <div>
                   <strong>{i.label}</strong>
                   <div class="meta">{`${kindLabel(i.kind)} · เริ่มใช้ ${thaiDate(i.start_date)} (ใช้มา ${dayNumber(i.start_date, today)} วัน)`}</div>

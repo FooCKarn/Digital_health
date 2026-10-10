@@ -7,6 +7,8 @@ import { groupFlags, isKnownSeverity, notCheckedLabels, unknownConditions, type 
 import type { TrackerStore } from "../model/tracker";
 import type { Aggregate, Meta } from "../types";
 import type { DiaryStore } from "../model/diary";
+import { thaiDate } from "../model/dates";
+import { useDiary } from "../hooks/useDiary";
 import { ActiveList } from "./ActiveList";
 import { Disclaimer } from "./Disclaimer";
 import { AggCard, FlagCard } from "./FlagCard";
@@ -28,6 +30,7 @@ export function ThisPeriod(p: Props) {
 
 /** ใช้ใน App: ผลตรวจชุดเดียวแบ่งกับใบสรุปเภสัชกร (ไม่เรียก API ซ้ำ) */
 export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props & { analysis: Analysis }) {
+  useDiary(diary);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(""); // ประกาศการเพิ่ม แยกจากพื้นที่ประกาศผลตรวจ
   const opener = useRef<HTMLButtonElement>(null);
@@ -37,15 +40,24 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
   const none = !!r && r.flags.length === 0 && r.aggregates.length === 0;
   const groups = r ? groupFlags(r) : null;
   const badConds = unknownConditions(store.state.profile, known);
+  const items = store.active();
+  const takenToday = diary ? items.filter((i) => diary.isTaken(i.id, today)).length : 0;
   const announce = a.status === "idle" ? NO_HERBS : a.current && s ? (none ? NO_FLAG : s.headline_th) : "";
 
   return (
     <section class="this-period">
       <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">{announce}</p>
-      <div class="addbar">
+      <section class="hero" aria-label="สรุปวันนี้">
+        <p class="hero-date">{thaiDate(today)}</p>
+        <div class="hero-stats">
+          <div><span class="hero-n">{items.length}</span><span class="hero-l">รายการที่ใช้</span></div>
+          <div><span class="hero-n">{r && a.current ? r.flags.length : "–"}</span><span class="hero-l">{r && a.current ? "คำเตือนที่พบ" : "ยังไม่ตรวจ"}</span></div>
+          {diary && <div><span class="hero-n">{`${takenToday}/${items.length}`}</span><span class="hero-l">ใช้แล้ววันนี้</span></div>}
+        </div>
+        {diary && items.length > 0 && <div class="hero-bar" role="presentation"><i style={{ width: `${Math.round((takenToday / items.length) * 100)}%` }} /></div>}
         <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>+ เพิ่ม</button>
-        <span class="meta">เพิ่มสมุนไพรหรือยาที่คุณใช้ แล้วระบบจะตรวจให้</span>
-      </div>
+        <p class="meta">เพิ่มสมุนไพรหรือยาที่คุณใช้ แล้วระบบจะตรวจให้</p>
+      </section>
       <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
       {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
       {a.status === "idle" && (
