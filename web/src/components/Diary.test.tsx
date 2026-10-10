@@ -39,7 +39,7 @@ test("ค่าสุขภาพต้องติ๊กยินยอมก�
   fireEvent.input(screen.getByLabelText(/น้ำตาลในเลือด/), { target: { value: "110" } });
   fireEvent.click(screen.getByRole("button", { name: "บันทึกวันนี้" }));
   expect(diary.entryOn(TODAY)?.glucose).toBe(110);
-  expect(screen.getByRole("img", { name: /น้ำตาลในเลือด บันทึก 1 ครั้ง ล่าสุด 110 mg\/dL/ })).toBeInTheDocument();
+  expect(screen.getByText(/บันทึกไว้ 110 mg\/dL/)).toBeInTheDocument();
 });
 
 test("ปุ่มใช้แล้ววันนี้ สลับสถานะ และการลบรายการล้างเช็กอินของรายการนั้น", () => {

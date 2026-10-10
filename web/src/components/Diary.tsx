@@ -125,9 +125,12 @@ function MoodDots({ diary, today }: { diary: DiaryStore; today: string }) {
     days.push({ d, mood: diary.entryOn(d)?.mood ?? null });
   }
   return (
+    <>
+    <p class="meta mood-cap">ความรู้สึก 7 วันล่าสุด (ซ้ายสุดเก่าสุด ขวาสุดคือวันนี้ · เลข 1 = แย่มาก ถึง 5 = ดีมาก · “·” คือไม่ได้บันทึก)</p>
     <div class="mooddots" role="img" aria-label={`ความรู้สึก 7 วันล่าสุด: ${days.map((x) => (x.mood === null ? "ไม่ได้บันทึก" : MOODS[x.mood - 1].th)).join(", ")}`}>
       {days.map((x) => <span key={x.d} class="dot" data-m={x.mood ?? 0}>{x.mood ?? "·"}</span>)}
     </div>
+    </>
   );
 }
 

@@ -2,7 +2,7 @@ body {
   margin: 0;
   background: var(--c-bg);
   color: var(--c-text);
-  font-family: "Noto Sans Thai", system-ui, "Sarabun", "Leelawadee UI", Tahoma, sans-serif;
+  font-family: "Noto Sans Thai", "Sarabun", "Leelawadee UI", system-ui, Tahoma, sans-serif; /* ฟอนต์ในเครื่องเท่านั้น ไม่โหลดจากภายนอก (ไม่ส่ง IP ให้บริการฟอนต์) */
   font-size: 16px;
   line-height: 1.6;
 }
