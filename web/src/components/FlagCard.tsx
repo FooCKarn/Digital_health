@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { useContext } from "preact/hooks";
 import { AskFlag } from "../chat/chatStore";
+import { NEXT_STEP, RULE_PLAIN, TIER_PLAIN } from "../texts";
 import { isKnownSeverity } from "../model/panel";
 import type { Aggregate, Flag } from "../types";
 import { SeverityBadge } from "./SeverityBadge";
@@ -18,13 +19,16 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
     <li class="flag-card" data-sev={f.severity}>
       <Sev severity={f.severity} />
       <p class="msg">{f.message_th}</p>
-      <p class="ev">
-        <span class="ev-lead">ที่มาของคำเตือนนี้</span>
-        <span class="chip">{`ชั้นหลักฐาน ${f.evidence_tier}`}</span>
-        <span class="chip">{`หน้า ${f.source_page}${f.pdf_page ? ` (หน้า ${f.pdf_page} ในไฟล์ PDF)` : ""}`}</span>
-        <span class={f.verified ? "chip" : "chip draft"}>{f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}</span>
-        <span class="chip">{`กฎ ${f.rule_id}`}</span>
-      </p>
+      {NEXT_STEP[f.severity] && <p class="next-step">{NEXT_STEP[f.severity]}</p>}
+      <p class="ev"><span class={f.verified ? "chip" : "chip draft"}>{f.verified ? "ตรวจแล้ว" : "ยังรอผู้เชี่ยวชาญตรวจ (ใช้สาธิต)"}</span></p>
+      <details class="src">
+        <summary>ที่มาของคำเตือนนี้</summary>
+        <p class="ev">
+          <span class="chip">{TIER_PLAIN[f.evidence_tier] ? `${TIER_PLAIN[f.evidence_tier]} (ชั้นหลักฐาน ${f.evidence_tier})` : `ชั้นหลักฐาน ${f.evidence_tier}`}</span>
+          <span class="chip">{`หน้า ${f.source_page}${f.pdf_page ? ` (หน้า ${f.pdf_page} ในไฟล์ PDF)` : ""}`}</span>
+          <span class="chip">{RULE_PLAIN[f.rule_id] ? `${RULE_PLAIN[f.rule_id]} (กฎ ${f.rule_id})` : `กฎ ${f.rule_id}`}</span>
+        </p>
+      </details>
       {f.evidence_quote && <Evidence quote={f.evidence_quote} page={f.source_page} pdfPage={f.pdf_page} doc={f.source_doc_th} />}
       {ask && (
         <button type="button" class="askflag noprint" aria-label={`ถามเรื่องธงนี้: ${ask.herbName(f.herb_id)}`} onClick={() => ask.ask(f)}>ถามเรื่องธงนี้</button>

@@ -42,12 +42,15 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
                     <WeekDots diary={diary} id={i.id} start={i.start_date} today={today} label={i.label} />
                   </div>
                 )}
+                <details class="manage">
+                  <summary>{`จัดการ ${i.label}`}</summary>
                 {diary && <DoseNote diary={diary} id={i.id} label={i.label} />}
                 <StartEditor store={store} diary={diary} item={i} today={today} />
                 <div class="row-actions">
                   <button type="button" aria-label={`หยุดใช้ ${i.label}`} onClick={() => done(() => store.stopItem(i.id))}>หยุดใช้</button>
                   <button type="button" aria-label={`ลบ ${i.label}`} onClick={() => confirm(`ลบ ${i.label} ออกถาวร (รวมประวัติ)?`) && done(() => { store.removeItem(i.id); diary?.dropTaken(i.id); })}>ลบ</button>
                 </div>
+                </details>
               </li>
             );
           })}

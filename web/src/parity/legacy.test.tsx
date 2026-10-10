@@ -226,12 +226,12 @@ describe("3-4) ขิง + กระเทียม + warfarin อายุ 60 (
     expect(cards).toHaveLength(flags.length);
     for (const c of cards) {
       const chips = [...c.querySelectorAll(".ev .chip")].map((x) => x.textContent!);
-      expect(chips.some((x) => /^ชั้นหลักฐาน [AC]$/.test(x))).toBe(true);
+      expect(chips.some((x) => /^ชั้นหลักฐาน [AC]$|\(ชั้นหลักฐาน [AC]\)$/.test(x))).toBe(true);
       expect(chips.some((x) => /^หน้า \d+( \(หน้า \d+ ในไฟล์ PDF\))?$/.test(x))).toBe(true);
-      expect(chips.some((x) => x.startsWith("ร่าง") || x === "ตรวจแล้ว")).toBe(true);
-      expect(chips.some((x) => /^กฎ R\d$/.test(x))).toBe(true);
+      expect(chips.some((x) => x.startsWith("ยังรอ") || x === "ตรวจแล้ว")).toBe(true);
+      expect(chips.some((x) => /^กฎ R\d$|\(กฎ R\d\)$/.test(x))).toBe(true);
     }
-    expect(view().textContent).toContain("ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"); // fixture ทุกธงยัง verified:false
+    expect(view().textContent).toContain("ยังรอผู้เชี่ยวชาญตรวจ (ใช้สาธิต)"); // fixture ทุกธงยัง verified:false
     // 3.6-3.7 ดูหลักฐาน: พับไว้ วลีสั้น <= 250 ตัวอักษร หน้าพิมพ์/หน้า PDF ข้อความเต็มอยู่ในเล่ม
     const evd = [...view().querySelectorAll<HTMLDetailsElement>("li details.evd")];
     expect(evd.length).toBeGreaterThanOrEqual(2);

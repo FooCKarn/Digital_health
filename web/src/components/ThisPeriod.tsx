@@ -42,6 +42,19 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
   return (
     <section class="this-period">
       <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">{announce}</p>
+      <div class="addbar">
+        <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>+ เพิ่ม</button>
+        <span class="meta">เพิ่มสมุนไพรหรือยาที่คุณใช้ แล้วระบบจะตรวจให้</span>
+      </div>
+      <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
+      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
+      {a.status === "idle" && (
+        <ol class="steps card" aria-label="วิธีใช้ 3 ขั้น">
+          <li><strong>เพิ่ม</strong> สมุนไพรหรือยาที่ใช้อยู่ (พิมพ์ชื่อ หรือพิมพ์เป็นประโยคก็ได้)</li>
+          <li><strong>ใส่วันที่เริ่มใช้</strong> ถ้าใช้มาก่อนแล้วให้ใส่วันที่เริ่มจริง</li>
+          <li><strong>ดูคำเตือน</strong> ระบบตรวจจากหนังสือแนวทางฯ ไม่ใช่การวินิจฉัย</li>
+        </ol>
+      )}
       {/* ขอบเขต + ไม่ใช่การวินิจฉัย อยู่เหนือธงแรกเสมอ */}
       <div class="scope">
         <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
@@ -73,7 +86,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
             const aggs = r.aggregates.filter((x) => aggBucket(x) === k);
             if (!groups[k].length && !aggs.length) return null;
             return (
-              <details key={k} id={`group-${k}`} data-group={k} open={k === "avoid"}>
+              <details key={k} id={`group-${k}`} data-group={k} open={k === "avoid" || k === "caution"}>
                 <summary>{`${GROUP_TITLE[k]} (${groups[k].length})`}</summary>
                 <ul class="flags">
                   {aggs.map((x) => <AggCard key={x.mechanism_tag} agg={x} />)}
@@ -93,10 +106,6 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
       )}
 
       <ExplainBox store={store} today={today} known={known} analysis={a} />
-
-      <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>+ เพิ่ม</button>
-      <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
-      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
 
       <ActiveList store={store} today={today} analysis={a} diary={diary} />
     </section>
