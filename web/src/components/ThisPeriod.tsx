@@ -47,6 +47,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
   return (
     <section class="this-period">
       <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">{announce}</p>
+      <div class="tp-side">
       <section class="hero" aria-label="สรุปวันนี้">
         <p class="hero-date">{thaiDate(today)}</p>
         <div class="hero-stats">
@@ -58,8 +59,6 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
         <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>+ เพิ่ม</button>
         <p class="meta">เพิ่มสมุนไพรหรือยาที่คุณใช้ แล้วระบบจะตรวจให้</p>
       </section>
-      <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
-      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
       {a.status === "idle" && (
         <ol class="steps card" aria-label="วิธีใช้ 3 ขั้น">
           <li><strong>เพิ่ม</strong> สมุนไพรหรือยาที่ใช้อยู่ (พิมพ์ชื่อ หรือพิมพ์เป็นประโยคก็ได้)</li>
@@ -68,6 +67,10 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
         </ol>
       )}
       {/* ขอบเขต + ไม่ใช่การวินิจฉัย อยู่เหนือคำเตือนแรกเสมอ */}
+      </div>
+      <div class="tp-main">
+      <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
+      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
       <div class="scope">
         <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
         <Disclaimer text={meta.disclaimer_th} />
@@ -120,6 +123,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
       <ExplainBox store={store} today={today} known={known} analysis={a} />
 
       <ActiveList store={store} today={today} analysis={a} diary={diary} />
+      </div>
     </section>
   );
 }
