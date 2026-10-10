@@ -19,12 +19,12 @@ export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Fl
   const [role, setRole] = useState<Role>("citizen");
   const [caseId, setCaseId] = useState("");
   const [comment, setComment] = useState("");
-  // ธงของผลปัจจุบันล่าสุดที่เห็น: ช่วงตรวจใหม่ (ไม่ใช่ปัจจุบัน) ไม่เปลี่ยน/ไม่ล้างอะไร
+  // คำเตือนของผลปัจจุบันล่าสุดที่เห็น: ช่วงตรวจใหม่ (ไม่ใช่ปัจจุบัน) ไม่เปลี่ยน/ไม่ล้างอะไร
   const seen = useRef({ sig: "[]", flags: [] as Flag[] });
   const sig = JSON.stringify(incoming.map((f) => [f.flag_id, f.rule_id, f.herb_id, f.message_th]));
   if (current && sig !== seen.current.sig) seen.current = { sig, flags: incoming };
   const flags = seen.current.flags;
-  // คำตอบผูกกับชุดธง: ชุดธงเปลี่ยน = คำตอบเก่าใช้ไม่ได้ (flag_id เดิมอาจเป็นธงอื่น)
+  // คำตอบผูกกับชุดคำเตือน: ชุดคำเตือนเปลี่ยน = คำตอบเก่าใช้ไม่ได้ (flag_id เดิมอาจเป็นคำเตือนอื่น)
   const [ans, setAns] = useState({ sig: "", map: {} as Record<string, Answer> });
   const answers = ans.sig === seen.current.sig ? ans.map : {};
   const setAnswer = (id: string, v: Answer) => setAns({ sig: seen.current.sig, map: { ...answers, [id]: v } });
@@ -71,7 +71,7 @@ export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Fl
       </div>
       {flags.map((f, i) => (
         <div class="field" key={f.flag_id}>
-          <label for={`fb-f${i}`}>{`ความเห็นต่อธงที่ ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`}</label>
+          <label for={`fb-f${i}`}>{`ความเห็นต่อคำเตือนที่ ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`}</label>
           <select id={`fb-f${i}`} value={answers[f.flag_id] ?? ""} onChange={(e) => { const v = e.currentTarget.value as Answer; setAnswer(f.flag_id, v); }}>
             <option value="">ยังไม่ตอบ</option>
             <option value="true">เห็นด้วย</option>

@@ -79,7 +79,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
         <ul class="plain-list">
           <li>{items.length ? `กำลังใช้: ${items.map((i) => `${i.label} (วันที่ ${dayNumber(i.start_date, today)})`).join(", ")}` : "กำลังใช้: ไม่มีรายการ"}</li>
           <li>
-            {flagCount ? `ธงเตือนจากฐานข้อมูลนี้: ควรหลีกเลี่ยง ${flagCount.avoid.length} · ควรระวัง ${flagCount.caution.length} · ข้อมูลเพิ่มเติม ${flagCount.info.length}` : "ธงเตือน: ยังไม่มีผลตรวจล่าสุด ดูที่หน้า ช่วงนี้"}
+            {flagCount ? `คำเตือนจากฐานข้อมูลนี้: ควรหลีกเลี่ยง ${flagCount.avoid.length} · ควรระวัง ${flagCount.caution.length} · ข้อมูลเพิ่มเติม ${flagCount.info.length}` : "คำเตือน: ยังไม่มีผลตรวจล่าสุด ดูที่หน้า ช่วงนี้"}
           </li>
           {recent.length === 0 ? <li>ยังไม่มีบันทึกสุขภาพ</li> : recent.map((e) => (
             <li key={e.id}>

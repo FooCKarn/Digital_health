@@ -87,5 +87,5 @@ export class ChatStore {
   }
 }
 
-/** ปุ่ม "ถามเรื่องธงนี้" บนการ์ดธง (มีเฉพาะเมื่อแชตติดตั้งอยู่) */
+/** ปุ่ม "ถามเรื่องคำเตือนนี้" บนการ์ดคำเตือน (มีเฉพาะเมื่อแชตติดตั้งอยู่) */
 export const AskFlag = createContext<{ herbName(id: string): string; ask(f: Flag): void } | null>(null);

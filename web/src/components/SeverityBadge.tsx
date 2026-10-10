@@ -7,7 +7,7 @@ export const SEVERITY_TEXT: Record<BadgeKind, string> = {
   avoid: "ควรหลีกเลี่ยง",
   caution: "ควรระวัง",
   info: "ข้อมูลเพิ่มเติม",
-  no_flag: "ไม่พบธงเตือนในฐานข้อมูลนี้",
+  no_flag: "ไม่พบคำเตือนในฐานข้อมูลนี้",
   no_data: "ยังไม่มีข้อมูลตรวจ",
 };
 

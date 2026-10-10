@@ -16,7 +16,7 @@ export interface Flag {
   drug_class?: string | null;
   condition?: string;
   group?: string;
-  /** เอกสารต้นทางของหน้าที่อ้าง (มีเฉพาะธงของตำรับ ธงสมุนไพรอ้างเล่ม TTM first เป็นค่าเริ่มต้น) */
+  /** เอกสารต้นทางของหน้าที่อ้าง (มีเฉพาะคำเตือนของตำรับ คำเตือนสมุนไพรอ้างเล่ม TTM first เป็นค่าเริ่มต้น) */
   source_doc_th?: string;
 }
 

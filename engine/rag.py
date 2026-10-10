@@ -198,8 +198,8 @@ def _lookup(question: str, scope: set, index: dict, config: dict, extra_stop: li
 
 
 def _covered(c: dict, flags: list) -> bool:
-    """รายการในฐานมีธงครอบคลุมแล้วหรือไม่ ดูจากฟิลด์ที่ check.py ใส่ในธงเท่านั้น (สมุนไพรเดียวกัน + กฎ + condition/drug_class)
-    notes ไม่มีกฎใดสร้างธง = ไม่ครอบคลุมเสมอ"""
+    """รายการในฐานมีคำเตือนครอบคลุมแล้วหรือไม่ ดูจากฟิลด์ที่ check.py ใส่ในคำเตือนเท่านั้น (สมุนไพรเดียวกัน + กฎ + condition/drug_class)
+    notes ไม่มีกฎใดสร้างคำเตือน = ไม่ครอบคลุมเสมอ"""
     def hit(f):
         if f["herb_id"] != c["herb_id"]:
             return False
@@ -240,16 +240,16 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
         flags = result["flags"]
         named = named_herbs(norm(question), index)
         classes, codes, kinds = anchors(question, index)
-        # กฎข้อ 5: คำถามเอ่ยถึงสมุนไพรที่ไม่ได้ตรวจ หรือยา/โรคที่ไม่มีธงใดครอบคลุม -> ห้ามตอบ 'ไม่พบธง' ผลตรวจไม่ได้ตอบเรื่องนั้น
+        # กฎข้อ 5: คำถามเอ่ยถึงสมุนไพรที่ไม่ได้ตรวจ หรือยา/โรคที่ไม่มีคำเตือนใดครอบคลุม -> ห้ามตอบ 'ไม่พบคำเตือน' ผลตรวจไม่ได้ตอบเรื่องนั้น
         unchecked = [h for h in named if h not in checked_herbs]
         phrases = config["chat_safety_yesno_phrases"]["value"] + config["chat_explain_phrases"]["value"]
         chunks = _lookup(question, set(named) or set(checked_herbs), index, config, phrases)
-        # ไม่มีธงแต่ฐานมีรายการตรงหลักของคำถาม (เช่น 'เด็ก' 'คนท้อง' ที่ผู้ใช้ไม่ได้กรอก) = ผลตรวจไม่ได้ตอบเรื่องนั้นเช่นกัน
-        # มีธงอื่นอยู่แล้วแต่หัวข้อที่ถาม (เช่น 'เด็ก') ไม่มีธงใดครอบคลุม = ไม่ครอบคลุมเช่นกัน
+        # ไม่มีคำเตือนแต่ฐานมีรายการตรงหลักของคำถาม (เช่น 'เด็ก' 'คนท้อง' ที่ผู้ใช้ไม่ได้กรอก) = ผลตรวจไม่ได้ตอบเรื่องนั้นเช่นกัน
+        # มีคำเตือนอื่นอยู่แล้วแต่หัวข้อที่ถาม (เช่น 'เด็ก') ไม่มีคำเตือนใดครอบคลุม = ไม่ครอบคลุมเช่นกัน
         uncovered = (unchecked or classes - {f.get("drug_class") for f in flags} or codes - {f.get("condition") for f in flags}
                      or (not flags and chunks) or any(c["kind"] in kinds and not _covered(c, flags) for c in chunks))
         if intent == "explain_flags":
-            flags = [f for f in flags if f["herb_id"] in named] or flags   # สมุนไพรที่ระบุไม่มีธง = แสดงธงทั้งหมด
+            flags = [f for f in flags if f["herb_id"] in named] or flags   # สมุนไพรที่ระบุไม่มีคำเตือน = แสดงคำเตือนทั้งหมด
         head = msgs["safety_prefix"] + "\n" if intent == "safety_yesno" else ""
         flag_text = head + "\n".join(f"• {f['message_th']} (ชั้นหลักฐาน {f['evidence_tier']}, หน้า {f['source_page']})" for f in flags)
         flag_cites = [_flag_cite(f, index) for f in flags]

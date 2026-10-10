@@ -30,7 +30,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
                   <div class="meta">{`${kindLabel(i.kind)} · เริ่มใช้ ${thaiDate(i.start_date)} (ใช้มา ${dayNumber(i.start_date, today)} วัน)`}</div>
                 </div>
                 {v === "pending" ? <span class="pending">กำลังตรวจ…</span>
-                  : v === "see_panel" ? <span class="see-panel">ดูธงในแผงด้านบน</span>
+                  : v === "see_panel" ? <span class="see-panel">ดูคำเตือนในแผงด้านบน</span>
                   : v === "drug_unsplit" ? <span class="see-panel">ผลตรวจไม่ได้แยกรายตัวยา</span>
                   : <SeverityBadge kind={v} />}
                 {diary && (
@@ -115,7 +115,7 @@ function DoseNote({ diary, id, label }: { diary: DiaryStore; id: string; label: 
       <input id={`dose-${id}`} type="text" maxLength={60} placeholder="เช่น 1 แคปซูล เช้า-เย็น" defaultValue={diary.doseOf(id)}
         onBlur={(e) => { const r = diary.setDose(id, e.currentTarget.value); setErr(r.ok ? "" : r.message); }} />
       {err && <p class="err" role="alert">{err}</p>}
-      <p class="meta">จดไว้ให้เภสัชกรดูได้ ระบบยังไม่นำขนาดไปคิดธงเตือน</p>
+      <p class="meta">จดไว้ให้เภสัชกรดูได้ ระบบยังไม่นำขนาดไปคิดคำเตือน</p>
     </div>
   );
 }

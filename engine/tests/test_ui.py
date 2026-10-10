@@ -30,7 +30,7 @@ def test_ui_flag_case_shows_evidence_coverage_and_disclaimer():
 
 def test_ui_no_flag_case_never_says_safe_outside_disclaimer():
     t = submit(["krachai"])
-    assert "ไม่พบธงเตือนในฐานข้อมูลนี้" in t and "ขอบเขตของฐานข้อมูลนี้" in t
+    assert "ไม่พบคำเตือนในฐานข้อมูลนี้" in t and "ขอบเขตของฐานข้อมูลนี้" in t
     assert "ปลอดภัย" not in t.replace("ไม่ได้หมายความว่าปลอดภัย", "")
 
 

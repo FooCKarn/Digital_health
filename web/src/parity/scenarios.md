@@ -31,34 +31,34 @@
 | 2.2 | โฟกัสที่ dropdown + aria-invalid | N/A | ไม่มีปุ่ม ตรวจ (ตรวจอัตโนมัติ) รายการว่างเป็นสถานะปกติ ไม่ใช่ข้อผิดพลาดของช่องกรอก จึงไม่มี aria-invalid |
 | 2.3 | เลือกแล้วล้างข้อความ | GAP | `web/src/parity/legacy.test.tsx::2) ไม่มีรายการเลย` |
 | 3.1 | เลือกสมุนไพร 2 ชนิด + ชิปยา + สรุปจำนวน | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` |
-| 3.2 | หัวข้อผล พบธงเตือน + โฟกัสย้ายไปหัวข้อ | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` (หัวข้อ + ประกาศในพื้นที่ประกาศ; ไม่ย้ายโฟกัสเพราะตรวจอัตโนมัติทุกครั้งที่แก้ การย้ายโฟกัสจะดึงผู้ใช้ออกจากที่ที่กำลังทำ) |
-| 3.3 | กล่องขอบเขต + ไม่ใช่การวินิจฉัย อยู่ก่อนรายการธง | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` `web/src/components/ThisPeriod.test.tsx::(ช) กลุ่ม avoid เปิด` |
-| 3.4 | ธงเป็น ul/li ≥3 ข้อ ทุกข้อมีไอคอน + คำ | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` `web/src/components/primitives.test.tsx::${kind}: ไอคอน svg aria-hidden` |
-| 3.5 | แถวหลักฐาน: ชั้นหลักฐาน หน้า ร่าง กฎ | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` `web/src/components/ThisPeriod.test.tsx::(ญ) ธง verified:false` |
+| 3.2 | หัวข้อผล พบคำเตือน + โฟกัสย้ายไปหัวข้อ | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` (หัวข้อ + ประกาศในพื้นที่ประกาศ; ไม่ย้ายโฟกัสเพราะตรวจอัตโนมัติทุกครั้งที่แก้ การย้ายโฟกัสจะดึงผู้ใช้ออกจากที่ที่กำลังทำ) |
+| 3.3 | กล่องขอบเขต + ไม่ใช่การวินิจฉัย อยู่ก่อนรายการคำเตือน | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` `web/src/components/ThisPeriod.test.tsx::(ช) กลุ่ม avoid เปิด` |
+| 3.4 | คำเตือนเป็น ul/li ≥3 ข้อ ทุกข้อมีไอคอน + คำ | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` `web/src/components/primitives.test.tsx::${kind}: ไอคอน svg aria-hidden` |
+| 3.5 | แถวหลักฐาน: ชั้นหลักฐาน หน้า ร่าง กฎ | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` `web/src/components/ThisPeriod.test.tsx::(ญ) คำเตือน verified:false` |
 | 3.6 | ปุ่ม ดูหลักฐานในหนังสือ (พับไว้) | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` (ข้อความปุ่มใหม่: ดูหลักฐาน) |
 | 3.7 | วลีสั้น ≤250 + หน้าพิมพ์/หน้า PDF + ฉบับเต็มอยู่ในเล่ม | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` |
 | 3.8 | ส่วน เพิ่มเติม พับไว้และใช้ h3 | GAP | `web/src/parity/legacy.test.tsx::4.5-4.6 + 3.8 ใบสรุปเภสัชกร` `web/src/components/MyData.test.tsx::อภิธานศัพท์ อธิบายชั้นหลักฐาน` |
-| 3.9 | ไม่ได้ตอบตั้งครรภ์ → แจ้ง ไม่ได้ตรวจ | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` `web/src/components/ThisPeriod.test.tsx::(จ) ไม่มีธง + ไม่ได้กรอกอายุ` |
+| 3.9 | ไม่ได้ตอบตั้งครรภ์ → แจ้ง ไม่ได้ตรวจ | GAP | `web/src/parity/legacy.test.tsx::3.1-3.9 รายการ หัวข้อผล` `web/src/components/ThisPeriod.test.tsx::(จ) ไม่มีคำเตือน + ไม่ได้กรอกอายุ` |
 | 4.1 | ชื่อ tablist/region ไม่ซ้ำ + แผงแท็บรับโฟกัส | mapped | `web/src/App.test.tsx::roving tabindex + ลูกศร/Home/End` `web/src/parity/legacy.test.tsx::11) โครงสร้างการเข้าถึง` |
 | 4.2 | ลูกศรขวา → แท็บถัดไป | mapped | `web/src/App.test.tsx::roving tabindex + ลูกศร/Home/End` |
 | 4.3 | Home → แท็บแรก | mapped | `web/src/App.test.tsx::roving tabindex + ลูกศร/Home/End` |
 | 4.4 | End → แท็บสุดท้าย | mapped | `web/src/App.test.tsx::roving tabindex + ลูกศร/Home/End` |
-| 4.5 | ตารางใบสรุปมีคอลัมน์บังคับ + caption + h3 | GAP | `web/src/parity/legacy.test.tsx::4.5-4.6 + 3.8 ใบสรุปเภสัชกร` `web/src/components/MyData.test.tsx::ผลปัจจุบัน: ขอบเขต disclaimer ตารางธง` |
+| 4.5 | ตารางใบสรุปมีคอลัมน์บังคับ + caption + h3 | GAP | `web/src/parity/legacy.test.tsx::4.5-4.6 + 3.8 ใบสรุปเภสัชกร` `web/src/components/MyData.test.tsx::ผลปัจจุบัน: ขอบเขต disclaimer ตารางคำเตือน` |
 | 4.6 | ใบสรุปเป็นภาษาไทย + โปรไฟล์ (อายุ: 60 ปี) | GAP | `web/src/parity/legacy.test.tsx::4.5-4.6 + 3.8 ใบสรุปเภสัชกร` |
 | 5.1 | ลบชิปยา → ซ่อนผลเก่า | GAP | `web/src/parity/legacy.test.tsx::5) หยุดใช้ยาหลังได้ผล` `web/src/components/ThisPeriod.test.tsx::เพิ่มยาระหว่างรอผลใหม่` (หน้าใหม่: ผลเก่าติดป้าย ผลก่อนแก้ไข แล้วตรวจใหม่อัตโนมัติ) |
 | 5.2 | ประกาศว่าผลเดิมถูกซ่อน (ไม่เงียบ) | GAP | `web/src/parity/legacy.test.tsx::5) หยุดใช้ยาหลังได้ผล` (ผลใหม่ถูกประกาศ; ผลเก่าไม่ถูกประกาศเป็นผลปัจจุบัน) |
-| 6.1 | ไม่พบธง: หัวข้อ ไม่พบธงเตือนในฐานข้อมูลนี้ ไม่มีรายการธง | GAP | `web/src/parity/legacy.test.tsx::6) กระชาย อายุ 30` |
-| 6.2 | บรรทัด ไม่ได้แปลว่าใช้ได้ + ขอบเขต | GAP | `web/src/parity/legacy.test.tsx::6) กระชาย อายุ 30` `web/src/components/ThisPeriod.test.tsx::(จ) ไม่มีธง + ไม่ได้กรอกอายุ` |
+| 6.1 | ไม่พบคำเตือน: หัวข้อ ไม่พบคำเตือนในฐานข้อมูลนี้ ไม่มีรายการคำเตือน | GAP | `web/src/parity/legacy.test.tsx::6) กระชาย อายุ 30` |
+| 6.2 | บรรทัด ไม่ได้แปลว่าใช้ได้ + ขอบเขต | GAP | `web/src/parity/legacy.test.tsx::6) กระชาย อายุ 30` `web/src/components/ThisPeriod.test.tsx::(จ) ไม่มีคำเตือน + ไม่ได้กรอกอายุ` |
 | 6.3 | ไม่มีสไตล์ ผ่าน/เขียว และไม่เตือนเงื่อนไขที่ไม่มีกฎ | GAP | `web/src/parity/legacy.test.tsx::6) กระชาย อายุ 30` `web/src/styles/contrast.test.ts::โทเคน no_flag ไม่ใช่สีเขียว` |
 | 7.1 | ข้อความฝัง HTML/สคริปต์แสดงเป็นข้อความธรรมดา | GAP | `web/src/parity/legacy.test.tsx::7) ชื่อยาที่พิมพ์เองฝัง HTML` `web/src/components/ThisPeriod.test.tsx::(ซ) ข้อความจากเซิร์ฟเวอร์ที่ฝัง HTML` `web/src/source-scan.test.ts::ไม่มี API ที่แปลงข้อความเป็น HTML` |
 | 8.1 | ปุ่ม AI ระหว่างทำงานใช้ aria-disabled | mapped | `web/src/components/AddSheet.test.tsx::ปุ่มที่กำลังทำงานเป็น aria-disabled` |
 | 8.2 | ไม่มี key → ใช้ AI ไม่ได้ กรอกเองได้ | mapped | `web/src/components/AddSheet.test.tsx::/api/parse 503 -> ข้อความไทยตายตัว` |
 | 8.3 | ไม่ได้พิมพ์ → ข้อความ + โฟกัสกลับช่องข้อความ | GAP+FIX | `web/src/parity/legacy.test.tsx::8.3 แยกรายการด้วย AI โดยไม่พิมพ์` (เดิมไม่ย้ายโฟกัสกลับช่องข้อความ) |
 | 8.4 | ปุ่มเรียบเรียงเป็น ตัวเลือก (รอง) | mapped | `web/src/components/AddSheet.test.tsx::ซ่อนเมื่อผลที่แสดงยังไม่ใช่ผลปัจจุบัน` `web/src/components/AddSheet.test.tsx::ข้อความจากเซิร์ฟเวอร์แสดงเป็นข้อความ + ป้ายที่มา` |
-| 8.5 | ไม่มี key → ใช้ข้อความจากธง ติดป้ายที่มา | mapped | `web/src/components/AddSheet.test.tsx::ข้อความจากเซิร์ฟเวอร์แสดงเป็นข้อความ + ป้ายที่มา` `web/src/components/AddSheet.test.tsx::คำตอบ explain รูปผิด/source แปลก` `engine/tests/test_llm.py::test_explain_llm_unavailable_falls_back_not_error` (ข้อความ template ฝั่งเซิร์ฟเวอร์) |
+| 8.5 | ไม่มี key → ใช้ข้อความจากคำเตือน ติดป้ายที่มา | mapped | `web/src/components/AddSheet.test.tsx::ข้อความจากเซิร์ฟเวอร์แสดงเป็นข้อความ + ป้ายที่มา` `web/src/components/AddSheet.test.tsx::คำตอบ explain รูปผิด/source แปลก` `engine/tests/test_llm.py::test_explain_llm_unavailable_falls_back_not_error` (ข้อความ template ฝั่งเซิร์ฟเวอร์) |
 | 9.1 | แสดง ภาระความเสี่ยงรวม | GAP | `web/src/parity/legacy.test.tsx::9) รางจืด + มะแว้งเครือ` `web/src/components/ThisPeriod.test.tsx::ต้องปรึกษาเภสัชกร + aggregate แสดง` |
 | 9.2 | โรคที่เลือกถูกส่งและแสดงในใบสรุป | GAP | `web/src/parity/legacy.test.tsx::9) รางจืด + มะแว้งเครือ` |
-| 10.1 | ตั้งครรภ์ ใช่/ไม่ใช่/ไม่ระบุ → ธง / ไม่มีธง / ไม่ได้ตรวจ | GAP | `web/src/parity/legacy.test.tsx::10 ตั้งครรภ์=%s` `web/src/components/MyData.test.tsx::ตั้งครรภ์เป็น select 3 ค่า` |
+| 10.1 | ตั้งครรภ์ ใช่/ไม่ใช่/ไม่ระบุ → คำเตือน / ไม่มีคำเตือน / ไม่ได้ตรวจ | GAP | `web/src/parity/legacy.test.tsx::10 ตั้งครรภ์=%s` `web/src/components/MyData.test.tsx::ตั้งครรภ์เป็น select 3 ค่า` |
 | 11.1 | ทุกปุ่ม/ช่องกรอกมีชื่อ | GAP | `web/src/parity/legacy.test.tsx::11) โครงสร้างการเข้าถึง` |
 | 11.2 | ชื่อที่โปรแกรมอ่านเสียงมีคำที่เห็นอยู่ด้วย | GAP | `web/src/parity/legacy.test.tsx::11) โครงสร้างการเข้าถึง` `web/src/chat/chat.test.tsx::19.2 ทุกปุ่ม/ช่องในแชตมีชื่อ` |
 | 11.3 | ปุ่มลบทุกตัวชื่อไม่ซ้ำ ขึ้นต้นด้วย ลบ | GAP | `web/src/parity/legacy.test.tsx::11) โครงสร้างการเข้าถึง` |
@@ -70,7 +70,7 @@
 | 12.1 | ระหว่างรอ ปุ่มตรวจเป็น aria-disabled | N/A | ไม่มีปุ่ม ตรวจ (ตรวจอัตโนมัติ) สถานะระหว่างรอแสดงเป็น กำลังตรวจ… : `web/src/components/ThisPeriod.test.tsx::แถวแสดงชนิดและวันที่ N; ระหว่างตรวจ` |
 | 12.2 | กดซ้ำระหว่างรอ ไม่ส่งคำขอซ้อน | GAP | `web/src/parity/legacy.test.tsx::12) แก้รายการหลายครั้งภายในช่วงหน่วง` `web/src/hooks/useAnalysis.test.tsx::หน่วงเวลา 300 ms ก่อนเรียก` |
 | 12.3 | ผลของข้อมูลเก่าที่มาถึงทีหลังถูกทิ้ง | mapped | `web/src/hooks/useAnalysis.test.tsx::(ก) เปลี่ยนรายการสองครั้ง` `web/src/hooks/useAnalysis.test.tsx::current: true เฉพาะเมื่อผลตรงกับข้อมูล` `web/src/components/ThisPeriod.test.tsx::เพิ่มยาระหว่างรอผลใหม่` |
-| 13.1 | มีผลและใบสรุปจากการตรวจครั้งแรก | GAP | `web/src/parity/legacy.test.tsx::13) ตรวจล้มเหลวหลังแก้ข้อมูล` `web/src/components/MyData.test.tsx::ผลปัจจุบัน: ขอบเขต disclaimer ตารางธง` |
+| 13.1 | มีผลและใบสรุปจากการตรวจครั้งแรก | GAP | `web/src/parity/legacy.test.tsx::13) ตรวจล้มเหลวหลังแก้ข้อมูล` `web/src/components/MyData.test.tsx::ผลปัจจุบัน: ขอบเขต disclaimer ตารางคำเตือน` |
 | 13.2 | ตรวจล้มเหลว → ล้างใบสรุปเก่า | GAP | `web/src/parity/legacy.test.tsx::13) ตรวจล้มเหลวหลังแก้ข้อมูล` `web/src/components/MyData.test.tsx::ผลไม่ใช่ปัจจุบัน` `web/src/components/ThisPeriod.test.tsx::แก้โปรไฟล์แล้วตรวจล้มเหลว` |
 | 13.3 | ข้อผิดพลาดเป็น role=alert และโฟกัสที่ข้อความ | GAP | `web/src/parity/legacy.test.tsx::13) ตรวจล้มเหลวหลังแก้ข้อมูล` `web/src/components/ThisPeriod.test.tsx::ตรวจล้มเหลวหลังมีผล` (role=alert ถูกอ่านทันที; ไม่ย้ายโฟกัสเพราะการตรวจเกิดเองหลังแก้ข้อมูล) |
 | 13.4 | ลูกศรไม่พาไปแท็บที่ซ่อนอยู่ | N/A | หน้าใหม่ไม่มีแท็บที่ซ่อน ทั้ง 3 แท็บใช้ได้ตลอด (`web/src/App.test.tsx::roving tabindex + ลูกศร/Home/End`) |
@@ -101,17 +101,17 @@
 | 17.7 | ข้อความของระบบไม่มีคำว่า ปลอดภัย | mapped | `web/src/chat/chat.test.tsx::17.4 ข้อความของระบบทั้งหน้า` |
 | 18.1 | sessionStorage JSON พัง: แชตยังใช้ได้ | mapped | `web/src/chat/chat.test.tsx::18.1 sessionStorage เป็น JSON พัง` |
 | 18.2 | setItem โยน error: แชตยังใช้ได้ | mapped | `web/src/chat/chat.test.tsx::18.2 setItem โยน error` `web/src/chat/chat.test.tsx::18.3 เข้าถึง sessionStorage ไม่ได้เลย` |
-| 18.3 | การ์ดธงมีปุ่ม ถามเรื่องธงนี้ | mapped | `web/src/chat/chat.test.tsx::18.4 การ์ดธงมีปุ่ม ถามเรื่องธงนี้` |
-| 18.4 | กดแล้วเปิดแชตและเติมคำถาม ไม่ส่งเอง | mapped | `web/src/chat/chat.test.tsx::18.4 การ์ดธงมีปุ่ม ถามเรื่องธงนี้` |
+| 18.3 | การ์ดคำเตือนมีปุ่ม ถามเรื่องคำเตือนนี้ | mapped | `web/src/chat/chat.test.tsx::18.4 การ์ดคำเตือนมีปุ่ม ถามเรื่องคำเตือนนี้` |
+| 18.4 | กดแล้วเปิดแชตและเติมคำถาม ไม่ส่งเอง | mapped | `web/src/chat/chat.test.tsx::18.4 การ์ดคำเตือนมีปุ่ม ถามเรื่องคำเตือนนี้` |
 | 18.5 | แก้ข้อมูลหลังคุยแล้ว แชตแจ้งว่าคำตอบก่อนหน้าอาจไม่ตรง | mapped | `web/src/chat/chat.test.tsx::18.5 แก้ข้อมูลหลังคุยแล้ว` |
 | 19.1 | API ล้ม: role=alert คำถามยังอยู่ | mapped | `web/src/chat/chat.test.tsx::19.1 เครือข่ายล่ม` |
 | 19.2 | ทุกปุ่ม/ช่องในแชตมีชื่อ ไม่มี div aria-label ลอย | mapped | `web/src/chat/chat.test.tsx::19.2 ทุกปุ่ม/ช่องในแชตมีชื่อ` |
 | 19.3 | ไม่มี id ซ้ำ | mapped | `web/src/chat/chat.test.tsx::19.2 ทุกปุ่ม/ช่องในแชตมีชื่อ` `web/src/parity/legacy.test.tsx::11) โครงสร้างการเข้าถึง` |
 | 19.4 | ช่องพิมพ์จำกัด 300 ตัวอักษร | mapped | `web/src/chat/chat.test.tsx::19.3 ช่องพิมพ์จำกัด 300` |
 | 19.5 | คำถามฝัง HTML แสดงเป็นข้อความ | mapped | `web/src/chat/chat.test.tsx::19.4 คำถามฝัง HTML` `web/src/chat/chat.test.tsx::19.5 คำตอบ/หลักฐานจากเซิร์ฟเวอร์ที่ฝัง` |
-| 20.1 | ผลตรวจ: ไม่พบธง | mapped | `web/src/parity/legacy.test.tsx::6) กระชาย อายุ 30` |
-| 20.2 | คำตอบมี ไม่พบธงเตือนในฐานข้อมูลนี้ | mapped | `web/src/chat/chat.test.tsx::20.1 คำตอบ ไม่พบธงเตือน` `engine/tests/test_rag_answer.py::test_safety_yesno_without_flags_uses_standard_no_flag_wording` |
-| 20.3 | ข้อความของระบบไม่มีคำว่า ปลอดภัย | mapped | `web/src/chat/chat.test.tsx::20.1 คำตอบ ไม่พบธงเตือน` |
+| 20.1 | ผลตรวจ: ไม่พบคำเตือน | mapped | `web/src/parity/legacy.test.tsx::6) กระชาย อายุ 30` |
+| 20.2 | คำตอบมี ไม่พบคำเตือนในฐานข้อมูลนี้ | mapped | `web/src/chat/chat.test.tsx::20.1 คำตอบ ไม่พบคำเตือน` `engine/tests/test_rag_answer.py::test_safety_yesno_without_flags_uses_standard_no_flag_wording` |
+| 20.3 | ข้อความของระบบไม่มีคำว่า ปลอดภัย | mapped | `web/src/chat/chat.test.tsx::20.1 คำตอบ ไม่พบคำเตือน` |
 | 21.1 | ผลปัจจุบัน: คำตอบไม่มีป้ายผลเดิม | mapped | `web/src/chat/chat.test.tsx::21.1-21.5 ป้ายผลเดิม` |
 | 21.2 | แก้ข้อมูลแล้วถาม 2 ครั้ง: ทั้งสองคำตอบมีป้ายผลเดิม | N/A | เปลี่ยนโดยการตัดสินงาน 10 (ledger): เซิร์ฟเวอร์ตอบจากข้อมูลปัจจุบันที่ส่งไปพร้อมคำถาม จึงไม่ใช่คำตอบของผลเดิม ไม่ติดป้าย พฤติกรรมใหม่ตรวจใน `web/src/chat/chat.test.tsx::21.1-21.5 ป้ายผลเดิม` |
 | 21.3 | ตรวจใหม่แล้ว: คำตอบถัดไปไม่มีป้าย | mapped | `web/src/chat/chat.test.tsx::21.1-21.5 ป้ายผลเดิม` |
@@ -123,8 +123,8 @@
 | 22.4 | 400 ข้อความไม่ใช่ไทย: ข้อความไทยตายตัว | mapped | `web/src/chat/chat.test.tsx::22.4 400 ข้อความไม่ใช่ไทย` `web/src/api.test.ts::400 with non-Thai message falls back` |
 | 22.5 | 400 ข้อความไทยจากเซิร์ฟเวอร์: แสดงตามเดิม | mapped | `web/src/chat/chat.test.tsx::22.5 400 ข้อความไทยจากเซิร์ฟเวอร์` |
 | 22.6 | 503: คงข้อความจากเซิร์ฟเวอร์ | mapped | `web/src/chat/chat.test.tsx::22.6 503 -> คงข้อความไทย` `web/src/api.test.ts::503 uses the server message` |
-| 23.1 | ยาที่ไม่ได้กรอก: คำเตือนจากฐานข้อมูลพร้อมหลักฐาน ไม่บอกว่าไม่พบธง | mapped | `web/src/chat/chat.test.tsx::23.1 คำตอบคำเตือนจากฐานข้อมูล` `engine/tests/test_rag_answer.py::test_safety_question_naming_an_unchecked_drug_shows_database_items_not_no_flag` |
-| 23.2 | ถามเฉพาะสิ่งที่ตรวจแล้วและไม่มีธง: ข้อความไม่พบธงมาตรฐาน | N/A | เนื้อหาคำตอบของเซิร์ฟเวอร์: `engine/tests/test_rag_answer.py::test_no_flag_wording_is_still_used_when_question_names_only_checked_things` |
+| 23.1 | ยาที่ไม่ได้กรอก: คำเตือนจากฐานข้อมูลพร้อมหลักฐาน ไม่บอกว่าไม่พบคำเตือน | mapped | `web/src/chat/chat.test.tsx::23.1 คำตอบคำเตือนจากฐานข้อมูล` `engine/tests/test_rag_answer.py::test_safety_question_naming_an_unchecked_drug_shows_database_items_not_no_flag` |
+| 23.2 | ถามเฉพาะสิ่งที่ตรวจแล้วและไม่มีคำเตือน: ข้อความไม่พบคำเตือนมาตรฐาน | N/A | เนื้อหาคำตอบของเซิร์ฟเวอร์: `engine/tests/test_rag_answer.py::test_no_flag_wording_is_still_used_when_question_names_only_checked_things` |
 
 ## นอกตาราง (ข้อกำหนดของงาน 11 ที่ไม่ได้มาจากสคริปต์เดิม)
 

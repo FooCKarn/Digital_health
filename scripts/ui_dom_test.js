@@ -111,15 +111,15 @@ function accName(e, d) {
   ok(d.querySelectorAll("#herbSel .sel").length === 2 && !!d.querySelector('#drugSel [data-v="warfarin"]') && $("herbHint").textContent.includes("เลือกแล้ว 2"), "เลือกสมุนไพร 2 ชนิด + ชิปยา + สรุปจำนวน");
   await submit(d);
   const head = $("resHead");
-  ok(head && /^พบธงเตือน/.test(head.textContent) && d.activeElement === head, `หัวข้อผล + โฟกัสย้ายไปที่หัวข้อ: "${head && head.textContent}"`);
+  ok(head && /^พบคำเตือน/.test(head.textContent) && d.activeElement === head, `หัวข้อผล + โฟกัสย้ายไปที่หัวข้อ: "${head && head.textContent}"`);
   const kids = [...$("p1").children], iScope = kids.findIndex((k) => k.classList.contains("scope")), iList = kids.findIndex((k) => k.classList.contains("flags"));
-  ok(iScope > 0 && iScope < iList, "กล่องขอบเขต+ไม่ใช่การวินิจฉัย อยู่ก่อนรายการธง");
+  ok(iScope > 0 && iScope < iList, "กล่องขอบเขต+ไม่ใช่การวินิจฉัย อยู่ก่อนรายการคำเตือน");
   const items = [...$("p1").querySelectorAll("ul.flags > li")];
-  ok($("p1").querySelector("ul.flags").getAttribute("aria-label") === "ธงเตือน" && items.length >= 3 && items.every((f) => f.querySelector("svg[aria-hidden]") && f.querySelector(".sev span").textContent.length > 2), `ธงเป็นรายการ (ul/li) ${items.length} ข้อ ทุกข้อมีไอคอน+คำ`);
+  ok($("p1").querySelector("ul.flags").getAttribute("aria-label") === "คำเตือน" && items.length >= 3 && items.every((f) => f.querySelector("svg[aria-hidden]") && f.querySelector(".sev span").textContent.length > 2), `คำเตือนเป็นรายการ (ul/li) ${items.length} ข้อ ทุกข้อมีไอคอน+คำ`);
   const chips = [...items.find((f) => f.querySelector(".ev")).querySelectorAll(".chip")].map((c) => c.textContent);
   ok(chips.some((c) => /^ชั้นหลักฐาน [AC]$/.test(c)) && chips.some((c) => /^หน้า \d+$/.test(c)) && chips.some((c) => c.startsWith("ร่าง")) && chips.some((c) => /^กฎ R\d$/.test(c)), `แถวหลักฐานครบ: ${chips.join(" | ")}`);
   const evd = [...$("p1").querySelectorAll("li.flag details.evd")];
-  ok(evd.length >= 2 && evd.every((x) => !x.open && x.querySelector("summary").textContent === "ดูหลักฐานในหนังสือ"), `ธงที่มีหลักฐานต้นทางมีปุ่ม 'ดูหลักฐานในหนังสือ' (พับไว้) ${evd.length} ใบ`);
+  ok(evd.length >= 2 && evd.every((x) => !x.open && x.querySelector("summary").textContent === "ดูหลักฐานในหนังสือ"), `คำเตือนที่มีหลักฐานต้นทางมีปุ่ม 'ดูหลักฐานในหนังสือ' (พับไว้) ${evd.length} ใบ`);
   ok(evd.every((x) => /^“.{2,250}”$/.test(x.querySelector("blockquote").textContent) && /หน้า \d+ \(หน้า \d+ ในไฟล์ PDF\)/.test(x.textContent) && /ข้อความเต็มและบริบทอยู่ในเล่ม/.test(x.textContent)), "แสดงวลีสั้น (<=250 ตัวอักษร) + หน้าพิมพ์/หน้า PDF + ข้อความว่าฉบับเต็มอยู่ในเล่ม");
   const more = [...$("p1").querySelectorAll("details")].find((x) => x.textContent.includes("ชั้นหลักฐาน A/B/C"));
   ok(!!more && !more.open && !!more.querySelector("h3"), "'เพิ่มเติม' พับไว้ และใช้หัวข้อ h3");
@@ -141,10 +141,10 @@ function accName(e, d) {
   ok($("out").hidden && !d.querySelector('#drugSel [data-v="warfarin"]'), "ลบชิปยา -> ซ่อนผลเก่า");
   ok((await live(d)).includes("ผลเดิมถูกซ่อน") , "ประกาศว่าผลเดิมถูกซ่อน (ไม่เงียบ)");
 
-  console.log("== 6) ไม่พบธง ==");
+  console.log("== 6) ไม่พบคำเตือน ==");
   ({ w, d, $ } = await load());
   pick(w, d, "herbAdd", "กระชาย"); $("age").value = "30"; await submit(d);
-  ok($("resHead").textContent === "ไม่พบธงเตือนในฐานข้อมูลนี้" && !$("p1").querySelector("ul.flags"), `หัวข้อ: "${$("resHead").textContent}" ไม่มีรายการธง`);
+  ok($("resHead").textContent === "ไม่พบคำเตือนในฐานข้อมูลนี้" && !$("p1").querySelector("ul.flags"), `หัวข้อ: "${$("resHead").textContent}" ไม่มีรายการคำเตือน`);
   ok($("p1").querySelector(".nonote").textContent === "นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร" && !!$("p1").querySelector(".scope"), "มีบรรทัด 'ไม่ได้แปลว่าปลอดภัย' + ขอบเขต");
   ok(!$("p1").querySelector("[class*=ok],[class*=success],[class*=green]") && !/ไม่ได้ตรวจเงื่อนไข/.test($("p1").textContent), "ไม่มีสไตล์ ผ่าน/เขียว และไม่เตือนเงื่อนไขที่กระชายไม่มีกฎ");
 
@@ -163,8 +163,8 @@ function accName(e, d) {
   pick(w, d, "herbAdd", "ขิง"); pick(w, d, "drugAdd", "warfarin"); await submit(d);
   const ex = [...d.querySelectorAll("#p1 button")].find((b) => b.textContent.includes("ให้ AI เรียบเรียง"));
   ok(!!ex && ex.textContent.startsWith("ตัวเลือก"), "ปุ่มเรียบเรียงเป็น 'ตัวเลือก' (รอง)");
-  ex.click(); await waitFor(() => $("explainBox").textContent.includes("ใช้ข้อความจากธงโดยตรง"));
-  ok($("explainBox").textContent.includes("ใช้ข้อความจากธงโดยตรง ไม่ได้ผ่าน AI") && ex.getAttribute("aria-disabled") === "false", "ไม่มี key -> ใช้ข้อความจากธง ติดป้ายที่มา");
+  ex.click(); await waitFor(() => $("explainBox").textContent.includes("ใช้ข้อความจากคำเตือนโดยตรง"));
+  ok($("explainBox").textContent.includes("ใช้ข้อความจากคำเตือนโดยตรง ไม่ได้ผ่าน AI") && ex.getAttribute("aria-disabled") === "false", "ไม่มี key -> ใช้ข้อความจากคำเตือน ติดป้ายที่มา");
 
   console.log("== 9) R3 + โรค/สภาวะ ==");
   ({ w, d, $ } = await load());
@@ -177,7 +177,7 @@ function accName(e, d) {
     ({ w, d, $ } = await load());
     pick(w, d, "herbAdd", "ขิง"); $("age").value = "30"; $("pregnant").value = val; await submit(d);
     const t = $("p1").textContent;
-    ok((/ไม่แนะนำให้ใช้ขิงบรรเทาคลื่นไส้อาเจียนในสตรีมีครรภ์/.test(t) === expectFlag) && (/ไม่ได้ตรวจเงื่อนไข \(ไม่ได้กรอก\): การตั้งครรภ์/.test(t) === expectUnchecked), `ตั้งครรภ์="${val || "ไม่ระบุ"}" -> ธง=${expectFlag} ไม่ได้ตรวจ=${expectUnchecked}`);
+    ok((/ไม่แนะนำให้ใช้ขิงบรรเทาคลื่นไส้อาเจียนในสตรีมีครรภ์/.test(t) === expectFlag) && (/ไม่ได้ตรวจเงื่อนไข \(ไม่ได้กรอก\): การตั้งครรภ์/.test(t) === expectUnchecked), `ตั้งครรภ์="${val || "ไม่ระบุ"}" -> คำเตือน=${expectFlag} ไม่ได้ตรวจ=${expectUnchecked}`);
   }
 
   console.log("== 11) โครงสร้างการเข้าถึง (ชื่อ/ARIA/id) ==");
@@ -196,7 +196,7 @@ function accName(e, d) {
   ok(refs.every((r) => d.getElementById(r)), "aria-controls/labelledby/describedby ชี้ไปที่ id ที่มีอยู่จริง");
   ok($("form").getAttribute("aria-labelledby") === "formHead" && !!$("formHead"), "ฟอร์มมีชื่อ");
   const fbSel = [...$("p1").querySelectorAll("details select")].map((s) => s.getAttribute("aria-label"));
-  ok(fbSel.some((n) => /^ความเห็นต่อธงที่ 1 \(/.test(n)) && !fbSel.some((n) => /f\d/.test(n)), `ชื่อช่องความเห็นใช้ลำดับ+ชื่อสมุนไพร ไม่ใช่รหัสภายใน: ${fbSel[1]}`);
+  ok(fbSel.some((n) => /^ความเห็นต่อคำเตือนที่ 1 \(/.test(n)) && !fbSel.some((n) => /f\d/.test(n)), `ชื่อช่องความเห็นใช้ลำดับ+ชื่อสมุนไพร ไม่ใช่รหัสภายใน: ${fbSel[1]}`);
 
   console.log("== 12) ผลเก่าไม่โผล่ทับข้อมูลที่แก้ระหว่างรอ ==");
   ({ w, d, $ } = await load());
@@ -259,7 +259,7 @@ function accName(e, d) {
   ok(d.querySelectorAll("#chatChips button").length === 2, "มีชิปคำถามแนะนำ");
   d.querySelector("#chatChips button").click();
   await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 2 && $("chatSend").getAttribute("aria-disabled") === "false");
-  ok(d.querySelectorAll("#chatLog .cmsg.a")[1].textContent.includes("ขิง"), "กดชิป 'ทำไมถึงขึ้นธง' ได้คำตอบจากผลตรวจปัจจุบัน");
+  ok(d.querySelectorAll("#chatLog .cmsg.a")[1].textContent.includes("ขิง"), "กดชิป 'ทำไมถึงขึ้นคำเตือน' ได้คำตอบจากผลตรวจปัจจุบัน");
   const sav = w.sessionStorage.getItem("hg_chat_v1");
   ({ w, d, $ } = await load({ storage: sav }));
   ok(d.querySelectorAll("#chatLog .cmsg").length === 4, "โหลดหน้าใหม่ในแท็บเดียวกัน: ประวัติ 4 ข้อความกลับมา");
@@ -273,14 +273,14 @@ function accName(e, d) {
   let m = await ask("หายใจไม่ออกหลังกินขิง", 1);
   ok(m.classList.contains("emerg") && m.getAttribute("role") === "alert" && m.textContent.includes("1669") && m.querySelector(".src").textContent === "ข้อควรทราบเร่งด่วน", "ฉุกเฉิน: ข้อความเร่งด่วน (role=alert) ไม่เรียก AI");
   m = await ask("ขิงกินวันละกี่เม็ด", 2); ok(/ไม่แนะนำขนาด/.test(m.textContent) && m.querySelector(".src").textContent === "ตอบไม่ได้ / ไม่มีข้อมูล", "ขอขนาดยา: ปฏิเสธ + ป้าย");
-  m = await ask("ทำไมถึงขึ้นธง", 3); ok(m.textContent.includes("ยังไม่มีผลตรวจ"), "ยังไม่ตรวจ: บอกให้ตรวจก่อน (แชตใช้ได้ก่อนตรวจ)");
+  m = await ask("ทำไมถึงขึ้นคำเตือน", 3); ok(m.textContent.includes("ยังไม่มีผลตรวจ"), "ยังไม่ตรวจ: บอกให้ตรวจก่อน (แชตใช้ได้ก่อนตรวจ)");
   m = await ask("รางจืดกับยาเบาหวาน", 4); ok(m.textContent.includes("รางจืด") && !!m.querySelector("details.evd"), "ถามเรื่องสมุนไพรที่ระบุชื่อได้แม้ยังไม่ตรวจ");
   m = await ask("ฟุตบอลคืออะไร", 5); ok(m.textContent.includes("ไม่พบข้อมูล"), "คำถามนอกฐาน: ไม่พบข้อมูล");
   m = await ask("ขิงกับ warfarin ปลอดภัยไหม", 6); ok(m.textContent.includes("ยังไม่มีผลตรวจ") && !/ใช้ได้|กินได้/.test(m.textContent), "ถามปลอดภัยไหมโดยยังไม่ตรวจ: ไม่ตอบใช่/ไม่ใช่");
   const sysText = (() => { const c = d.body.cloneNode(true); c.querySelectorAll(".cmsg.u").forEach((u) => u.remove()); return c.textContent; })();  // ไม่นับคำที่ผู้ใช้พิมพ์เอง
   ok(sysText.replace(/ไม่ได้(แปลว่า|หมายความว่า)ปลอดภัย/g, "").indexOf("ปลอดภัย") === -1, "ข้อความของระบบทั้งหน้าไม่มีคำว่า ปลอดภัย นอกเชิงปฏิเสธ (ไม่นับคำถามที่ผู้ใช้พิมพ์)");
 
-  console.log("== 18) แชต: storage เสีย/ใช้ไม่ได้ + ผลตรวจเปลี่ยน + ปุ่มถามเรื่องธง ==");
+  console.log("== 18) แชต: storage เสีย/ใช้ไม่ได้ + ผลตรวจเปลี่ยน + ปุ่มถามเรื่องคำเตือน ==");
   ({ w, d, $ } = await load({ storage: "{not json" }));
   $("chatHead").click(); $("chatInput").value = "รางจืดกับยาเบาหวาน"; $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
   await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
@@ -292,9 +292,9 @@ function accName(e, d) {
   ({ w, d, $ } = await load());
   pick(w, d, "herbAdd", "ขิง"); pick(w, d, "drugAdd", "warfarin"); $("age").value = "60"; await submit(d);
   const askBtn = d.querySelector("li.flag button.askflag");
-  ok(!!askBtn && /^ถามเรื่องธงนี้/.test(askBtn.getAttribute("aria-label")) && askBtn.textContent === "ถามเรื่องธงนี้", "การ์ดธงมีปุ่ม 'ถามเรื่องธงนี้' (ชื่อขึ้นต้นด้วยคำที่เห็น)");
+  ok(!!askBtn && /^ถามเรื่องคำเตือนนี้/.test(askBtn.getAttribute("aria-label")) && askBtn.textContent === "ถามเรื่องคำเตือนนี้", "การ์ดคำเตือนมีปุ่ม 'ถามเรื่องคำเตือนนี้' (ชื่อขึ้นต้นด้วยคำที่เห็น)");
   askBtn.click();
-  ok(!$("chatPanel").hidden && $("chatInput").value.startsWith("อธิบายธงของ") && d.activeElement === $("chatInput") && d.querySelectorAll("#chatLog .cmsg").length === 0, "กดแล้วเปิดแชตและเติมคำถามให้ (ยังไม่ส่งเอง)");
+  ok(!$("chatPanel").hidden && $("chatInput").value.startsWith("อธิบายคำเตือนของ") && d.activeElement === $("chatInput") && d.querySelectorAll("#chatLog .cmsg").length === 0, "กดแล้วเปิดแชตและเติมคำถามให้ (ยังไม่ส่งเอง)");
   $("chatForm").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
   await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 1 && $("chatSend").getAttribute("aria-disabled") === "false");
   d.querySelector('#drugSel [data-v="warfarin"] button').click();   // แก้ข้อมูล -> ผลเก่าถูกซ่อน
@@ -319,13 +319,13 @@ function accName(e, d) {
   const errN = async (q, n) => { send(q); await waitFor(() => d.querySelectorAll("#chatLog .err").length === n && $("chatSend").getAttribute("aria-disabled") === "false"); return [...d.querySelectorAll("#chatLog .err")][n - 1]; };
   const STL = "อ้างอิงผลตรวจก่อนที่คุณจะแก้ข้อมูล";
 
-  console.log("== 20) แชต: ตรวจแล้วไม่พบธง แล้วถาม 'ปลอดภัยไหม' ==");
+  console.log("== 20) แชต: ตรวจแล้วไม่พบคำเตือน แล้วถาม 'ปลอดภัยไหม' ==");
   ({ w, d, $ } = await load());
   pick(w, d, "herbAdd", "กระชาย"); $("age").value = "30"; await submit(d);
-  ok($("resHead").textContent === "ไม่พบธงเตือนในฐานข้อมูลนี้", "ผลตรวจ: ไม่พบธง");
+  ok($("resHead").textContent === "ไม่พบคำเตือนในฐานข้อมูลนี้", "ผลตรวจ: ไม่พบคำเตือน");
   $("chatHead").click();
   m = await askN("กระชายปลอดภัยไหม", 1);
-  ok(!!m && m.textContent.includes("ไม่พบธงเตือนในฐานข้อมูลนี้"), "คำตอบมี 'ไม่พบธงเตือนในฐานข้อมูลนี้' (ไม่ตอบว่าใช้ได้)");
+  ok(!!m && m.textContent.includes("ไม่พบคำเตือนในฐานข้อมูลนี้"), "คำตอบมี 'ไม่พบคำเตือนในฐานข้อมูลนี้' (ไม่ตอบว่าใช้ได้)");
   const sys20 = (() => { const c = d.body.cloneNode(true); c.querySelectorAll(".cmsg.u").forEach((u) => u.remove()); return c.textContent; })();
   // รูปปฏิเสธที่ยอมรับ: ไม่ได้แปลว่า/ไม่ได้หมายความว่าปลอดภัย (รูปหลังมาจาก disclaimer_th ใน data/config.json เดิม) เกณฑ์เดียวกับสถานการณ์ 0
   ok(sys20.replace(/ไม่ได้(แปลว่า|หมายความว่า)ปลอดภัย/g, "").indexOf("ปลอดภัย") === -1, "ข้อความของระบบไม่มีคำว่า ปลอดภัย นอกเชิงปฏิเสธ");
@@ -334,13 +334,13 @@ function accName(e, d) {
   ({ w, d, $ } = await load());
   pick(w, d, "herbAdd", "ขิง"); pick(w, d, "drugAdd", "warfarin"); $("age").value = "60"; await submit(d);
   $("chatHead").click();
-  m = await askN("ทำไมถึงขึ้นธง", 1); ok(!!m && !m.querySelector(".stl"), "ผลตรวจปัจจุบัน: คำตอบไม่มีป้ายผลเดิม");
+  m = await askN("ทำไมถึงขึ้นคำเตือน", 1); ok(!!m && !m.querySelector(".stl"), "ผลตรวจปัจจุบัน: คำตอบไม่มีป้ายผลเดิม");
   d.querySelector('#drugSel [data-v="warfarin"] button').click();   // แก้ข้อมูล -> ผลเก่าถูกซ่อน
-  const m2 = await askN("ทำไมถึงขึ้นธง", 2), m3 = await askN("ควรถามเภสัชกรว่าอะไร", 3);
+  const m2 = await askN("ทำไมถึงขึ้นคำเตือน", 2), m3 = await askN("ควรถามเภสัชกรว่าอะไร", 3);
   ok([m2, m3].every((x) => x && x.querySelector(".stl") && x.querySelector(".stl").textContent.startsWith(STL)), "แก้ข้อมูลแล้วถาม 2 ครั้ง: ทั้งสองคำตอบมีป้าย 'อ้างอิงผลตรวจก่อนที่คุณจะแก้ข้อมูล'");
   await submit(d);
-  m = await askN("ทำไมถึงขึ้นธง", 4); ok(!!m && !m.querySelector(".stl"), "ตรวจใหม่แล้ว: คำตอบถัดไปไม่มีป้าย");
-  w.__askDelay = 400; send("ทำไมถึงขึ้นธง"); await sleep(60);
+  m = await askN("ทำไมถึงขึ้นคำเตือน", 4); ok(!!m && !m.querySelector(".stl"), "ตรวจใหม่แล้ว: คำตอบถัดไปไม่มีป้าย");
+  w.__askDelay = 400; send("ทำไมถึงขึ้นคำเตือน"); await sleep(60);
   $("age").value = "61"; $("age").dispatchEvent(new w.Event("input", { bubbles: true }));   // แก้ระหว่างรอคำตอบ
   await waitFor(() => d.querySelectorAll("#chatLog .cmsg.a").length === 5 && $("chatSend").getAttribute("aria-disabled") === "false");
   m = [...d.querySelectorAll("#chatLog .cmsg.a")][4];
@@ -366,14 +366,14 @@ function accName(e, d) {
   w.__askResp = { status: 503, body: JSON.stringify({ error: "llm_unavailable", message: "บริการ AI ใช้ไม่ได้ชั่วคราว" }) };
   er = await errN("รางจืด", 5); ok(!!er && er.textContent.includes("บริการ AI ใช้ไม่ได้ชั่วคราว"), "503: คงข้อความจากเซิร์ฟเวอร์");
 
-  console.log("== 23) แชต: ถาม 'กินได้ไหม' เรื่องที่ไม่ได้กรอก -> ไม่ตอบ 'ไม่พบธง' ==");
+  console.log("== 23) แชต: ถาม 'กินได้ไหม' เรื่องที่ไม่ได้กรอก -> ไม่ตอบ 'ไม่พบคำเตือน' ==");
   ({ w, d, $ } = await load());
   pick(w, d, "herbAdd", "ขิง"); $("age").value = "30"; await submit(d);
   $("chatHead").click();
   m = await askN("ขิงกับวาร์ฟารินกินได้ไหม", 1);
-  ok(!!m && !m.textContent.includes("ไม่พบธงเตือน") && m.textContent.includes("ไม่ควรรับประทาน") && !!m.querySelector("details.evd"), "ยาที่ไม่ได้กรอก: แสดงคำเตือนจากฐานข้อมูลพร้อมหลักฐาน ไม่บอกว่าไม่พบธง");
+  ok(!!m && !m.textContent.includes("ไม่พบคำเตือน") && m.textContent.includes("ไม่ควรรับประทาน") && !!m.querySelector("details.evd"), "ยาที่ไม่ได้กรอก: แสดงคำเตือนจากฐานข้อมูลพร้อมหลักฐาน ไม่บอกว่าไม่พบคำเตือน");
   m = await askN("ขิงปลอดภัยไหม", 2);
-  ok(!!m && m.textContent.includes("ไม่พบธงเตือนในฐานข้อมูลนี้"), "ถามเฉพาะสิ่งที่ตรวจแล้วและไม่มีธง: ยังใช้ข้อความไม่พบธงมาตรฐาน");
+  ok(!!m && m.textContent.includes("ไม่พบคำเตือนในฐานข้อมูลนี้"), "ถามเฉพาะสิ่งที่ตรวจแล้วและไม่มีคำเตือน: ยังใช้ข้อความไม่พบคำเตือนมาตรฐาน");
 
   console.log(fails ? `\nสรุป: ล้มเหลว ${fails} ข้อ` : "\nสรุป: ผ่านทุกข้อ");
   process.exit(fails ? 1 : 0);

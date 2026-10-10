@@ -12,7 +12,7 @@ function Sev({ severity, prefix = "" }: { severity: string; prefix?: string }) {
   return <span class="sev-text">{`${prefix}ระดับ ${severity}`}</span>;
 }
 
-/** การ์ดธง: ข้อความทั้งหมดจากเซิร์ฟเวอร์แสดงเป็นข้อความล้วน */
+/** การ์ดคำเตือน: ข้อความทั้งหมดจากเซิร์ฟเวอร์แสดงเป็นข้อความล้วน */
 export function FlagCard({ flag: f }: { flag: Flag }) {
   const ask = useContext(AskFlag);
   return (
@@ -31,13 +31,13 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
       </details>
       {f.evidence_quote && <Evidence quote={f.evidence_quote} page={f.source_page} pdfPage={f.pdf_page} doc={f.source_doc_th} />}
       {ask && (
-        <button type="button" class="askflag noprint" aria-label={`ถามเรื่องธงนี้: ${ask.herbName(f.herb_id)}`} onClick={() => ask.ask(f)}>ถามเรื่องธงนี้</button>
+        <button type="button" class="askflag noprint" aria-label={`ถามเรื่องคำเตือนนี้: ${ask.herbName(f.herb_id)}`} onClick={() => ask.ask(f)}>ถามเรื่องคำเตือนนี้</button>
       )}
     </li>
   );
 }
 
-/** "ดูหลักฐาน" (พับไว้): วลีสั้น + หน้าในหนังสือ ใช้ทั้งการ์ดธงและคำตอบแชต */
+/** "ดูหลักฐาน" (พับไว้): วลีสั้น + หน้าในหนังสือ ใช้ทั้งการ์ดคำเตือนและคำตอบแชต */
 const DEFAULT_DOC = "หนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first)";
 
 export function Evidence({ summary = "ดูหลักฐาน", quote, page, pdfPage, doc = DEFAULT_DOC, children }: {

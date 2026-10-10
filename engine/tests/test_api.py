@@ -177,7 +177,7 @@ def test_index_page_chat_widget_markers_and_privacy_rules():
 def test_chat_css_does_not_restyle_flag_card_msg():
     import re
     css = (ROOT / "public" / "index.html").read_text(encoding="utf-8").split("<style>")[1].split("</style>")[0]
-    # .msg เป็นของการ์ดธง ใช้ได้เฉพาะใต้ .flag; ฟองแชตใช้ .cmsg (กันสไตล์แชตรั่วไปเปลี่ยนหน้าผลตรวจ)
+    # .msg เป็นของการ์ดคำเตือน ใช้ได้เฉพาะใต้ .flag; ฟองแชตใช้ .cmsg (กันสไตล์แชตรั่วไปเปลี่ยนหน้าผลตรวจ)
     hits = [css[max(0, m.start() - 6):m.end()] for m in re.finditer(r"(?<![\w-])\.msg\b", css)]
     assert hits and all(h.startswith(".flag ") for h in hits), hits
 
@@ -218,7 +218,7 @@ def test_dev_server_falls_back_to_public_without_dist(tmp_path):
 
 def test_index_page_respects_ui_rule_5_and_has_no_reassurance_glyphs():
     html = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-    assert 'const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้"' in html           # ข้อความมาตรฐานเมื่อไม่พบธง
+    assert 'const NO_FLAG = "ไม่พบคำเตือนในฐานข้อมูลนี้"' in html           # ข้อความมาตรฐานเมื่อไม่พบคำเตือน
     assert "ปลอดภัย" not in html.replace("ไม่ได้แปลว่าปลอดภัย", "")           # คำนี้ใช้ได้เฉพาะแบบปฏิเสธ
     assert not any(g in html for g in "✓✔✅☑👍")                              # ไม่มีสัญลักษณ์ติ๊ก/ปลอบใจในผลตรวจ
     assert "scopeBox(cov, r.disclaimer_th)" in html and "evidence(f)" in html  # ขอบเขต+disclaimer และแถวหลักฐานถูกเรียกใช้
@@ -244,7 +244,7 @@ def test_ask_works_before_any_check_with_no_herbs(monkeypatch):
     _no_keys(monkeypatch)
     a = service.ask({"question": "รางจืดกับยาเบาหวาน"})["answer"]
     assert a["source"] == "database" and a["cites"][0]["herb_id"] == "rangchuet"
-    assert service.ask({"question": "ทำไมถึงขึ้นธง"})["answer"]["source"] == "refusal"   # ยังไม่มีผลตรวจ
+    assert service.ask({"question": "ทำไมถึงขึ้นคำเตือน"})["answer"]["source"] == "refusal"   # ยังไม่มีผลตรวจ
 
 
 def test_ask_emergency_and_refusals(monkeypatch):
@@ -271,9 +271,9 @@ def test_ask_accepts_punctuation_only_question_and_answers_with_fixed_refusal(mo
 
 def test_ask_recomputes_result_server_side_and_ignores_client_supplied_result(monkeypatch):
     _no_keys(monkeypatch)
-    forged = {**ASK, "question": "ทำไมถึงขึ้นธง", "result": {"flags": []}}
+    forged = {**ASK, "question": "ทำไมถึงขึ้นคำเตือน", "result": {"flags": []}}
     a = service.ask(forged)["answer"]
-    assert a["cites"] and a["source"] == "database"   # ธงมาจากการคำนวณใหม่ ไม่ใช่ค่าที่ไคลเอนต์ส่ง
+    assert a["cites"] and a["source"] == "database"   # คำเตือนมาจากการคำนวณใหม่ ไม่ใช่ค่าที่ไคลเอนต์ส่ง
 
 
 def test_ask_never_logs_the_question(monkeypatch, capsys):

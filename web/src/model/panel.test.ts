@@ -140,7 +140,7 @@ describe("rowView (ใช้ผลเฉพาะเมื่อ current)", () =
     expect(rowView(herb, ok(body([flag({ severity: "weird" as any })])), none)).toBe("see_panel");
   });
   test("ยา: ไม่เคยได้ no_flag; unknown = no_data; ไม่ได้ส่ง = no_data", () => {
-    expect(rowView(drug, ok(withDrug(body())), none)).toBe("drug_unsplit"); // ผลไม่มีธงเลย: ไม่ชี้ไปแผงที่ว่าง
+    expect(rowView(drug, ok(withDrug(body())), none)).toBe("drug_unsplit"); // ผลไม่มีคำเตือนเลย: ไม่ชี้ไปแผงที่ว่าง
     expect(rowView(drug, ok(withDrug(body([flag()]))), none)).toBe("see_panel");
     expect(rowView(drug, ok(withDrug(body([], { coverage: { unknown_inputs: ["Warfarin"] } }))), none)).toBe("no_data");
     expect(rowView(drug, ok(body()), none)).toBe("no_data"); // ไม่อยู่ใน drugs_as_entered

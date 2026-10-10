@@ -222,9 +222,9 @@ describe("ข้อความแจ้ง", () => {
 describe("ใบสรุปเภสัชกร", () => {
   const region = () => screen.getByRole("region", { name: "ใบสรุปสำหรับเภสัชกร" });
 
-  test("ผลปัจจุบัน: ขอบเขต disclaimer ตารางธง คำถามต่อ ยังไม่ได้ตรวจ และปุ่มดาวน์โหลด/พิมพ์", () => {
+  test("ผลปัจจุบัน: ขอบเขต disclaimer ตารางคำเตือน คำถามต่อ ยังไม่ได้ตรวจ และปุ่มดาวน์โหลด/พิมพ์", () => {
     herb();
-    const b = body([flag({ verified: false, message_th: "ข้อความธงหนึ่ง" })], {
+    const b = body([flag({ verified: false, message_th: "ข้อความคำเตือนหนึ่ง" })], {
       coverage: { not_checked: ["age"], unknown_inputs: ["ยาแปลก"] },
       summary: { follow_up_questions_th: ["ใช้มานานเท่าไร"], draft_notice_th: "มีข้อมูลร่าง" },
     });
@@ -233,7 +233,7 @@ describe("ใบสรุปเภสัชกร", () => {
     expect(within(r).getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา")).toBeInTheDocument();
     expect(within(r).getByRole("note")).toHaveTextContent(META.disclaimer_th);
     expect(within(r).getByText(b.summary.headline_th)).toBeInTheDocument();
-    expect(within(r).getByRole("table")).toHaveTextContent("ข้อความธงหนึ่ง");
+    expect(within(r).getByRole("table")).toHaveTextContent("ข้อความคำเตือนหนึ่ง");
     expect(within(r).getByRole("table")).toHaveTextContent("ร่าง: ยังไม่ผ่านการตรวจ");
     expect(within(r).getByText("ใช้มานานเท่าไร")).toBeInTheDocument();
     expect(within(r).getByText("ยังไม่ได้ตรวจ: ยาแปลก, อายุ")).toBeInTheDocument();
@@ -247,20 +247,20 @@ describe("ใบสรุปเภสัชกร", () => {
     expect(print).toHaveBeenCalled();
   });
 
-  test("ไม่มีธง: หัวข้อ ไม่พบธงเตือนในฐานข้อมูลนี้ คู่ข้อความว่าไม่ได้แปลว่าใช้ได้", () => {
+  test("ไม่มีคำเตือน: หัวข้อ ไม่พบคำเตือนในฐานข้อมูลนี้ คู่ข้อความว่าไม่ได้แปลว่าใช้ได้", () => {
     herb();
     show(okA(body()));
-    expect(within(region()).getByText("ไม่พบธงเตือนในฐานข้อมูลนี้")).toBeInTheDocument();
+    expect(within(region()).getByText("ไม่พบคำเตือนในฐานข้อมูลนี้")).toBeInTheDocument();
     expect(within(region()).getByText("นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร")).toBeInTheDocument();
   });
 
   test("ผลไม่ใช่ปัจจุบัน: ไม่แสดงเนื้อหาเก่าเป็นปัจจุบัน (ไม่มีตาราง/หัวข้อผล) แต่ยังมีขอบเขต", () => {
     herb();
-    const b = body([flag({ message_th: "ธงเก่า" })]);
+    const b = body([flag({ message_th: "คำเตือนเก่า" })]);
     show(ana({ status: "loading", result: b.result, summary: b.summary, current: false }));
     const r = region();
     expect(within(r).queryByRole("table")).toBeNull();
-    expect(within(r).queryByText("ธงเก่า")).toBeNull();
+    expect(within(r).queryByText("คำเตือนเก่า")).toBeNull();
     expect(within(r).queryByText(b.summary.headline_th)).toBeNull();
     expect(within(r).queryByRole("button", { name: "ดาวน์โหลดใบสรุปเป็นไฟล์" })).toBeNull();
     expect(within(r).getByText(/กำลังตรวจ/)).toBeInTheDocument();
@@ -293,8 +293,8 @@ describe("ข้อเสนอแนะ", () => {
     vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => { calls.push({ url, body: JSON.parse(String(init!.body)) }); return respond({ ok: true }); }));
     show(okA(body([flag({ flag_id: "F-1" }), flag({ flag_id: "F-2" })])));
     await user.click(screen.getByText(/ช่วยเราปรับปรุง/, { selector: "summary" }));
-    await user.selectOptions(screen.getByLabelText(/ความเห็นต่อธงที่ 1/), "เห็นด้วย");
-    await user.selectOptions(screen.getByLabelText(/ความเห็นต่อธงที่ 2/), "ไม่แน่ใจ");
+    await user.selectOptions(screen.getByLabelText(/ความเห็นต่อคำเตือนที่ 1/), "เห็นด้วย");
+    await user.selectOptions(screen.getByLabelText(/ความเห็นต่อคำเตือนที่ 2/), "ไม่แน่ใจ");
     await user.selectOptions(screen.getByLabelText("คุณคือ"), "เภสัชกร");
     await user.type(screen.getByLabelText("ความเห็น"), "ทดสอบ");
     expect(screen.getByLabelText("ความเห็น")).toHaveAttribute("maxlength", "500");
@@ -312,10 +312,10 @@ describe("ข้อเสนอแนะ", () => {
     for (const w of ["warfarin", "htn", "khing", "ขิง", "pregnant", "profile", "age"]) expect(s).not.toContain(w);
   });
 
-  describe("คำตอบต่อธงผูกกับผลปัจจุบัน; ความเห็น/บทบาท/ชื่อเคสคงอยู่", () => {
-    const oldFlags = () => body([flag({ flag_id: "f0", rule_id: "R1", message_th: "ธงเดิม" })]);
+  describe("คำตอบต่อคำเตือนผูกกับผลปัจจุบัน; ความเห็น/บทบาท/ชื่อเคสคงอยู่", () => {
+    const oldFlags = () => body([flag({ flag_id: "f0", rule_id: "R1", message_th: "คำเตือนเดิม" })]);
     const rerender = (view: ReturnType<typeof show>, a: Analysis) => view.rerender(<MyData store={store} meta={META} today={T} analysis={a} />);
-    const answer = () => screen.getByLabelText(/ความเห็นต่อธงที่ 1/);
+    const answer = () => screen.getByLabelText(/ความเห็นต่อคำเตือนที่ 1/);
 
     async function fill() {
       const user = userEvent.setup();
@@ -348,12 +348,12 @@ describe("ข้อเสนอแนะ", () => {
       kept();
     });
 
-    test("(ข) ผลใหม่ที่ f0 เป็นธงอื่น: คำตอบถูกล้าง ความเห็น/บทบาท/ชื่อเคสคงอยู่ และไม่ส่งคำตอบเก่า", async () => {
+    test("(ข) ผลใหม่ที่ f0 เป็นคำเตือนอื่น: คำตอบถูกล้าง ความเห็น/บทบาท/ชื่อเคสคงอยู่ และไม่ส่งคำตอบเก่า", async () => {
       const calls: any[] = [];
       vi.stubGlobal("fetch", vi.fn(async (_u: string, init?: RequestInit) => { calls.push(JSON.parse(String(init!.body))); return respond({ ok: true }); }));
       const { user, view } = await fill();
       rerender(view, ana({ status: "loading" }));
-      rerender(view, okA(body([flag({ flag_id: "f0", rule_id: "R2", message_th: "ธงใหม่" })])));
+      rerender(view, okA(body([flag({ flag_id: "f0", rule_id: "R2", message_th: "คำเตือนใหม่" })])));
       expect(answer()).toHaveValue("");
       kept();
       await user.click(screen.getByRole("button", { name: "ส่งความเห็น" }));
