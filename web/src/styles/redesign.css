@@ -199,3 +199,16 @@ button.danger { background: var(--c-avoid-fg); color: var(--c-avoid-bg); border-
 .pharm-summary td .badge { white-space: nowrap; }
 .pharm-summary td:first-child { min-width: 9.5rem; }
 @media (max-width: 600px) { .pharm-summary td:first-child { min-width: 0; } }
+
+/* เพิ่มรายการ: เลือกวันเริ่มแบบเร็ว + ติ๊กย้อนหลัง; แก้วันเริ่ม */
+.quick-dates { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.check-line { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; font-weight: 400; }
+.link-btn { background: none; border: 0; padding: 4px 0; min-height: 44px; color: var(--c-primary); text-decoration: underline; cursor: pointer; font: inherit; }
+.start-editor { display: grid; gap: 6px; padding: 8px 0; }
+.weekline { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.legend { margin-top: 12px; }
+
+/* การ์ดธง: ข้อความหลักอ่านง่าย แหล่งที่มาแยกเป็นบรรทัดรอง */
+.flag-card .msg { font-size: 1.05rem; line-height: 1.7; margin: 8px 0; }
+.flag-card .ev { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.flag-card .ev-lead { flex-basis: 100%; font-size: .85rem; color: var(--c-muted, inherit); }

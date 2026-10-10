@@ -37,7 +37,7 @@ test("เพิ่มขิง เริ่ม 3 วันก่อน -> รา
   await user.type(within(d).getByLabelText("ค้นหา หรือพิมพ์ชื่อยา"), "ขิง");
   expect(within(d).queryByRole("button", { name: /ฟ้าทะลายโจร/ })).toBeNull();
   await user.click(within(d).getByRole("button", { name: "ขิง (สมุนไพร)" }));
-  const date = within(d).getByLabelText("วันที่เริ่มใช้") as HTMLInputElement;
+  const date = within(d).getByLabelText("เริ่มใช้ครั้งแรกเมื่อไหร่") as HTMLInputElement;
   expect(date.max).toBe(T);
   expect(date.value).toBe(T);
   await user.clear(date);
@@ -46,14 +46,14 @@ test("เพิ่มขิง เริ่ม 3 วันก่อน -> รา
   expect(store.active()).toHaveLength(1);
   expect(store.active()[0]).toMatchObject({ kind: "herb", ref: "khing", start_date: "2026-10-04" });
   expect(screen.queryByRole("dialog")).toBeNull();
-  expect(await screen.findByText(/วันที่ 4/)).toBeInTheDocument();
+  expect(await screen.findByText(/ใช้มา 4 วัน/)).toBeInTheDocument();
 });
 
 test("วันที่ในอนาคต -> ข้อความอยู่ติดช่องวันที่ ไม่เพิ่ม", async () => {
   const user = setup();
   const d = await open(user);
   await user.click(within(d).getByRole("button", { name: "ขิง (สมุนไพร)" }));
-  const date = within(d).getByLabelText("วันที่เริ่มใช้");
+  const date = within(d).getByLabelText("เริ่มใช้ครั้งแรกเมื่อไหร่");
   await user.clear(date);
   await user.type(date, "2026-10-09");
   await user.click(within(d).getByRole("button", { name: "เพิ่ม" }));
@@ -147,7 +147,7 @@ test("แก้วันที่แล้วข้อความผิดพ�
   const user = setup();
   const d = await open(user);
   await user.click(within(d).getByRole("button", { name: "ขิง (สมุนไพร)" }));
-  const date = within(d).getByLabelText("วันที่เริ่มใช้");
+  const date = within(d).getByLabelText("เริ่มใช้ครั้งแรกเมื่อไหร่");
   await user.clear(date);
   await user.type(date, "2026-10-09");
   await user.click(within(d).getByRole("button", { name: "เพิ่ม" }));
@@ -227,4 +227,19 @@ describe("ExplainBox", () => {
     store.addItem({ kind: "drug", ref: "warfarin", label: "warfarin", start_date: T });
     await waitFor(() => expect(screen.queryByText("สรุปทดสอบ")).toBeNull());
   });
+});
+
+test.each([[true, 8], [false, 0]])("เริ่มใช้ 1 สัปดาห์ก่อน ติ๊กทุกวัน=%s -> เติมประวัติ %i วัน", async (fill, n) => {
+  const { DiaryStore } = await import("../model/diary");
+  const diary = new DiaryStore(null, () => T);
+  const user = userEvent.setup();
+  render(<ThisPeriod store={store} meta={META} today={T} diary={diary} />);
+  const d = await open(user);
+  await user.click(within(d).getByRole("button", { name: /ขิง/ }));
+  await user.click(within(d).getByRole("button", { name: "1 สัปดาห์ก่อน" }));
+  const box = within(d).getByRole("checkbox") as HTMLInputElement;
+  expect(box.checked).toBe(true);
+  if (!fill) await user.click(box);
+  await user.click(within(d).getByRole("button", { name: "เพิ่ม" }));
+  expect((diary.state.taken[store.state.items[0].id] ?? []).length).toBe(n);
 });

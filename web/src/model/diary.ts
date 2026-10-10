@@ -1,4 +1,4 @@
-import { dayNumber, isValidISODate } from "./dates";
+import { addDays, dayNumber, isValidISODate } from "./dates";
 import type { KeyValueStorage } from "./tracker";
 
 /**
@@ -152,6 +152,22 @@ export class DiaryStore {
     if (next.length === 0) delete taken[itemId];
     this.commit({ ...this._state, taken });
     return true;
+  }
+
+  /**
+   * ติ๊กว่าใช้ทุกวันตั้งแต่ start ถึง today (ผู้ใช้เลือกเองตอนเพิ่ม/แก้วันเริ่ม)
+   * ไม่แตะวันที่เคยติ๊กไว้แล้ว คืนจำนวนวันที่เพิ่ม
+   */
+  markRange(itemId: string, start: string, end: string): number {
+    if (!itemId || itemId.length > 64 || !isValidISODate(start) || !isValidISODate(end)) return 0;
+    const last = Math.min(dayNumber(start, end), MAX_ENTRIES);
+    if (dayNumber(end, this.today()) < 1 || last < 1) return 0;
+    const cur = new Set(this._state.taken[itemId] ?? []);
+    const before = cur.size;
+    for (let k = 0; k < last; k++) { const d = addDays(end, -k); if (d) cur.add(d); }
+    const next = [...cur].sort().slice(-MAX_ENTRIES);
+    this.commit({ ...this._state, taken: { ...this._state.taken, [itemId]: next } });
+    return Math.max(0, next.length - before);
   }
 
   /** ลบเช็กอินของรายการที่ถูกลบออกจากรายการใช้ (กันข้อมูลค้าง) */

@@ -80,3 +80,12 @@ test("series skips nulls and keeps date order", () => {
   s.saveEntry(e({ date: "2026-10-06" }));
   expect(series(s.state.entries, "weight")).toEqual([{ date: "2026-10-05", value: 61 }, { date: "2026-10-07", value: 60 }]);
 });
+
+test("markRange ticks every day from start to today, keeps earlier ticks, rejects future end", () => {
+  const s = new DiaryStore(mem(), today);
+  s.toggleTaken("a", "2026-10-05");
+  expect(s.markRange("a", "2026-10-03", TODAY)).toBe(4);
+  expect(s.state.taken.a).toEqual(["2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07"]);
+  expect(takenInWindow(s.state.taken.a, "2026-10-03", TODAY)).toEqual({ took: 5, days: 5 });
+  expect(s.markRange("a", "2026-10-03", "2026-10-09")).toBe(0);
+});

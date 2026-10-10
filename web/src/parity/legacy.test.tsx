@@ -203,7 +203,7 @@ describe("3-4) ขิง + กระเทียม + warfarin อายุ 60 (
     await mount();
     const h = await result("khing_garlic_warfarin_60");
     // 3.1 รายการที่กำลังใช้ (แทนแถวที่เลือก + ชิปยา + สรุปจำนวน)
-    for (const [label, kind] of [["ขิง", "สมุนไพร"], ["กระเทียม", "สมุนไพร"], ["warfarin", "ยา"]]) expect(activeRow(label)).toHaveTextContent(`${kind} · วันที่ 1`);
+    for (const [label, kind] of [["ขิง", "สมุนไพร"], ["กระเทียม", "สมุนไพร"], ["warfarin", "ยา"]]) expect(activeRow(label)).toHaveTextContent(new RegExp(`${kind} · เริ่มใช้ .*\\(ใช้มา 1 วัน\\)`));
     // 3.2 หัวข้อผลจาก engine และประกาศในพื้นที่ประกาศ (ไม่ย้ายโฟกัสเอง เพราะตรวจอัตโนมัติทุกครั้งที่แก้)
     expect(h.textContent).toMatch(/^พบธงเตือน/);
     expect(status()).toHaveTextContent(h.textContent!);

@@ -96,7 +96,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
 
       <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>+ เพิ่ม</button>
       <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
-      {adding && <AddSheet meta={meta} store={store} today={today} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
+      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
 
       <ActiveList store={store} today={today} analysis={a} diary={diary} />
     </section>

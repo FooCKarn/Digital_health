@@ -104,11 +104,11 @@ describe("แท็บ ช่วงนี้ · บันทึก · ที่�
         profile: { age: null, pregnant: null, breastfeeding: null, conditions: [] },
       }));
       const tabs = await mount();
-      expect(await screen.findByText("สมุนไพร · วันที่ 1")).toBeInTheDocument();
+      expect(await screen.findByText(/^สมุนไพร · เริ่มใช้ .*\(ใช้มา 1 วัน\)$/)).toBeInTheDocument();
       vi.setSystemTime(new Date(2026, 9, 8, 0, 1));
       fireEvent.click(tabs[2]);
       fireEvent.click(tabs[0]);
-      expect(await screen.findByText("สมุนไพร · วันที่ 2")).toBeInTheDocument();
+      expect(await screen.findByText(/^สมุนไพร · เริ่มใช้ .*\(ใช้มา 2 วัน\)$/)).toBeInTheDocument();
     } finally { vi.useRealTimers(); }
   });
 
