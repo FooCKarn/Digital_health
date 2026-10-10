@@ -12,7 +12,7 @@ import analyze  # noqa: E402
 import ask  # noqa: E402
 import explain  # noqa: E402
 import brief  # noqa: E402
-import intent  # noqa: E402
+import assistant  # noqa: E402
 import feedback  # noqa: E402
 import meta  # noqa: E402
 import parse  # noqa: E402
@@ -21,7 +21,7 @@ ROUTES = {("GET", "/api/meta"): meta.handler.do_GET, ("POST", "/api/analyze"): a
           ("POST", "/api/feedback"): feedback.handler.do_POST,
           ("POST", "/api/parse"): parse.handler.do_POST, ("POST", "/api/explain"): explain.handler.do_POST,
           ("POST", "/api/ask"): ask.handler.do_POST,
-          ("POST", "/api/brief"): brief.handler.do_POST, ("POST", "/api/intent"): intent.handler.do_POST}
+          ("POST", "/api/brief"): brief.handler.do_POST, ("POST", "/api/assistant"): assistant.handler.do_POST}
 
 
 class Dev(SimpleHTTPRequestHandler):

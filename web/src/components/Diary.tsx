@@ -7,7 +7,6 @@ import { downloadJSON } from "../download";
 import { groupFlags } from "../model/panel";
 import { Trend } from "./Trend";
 import { Calendar } from "./Calendar";
-import { itemsOn } from "../model/calendar";
 import { openPolicy } from "./Policy";
 import { useDiary } from "../hooks/useDiary";
 
@@ -134,7 +133,7 @@ function MoodDots({ diary, today }: { diary: DiaryStore; today: string }) {
   );
 }
 
-/** แผงของวันที่เลือก: ฟอร์มบันทึก + ปุ่มกดว่าใช้แล้ว (key = วันที่ ฟอร์มจึงเริ่มใหม่เมื่อเปลี่ยนวัน) */
+/** แผงของวันที่เลือก: ฟอร์มบันทึกสุขภาพ (การกดว่าใช้แล้วอยู่ที่ปุ่ม ใช้แล้ววันนี้ ในหน้า ช่วงนี้/ผู้ช่วย) (key = วันที่ ฟอร์มจึงเริ่มใหม่เมื่อเปลี่ยนวัน) */
 function DayPanel({ diary, store, date, today, msg, onMsg }: {
   diary: DiaryStore; store: TrackerStore; date: string; today: string;
   msg: { ok: boolean; text: string } | null; onMsg: (m: { ok: boolean; text: string } | null) => void;
@@ -149,7 +148,6 @@ function DayPanel({ diary, store, date, today, msg, onMsg }: {
   const [glucose, setGlucose] = useState(mine?.glucose?.toString() ?? "");
   const [weight, setWeight] = useState(mine?.weight?.toString() ?? "");
   const [consent, setConsent] = useState(diary.state.entries.length > 0);
-  const used = itemsOn(store.state.items, date);
 
   const save = (e: Event) => {
     e.preventDefault();
@@ -160,20 +158,6 @@ function DayPanel({ diary, store, date, today, msg, onMsg }: {
   return (
     <form class="card day-panel" onSubmit={save} noValidate aria-labelledby="day-h">
       <h3 id="day-h">{isToday ? "วันนี้เป็นอย่างไรบ้าง" : `บันทึกของ${when}`}</h3>
-
-      {used.length > 0 && <p class="meta">{`กดรายการที่ใช้แล้วใน${when} (กดซ้ำเพื่อยกเลิก)`}</p>}
-      {used.length > 0 && (
-        <div class="day-items" role="group" aria-label={`รายการที่ใช้อยู่ใน${when}`}>
-          {used.map((i) => {
-            const on = diary.isTaken(i.id, date);
-            return (
-              <button key={i.id} type="button" class="check-btn" aria-pressed={on} aria-label={`ใช้ ${i.label} แล้วใน${when}`} onClick={() => diary.toggleTaken(i.id, date)}>
-                {i.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
 
       <div role="radiogroup" aria-label={`ความรู้สึก${when}`} class="moods">
         {MOODS.map((m) => (

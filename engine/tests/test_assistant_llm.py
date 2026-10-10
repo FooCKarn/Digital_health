@@ -9,7 +9,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "engine"))
 import service  # noqa: E402
-from llm import LLMUnavailable, brief, brief_template, parse_intent  # noqa: E402
+from llm import LLMUnavailable, brief, brief_template, route  # noqa: E402
 
 L = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E731
 HERBS, DRUGS, CONFIG = L("data/herbs.json"), L("data/drug_class_map.json"), L("data/config.json")
@@ -55,24 +55,38 @@ def test_brief_rejects_warning_talk_when_there_are_none_and_llm_failure_uses_tem
 
 
 ITEMS = [{"id": "i1", "label": "ขิง"}, {"id": "i2", "label": "warfarin"}]
+ASK = {"tool": "ask", "item_ids": [], "time": "", "page": "", "mood": 0}
+R = lambda text, obj: route(text, ITEMS, fake(obj))  # noqa: E731
 
 
-def test_intent_taken_returns_only_known_items_named_in_text():
-    out = parse_intent("กินขิงแล้ววันนี้", ITEMS, fake({"action": "taken", "item_ids": ["i1", "i2", "zzz"]}))
-    assert out == {"action": "taken", "item_ids": ["i1"]}  # i2 ไม่ได้อยู่ในข้อความ, zzz ไม่ใช่รายการของผู้ใช้
+def test_route_mark_taken_returns_only_known_items_named_in_text():
+    out = R("กินขิงแล้ววันนี้", {"tool": "mark_taken", "item_ids": ["i1", "i2", "zzz"]})
+    assert out["tool"] == "mark_taken" and out["item_ids"] == ["i1"]  # i2 ไม่ได้อยู่ในข้อความ, zzz ไม่ใช่รายการของผู้ใช้
 
 
-def test_intent_not_taken_and_none_cases():
-    assert parse_intent("วันนี้ข้าม warfarin", ITEMS, fake({"action": "not_taken", "item_ids": ["i2"]})) == {"action": "not_taken", "item_ids": ["i2"]}
-    assert parse_intent("ขิงดีไหม", ITEMS, fake({"action": "none", "item_ids": []})) == {"action": "none", "item_ids": []}
-    assert parse_intent("กินกระเทียมแล้ว", ITEMS, fake({"action": "taken", "item_ids": ["i1"]})) == {"action": "none", "item_ids": []}
-    assert parse_intent("กินขิงแล้ว", ITEMS, fake({"action": "delete_all", "item_ids": ["i1"]})) == {"action": "none", "item_ids": []}
+def test_route_mark_not_taken_and_unnamed_or_unknown_falls_back_to_ask():
+    assert R("วันนี้ข้าม warfarin", {"tool": "mark_not_taken", "item_ids": ["i2"]})["item_ids"] == ["i2"]
+    assert R("กินกระเทียมแล้ว", {"tool": "mark_taken", "item_ids": ["i1"]}) == ASK          # ชื่อไม่อยู่ในข้อความ
+    assert R("กินแล้ว", {"tool": "mark_taken", "item_ids": ["i1", "i2"]}) == ASK            # ไม่เอ่ยชื่อและไม่ได้บอกว่าครบ
+    assert R("กินครบแล้ว", {"tool": "mark_taken", "item_ids": ["i1", "i2"]})["item_ids"] == ["i1", "i2"]
 
 
-def test_intent_everything_words_allow_all_items_without_naming_them():
-    both = fake({"action": "taken", "item_ids": ["i1", "i2"]})
-    assert parse_intent("กินครบแล้ว", ITEMS, both) == {"action": "taken", "item_ids": ["i1", "i2"]}
-    assert parse_intent("กินแล้ว", ITEMS, both) == {"action": "none", "item_ids": []}  # ไม่เอ่ยชื่อและไม่ได้บอกว่าครบ = ไม่บันทึก
+def test_route_tools_without_args_and_unknown_tool():
+    for t in ("ask", "show_brief", "show_check", "add_items"):
+        assert R("x", {"tool": t})["tool"] == t
+    assert R("ลบข้อมูลทั้งหมด", {"tool": "delete_all"}) == ASK                               # เครื่องมือนอกรายการ
+    assert R("x", ["not", "a", "dict"]) == ASK
+
+
+def test_route_reminder_page_mood_validation():
+    assert R("เตือน 8 โมงเช้า", {"tool": "set_reminder", "time": "08:00"})["time"] == "08:00"
+    assert R("ปิดเตือน", {"tool": "set_reminder", "time": "off"})["time"] == "off"
+    assert R("เตือน", {"tool": "set_reminder", "time": "25:00"}) == ASK
+    assert R("ไปปฏิทิน", {"tool": "go_to", "page": "diary"})["page"] == "diary"
+    assert R("ไป", {"tool": "go_to", "page": "https://evil.example"}) == ASK
+    assert R("วันนี้รู้สึกดี", {"tool": "log_mood", "mood": 4})["mood"] == 4
+    for bad in (0, 6, "4", True, None):
+        assert R("วันนี้รู้สึกดี", {"tool": "log_mood", "mood": bad}) == ASK
 
 
 def test_service_validates_payloads():
@@ -82,6 +96,6 @@ def test_service_validates_payloads():
                 {"item_count": 1, "taken_count": 0, "warnings": {"total": 1}}]:
         with pytest.raises(ValueError):
             service.brief(bad)
-    for bad in [{"text": "", "items": ITEMS}, {"text": "x", "items": []}, {"text": "x", "items": [{"id": "a"}]}, {"text": "x" * 201, "items": ITEMS}]:
+    for bad in [{"text": ""}, {"text": "x" * 301}, {"text": "x", "items": "no"}, {"text": "x", "items": [{"id": "a"}]}]:
         with pytest.raises(ValueError):
-            service.intent(bad)
+            service.assistant(bad)

@@ -27,24 +27,19 @@ test("หัวเดือนเป็น พ.ศ. มีหัวคอลั�
   expect(screen.getByRole("button", { name: "เดือนถัดไป" })).toBeDisabled();
 });
 
-test("เลือกวันย้อนหลังแล้วบันทึกความรู้สึก + กดว่าใช้ ช่องปฏิทินสะท้อนทันที", () => {
+test("เลือกวันย้อนหลังแล้วบันทึกความรู้สึก ช่องปฏิทินสะท้อนทันที (ไม่มีปุ่มกดว่าใช้ในแผงนี้)", () => {
   const { diary, id } = setup();
+  diary.toggleTaken(id, "2026-10-05");
   fireEvent.click(day("2026-10-05"));
   expect(screen.getByRole("heading", { name: "บันทึกของวันที่ 5 ตุลาคม 2569" })).toBeInTheDocument();
   fireEvent.click(screen.getByRole("radio", { name: "ดี" }));
-  fireEvent.click(screen.getByRole("button", { name: "ใช้ ขิง แล้วในวันที่ 5 ตุลาคม 2569" }));
+  expect(screen.queryByRole("button", { name: /ใช้ ขิง แล้วใน/ })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "บันทึกวันที่ 5 ตุลาคม 2569" }));
   expect(screen.getByRole("status")).toHaveTextContent("บันทึกของวันที่ 5 ตุลาคม 2569แล้ว");
   expect(diary.entryOn("2026-10-05")?.mood).toBe(4);
   expect(diary.isTaken(id, "2026-10-05")).toBe(true);
   expect(day("2026-10-05")).toHaveAccessibleName(/ความรู้สึก ดี · กดบันทึกว่าใช้ 1 จาก 1 รายการ/);
   expect(diary.entryOn(TODAY)).toBeUndefined(); // ไม่กระทบวันนี้
-});
-
-test("วันก่อนเริ่มใช้ไม่มีปุ่มกดว่าใช้ (ไม่ผูกรายการกับวันที่ยังไม่เริ่ม)", () => {
-  setup();
-  fireEvent.click(day("2026-10-02"));
-  expect(screen.queryByRole("button", { name: /ใช้ ขิง แล้ว/ })).toBeNull();
 });
 
 test("ลบบันทึกของวันที่เลือกได้ และยืนยันก่อนลบ", () => {

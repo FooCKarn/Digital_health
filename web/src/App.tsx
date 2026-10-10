@@ -13,6 +13,7 @@ import { useAnalysis } from "./hooks/useAnalysis";
 import { todayISO } from "./model/dates";
 import { getLocalStorage } from "./model/storage";
 import { TrackerStore } from "./model/tracker";
+import { AssistantLog } from "./model/assistantLog";
 import { DiaryStore } from "./model/diary";
 import { ReminderStore, hhmm } from "./model/reminder";
 import type { Meta } from "./types";
@@ -89,6 +90,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   const a = useAnalysis(store, today, Object.keys(meta.conditions));
   const [tab, setTab] = useState(0);
   const reminder = useMemo(() => new ReminderStore(getLocalStorage()), []);
+  const assistantLog = useMemo(() => new AssistantLog(), []); // บทสนทนาหน้าผู้ช่วย: อยู่ในหน่วยความจำ ไม่ลงที่เก็บ
   const [reminderBanner, setReminderBanner] = useState(false);
   // เตือนให้บันทึกการใช้: ทำงานตอนเปิดหน้านี้ค้างไว้ (ไม่มีเซิร์ฟเวอร์) ข้อความไม่ใส่ชื่อยา
   useEffect(() => {
@@ -157,15 +159,11 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
         <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
           {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} diary={diary} />
             : v.id === "assistant" ? (
-              <>
-                <Assistant store={store} diary={diary} meta={meta} today={today} analysis={a} ask={(q) => openChat(q)} reminder={reminder}
-                  go={(to: GoTo) => setTab(VIEWS.findIndex((x) => x.id === to))}>
-                  <ChatPanel inline chat={chat} store={store} meta={meta} today={today} open={chatOpen ?? { n: 0 }} onClose={closeChat} />
-                </Assistant>
-              </>
+              <Assistant store={store} diary={diary} meta={meta} today={today} analysis={a} reminder={reminder} log={assistantLog}
+                go={(to: GoTo) => setTab(VIEWS.findIndex((x) => x.id === to))} />
             )
             : v.id === "diary" ? <><Diary diary={diary} store={store} today={today} analysis={a} /><History store={store} /></>
-            : <MyData store={store} meta={meta} today={today} analysis={a} onClearAll={() => { chat.clear(); diary.clearAll(); }} />}
+            : <MyData store={store} meta={meta} today={today} analysis={a} onClearAll={() => { chat.clear(); assistantLog.clear(); diary.clearAll(); }} />}
         </div>
       </AskFlag.Provider>
       {/* แชตอยู่ระดับ App นอกแผงแท็บ ใช้ได้ทุกแท็บ ใช้ store/meta/analysis ชุดเดียวกัน */}
