@@ -14,6 +14,7 @@ import { todayISO } from "./model/dates";
 import { getLocalStorage } from "./model/storage";
 import { TrackerStore } from "./model/tracker";
 import { DiaryStore } from "./model/diary";
+import { ReminderStore, hhmm } from "./model/reminder";
 import type { Meta } from "./types";
 
 const VIEWS = [
@@ -87,6 +88,21 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   const today = todayISO();
   const a = useAnalysis(store, today, Object.keys(meta.conditions));
   const [tab, setTab] = useState(0);
+  const reminder = useMemo(() => new ReminderStore(getLocalStorage()), []);
+  const [reminderBanner, setReminderBanner] = useState(false);
+  // เตือนให้บันทึกการใช้: ทำงานตอนเปิดหน้านี้ค้างไว้ (ไม่มีเซิร์ฟเวอร์) ข้อความไม่ใส่ชื่อยา
+  useEffect(() => {
+    const tick = () => {
+      const t = todayISO();
+      if (!reminder.shouldFire(hhmm(new Date()), t, store.active().some((i) => !diary.isTaken(i.id, t)))) return;
+      reminder.markFired(t);
+      setReminderBanner(true);
+      try { if (typeof Notification !== "undefined" && Notification.permission === "granted") new Notification("HerbGuard TTM", { body: "ถึงเวลาบันทึกการใช้วันนี้แล้ว" }); } catch { /* มีแบนเนอร์ในหน้าแทน */ }
+    };
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => clearInterval(id);
+  }, [store, diary, reminder]);
   const [hideRecovered, setHideRecovered] = useState(false);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const chat = useMemo(() => new ChatStore(getSessionStorage()), []);
@@ -121,6 +137,13 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
           <button type="button" aria-label="ปิดข้อความ ข้อมูลเสียหาย" onClick={() => setHideRecovered(true)}>ปิด</button>
         </p>
       )}
+      {reminderBanner && (
+        <p class="warn row-actions" role="status">
+          <span>ถึงเวลาบันทึกการใช้วันนี้แล้ว</span>
+          <button type="button" onClick={() => { setTab(VIEWS.findIndex((x) => x.id === "assistant")); setReminderBanner(false); }}>ไปบันทึก</button>
+          <button type="button" aria-label="ปิดข้อความเตือน" onClick={() => setReminderBanner(false)}>ปิด</button>
+        </p>
+      )}
       <div class="tabs noprint" role="tablist" aria-label="มุมมอง" onKeyDown={onKey}>
         {VIEWS.map((x, i) => (
           <button key={x.id} ref={(el) => { tabs.current[i] = el; }} type="button" role="tab" id={`tab-${x.id}`}
@@ -135,7 +158,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
           {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} diary={diary} />
             : v.id === "assistant" ? (
               <>
-                <Assistant store={store} diary={diary} meta={meta} today={today} analysis={a} ask={(q) => openChat(q)}
+                <Assistant store={store} diary={diary} meta={meta} today={today} analysis={a} ask={(q) => openChat(q)} reminder={reminder}
                   go={(to: GoTo) => setTab(VIEWS.findIndex((x) => x.id === to))}>
                   <ChatPanel inline chat={chat} store={store} meta={meta} today={today} open={chatOpen ?? { n: 0 }} onClose={closeChat} />
                 </Assistant>

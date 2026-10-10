@@ -158,3 +158,53 @@ def ask(payload) -> dict:
     answer = rag.answer(q.strip(), result, ctx, [h["id"] for h in inp["herbs"]], RAG, CONFIG,
                         use_llm=os.environ.get("HERBGUARD_CHAT_LLM") == "1")
     return {"answer": answer}
+
+
+_BRIEF_KEYS = {"item_count", "taken_count", "untaken", "warnings", "no_entry_today", "not_checked_count", "longest_days"}
+
+
+def brief(payload) -> dict:
+    """LLM จุดที่ 4: เรียบเรียงสรุปประจำวันจากข้อเท็จจริงที่หน้าเว็บคำนวณ (ไม่เชื่อว่าเป็นคำสั่ง; ไม่ผ่านตัวตรวจ = template)"""
+    if not isinstance(payload, dict) or set(payload) - _BRIEF_KEYS:
+        raise ValueError("ข้อมูลไม่ถูกต้อง")
+    n = _int(payload.get("item_count"), 0, 100, "item_count")
+    t = _int(payload.get("taken_count"), 0, 100, "taken_count")
+    if t > n:
+        raise ValueError("taken_count ต้องไม่เกิน item_count")
+    un = payload.get("untaken", [])
+    if not isinstance(un, list) or len(un) > 100 or not all(isinstance(x, str) and 1 <= len(x) <= 100 and not re.search(r"[\x00-\x1f<>]", x) for x in un):
+        raise ValueError("untaken ไม่ถูกต้อง")
+    w = payload.get("warnings")
+    if w is not None:
+        if not isinstance(w, dict) or set(w) != {"total", "avoid"}:
+            raise ValueError("warnings ไม่ถูกต้อง")
+        w = {"total": _int(w["total"], 0, 1000, "total"), "avoid": _int(w["avoid"], 0, 1000, "avoid")}
+    facts = {"item_count": n, "taken_count": t, "untaken": un, "warnings": w, "no_entry_today": bool(payload.get("no_entry_today"))}
+    if payload.get("not_checked_count") is not None:
+        facts["not_checked_count"] = _int(payload["not_checked_count"], 0, 20, "not_checked_count")
+    if payload.get("longest_days") is not None:
+        facts["longest_days"] = _int(payload["longest_days"], 0, 400, "longest_days")
+    return {"brief": llm.brief(facts, ALL, DRUGS, CONFIG)}
+
+
+def intent(payload) -> dict:
+    """LLM จุดที่ 5: ข้อความสั้น -> เสนอ action (taken/not_taken) กับรายการที่ใช้อยู่ ผู้ใช้ต้องยืนยันก่อนบันทึกจริง"""
+    if not isinstance(payload, dict):
+        raise ValueError("ข้อมูลต้องเป็น JSON object")
+    text = payload.get("text")
+    items = payload.get("items")
+    if not isinstance(text, str) or not 1 <= len(text.strip()) <= 200 or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", text):
+        raise ValueError("text ต้องเป็นข้อความ 1-200 ตัวอักษร")
+    if not isinstance(items, list) or not 1 <= len(items) <= 80:
+        raise ValueError("items ต้องมี 1-80 รายการ")
+    clean = []
+    for i in items:
+        if not (isinstance(i, dict) and isinstance(i.get("id"), str) and 1 <= len(i["id"]) <= 64 and isinstance(i.get("label"), str) and 1 <= len(i["label"]) <= 100):
+            raise ValueError("items ไม่ถูกต้อง")
+        clean.append({"id": i["id"], "label": i["label"]})
+    try:
+        return {"intent": llm.parse_intent(text.strip(), clean)}
+    except llm.LLMUnavailable as e:
+        raise ServiceUnavailable(str(e)) from e
+    except (ValueError, KeyError, TypeError) as e:
+        raise ServiceUnavailable("AI แปลงข้อความไม่สำเร็จ กรุณากดเอง") from e

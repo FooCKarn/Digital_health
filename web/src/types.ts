@@ -102,6 +102,14 @@ export interface AskAnswer {
   rejected_reason: string | null;
 }
 
+export interface BriefFacts {
+  item_count: number; taken_count: number; untaken: string[];
+  warnings: { total: number; avoid: number } | null; no_entry_today: boolean;
+  not_checked_count?: number; longest_days?: number;
+}
+export interface BriefOut { source: "llm" | "template"; summary_th: string; rejected_reason: string | null }
+export interface IntentOut { action: "taken" | "not_taken" | "none"; item_ids: string[] }
+
 export interface ParseProposal {
   herbs: { id: string; days_in_use?: number }[];
   drugs: string[];

@@ -288,3 +288,11 @@ details[data-group][data-group] { border-left: 1px solid var(--c-line); }
 @media (min-width: 900px) {
   .assistant { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--sp-5); align-items: start; }
 }
+.ai-brief { margin: var(--sp-3) 0; }
+.intent-box form { display: flex; gap: var(--sp-2); }
+.intent-box input { flex: 1; min-width: 0; }
+.proposal { border-left: 4px solid var(--c-primary); padding: var(--sp-2) var(--sp-3); margin: var(--sp-2) 0; }
+.reminder-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
+.assistant-side > .card { margin-top: 0; }
+input[type="time"] { border: 1.5px solid var(--c-muted); border-radius: 12px; padding: 6px 12px; background: var(--c-surface); color: var(--c-text); color-scheme: light dark; }
+.assistant-side { margin-top: var(--sp-4); }

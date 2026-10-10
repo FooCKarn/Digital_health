@@ -1,4 +1,4 @@
-import type { AnalyzePayload, AnalyzeResult, AskAnswer, AskPayload, Explanation, FeedbackPayload, Meta, ParseProposal, Summary } from "./types";
+import type { BriefFacts, BriefOut, IntentOut, AnalyzePayload, AnalyzeResult, AskAnswer, AskPayload, Explanation, FeedbackPayload, Meta, ParseProposal, Summary } from "./types";
 
 const FIXED = "ตรวจไม่สำเร็จ ลองใหม่อีกครั้ง";
 const THAI = /[฀-๿]/;
@@ -49,6 +49,13 @@ export const explain = (payload: AnalyzePayload) =>
     return (e?.source === "llm" || e?.source === "template") && typeof e.summary_th === "string" && Array.isArray(e.items)
       && e.items.every((i: any) => typeof i?.flag_id === "string" && typeof i?.text_th === "string");
   });
+
+export const briefAi = async (facts: BriefFacts): Promise<BriefOut> =>
+  (await post<{ brief: BriefOut }>("/api/brief", facts, (d) => (d.brief?.source === "llm" || d.brief?.source === "template") && typeof d.brief.summary_th === "string")).brief;
+
+export const intentAi = async (text: string, items: { id: string; label: string }[]): Promise<IntentOut> =>
+  (await post<{ intent: IntentOut }>("/api/intent", { text, items }, (d) =>
+    ["taken", "not_taken", "none"].includes(d.intent?.action) && Array.isArray(d.intent.item_ids) && d.intent.item_ids.every((x: unknown) => typeof x === "string"))).intent;
 
 export const sendFeedback = async (payload: FeedbackPayload): Promise<void> => {
   await post("/api/feedback", payload, (d) => d.ok === true);

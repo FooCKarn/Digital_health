@@ -1,7 +1,7 @@
 import { dayNumber } from "./dates";
 import { groupFlags } from "./panel";
 import type { TrackerItem } from "./tracker";
-import type { AnalyzeResult } from "../types";
+import type { AnalyzeResult, BriefFacts } from "../types";
 
 /**
  * สรุปประจำวัน: คำนวณจากข้อมูลในเครื่องและผลตรวจปัจจุบันเท่านั้น (ฟังก์ชันล้วน ไม่เรียก AI ไม่แปลผลสุขภาพ)
@@ -16,6 +16,14 @@ export interface Brief {
   notChecked: string[];
   noEntryToday: boolean;
   longestUse: { label: string; days: number } | null;
+}
+
+/** ข้อเท็จจริงที่ส่งให้ AI เรียบเรียง (เฉพาะตัวเลขและชื่อรายการที่ผู้ใช้เพิ่มเอง) */
+export function toFacts(b: Brief): BriefFacts {
+  return {
+    item_count: b.itemCount, taken_count: b.takenCount, untaken: b.untaken.map((x) => x.label), warnings: b.warnings, no_entry_today: b.noEntryToday,
+    ...(b.warnings ? { not_checked_count: b.notChecked.length } : {}), ...(b.longestUse ? { longest_days: b.longestUse.days } : {}),
+  };
 }
 
 export function buildBrief(input: {
