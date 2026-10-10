@@ -40,7 +40,7 @@ test("payload ส่งตำรับไปในอาร์เรย์ herbs
   expect(buildPayload([item("drug", "warfarin")], profile, T)).toBeNull(); // ไม่มีสมุนไพร/ตำรับ = ไม่ตรวจ
 });
 
-test("แถวของตำรับขึ้นสถานะมีธงเมื่อธงอ้าง id ตำรับ และไม่ขึ้นเมื่อไม่มีธง (ไม่ปะปนกับสมุนไพร)", () => {
+test("แถวของตำรับขึ้นสถานะมีคำเตือนเมื่อคำเตือนอ้าง id ตำรับ และไม่ขึ้นเมื่อไม่มีคำเตือน (ไม่ปะปนกับสมุนไพร)", () => {
   const it = item("formula", "tonic");
   const sum = { herbs: [{ id: "tonic", name_th: "ตำรับทดสอบ", part: null, days_in_use: 1 }] };
   const withFlag = body([flag({ herb_id: "tonic", severity: "avoid" })], { summary: sum });
@@ -50,6 +50,6 @@ test("แถวของตำรับขึ้นสถานะมีธง�
   const noFlag = body([], { summary: sum });
   const b = { result: noFlag.result, summary: noFlag.summary, current: true, loading: false };
   expect(rowView(it, b, unsentRefs([it]))).toBe("no_flag");
-  // ธงของสมุนไพรชื่อ id เดียวกัน ≠ ตำรับอื่น
+  // คำเตือนของสมุนไพรชื่อ id เดียวกัน ≠ ตำรับอื่น
   expect(itemStatus(item("formula", "other"), withFlag.result)).toBe("no_flag");
 });

@@ -6,7 +6,7 @@ import { buildPayload } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Explanation } from "../types";
 
-const FIXED = "ตอนนี้ใช้ AI ไม่ได้ ข้อความธงด้านบนยังอ่านได้เหมือนเดิม";
+const FIXED = "ตอนนี้ใช้ AI ไม่ได้ ข้อความคำเตือนด้านบนยังอ่านได้เหมือนเดิม";
 const LABEL = {
   llm: "AI เรียบเรียงจากผลตรวจนี้ (ผ่านตัวตรวจข้อความแล้ว)",
   template: "ข้อความสำรองจากฐานข้อมูล (AI ไม่ได้ใช้หรือข้อความไม่ผ่านการตรวจ)",

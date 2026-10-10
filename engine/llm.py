@@ -1,8 +1,8 @@
 """จุดใช้ LLM 3 จุด (CLAUDE.md กฎข้อ 4) ทั้งสองจุดมีตัวตรวจแบบ deterministic ทับผลของ LLM เสมอ:
   parse_text : ข้อความอิสระ -> รายการสมุนไพร/ยา "เสนอให้ผู้ใช้ยืนยัน" (ไม่ใช่ผลสุดท้าย)
-  explain    : เรียบเรียงจาก JSON ผลตรวจ -> ถ้าไม่ผ่าน validate_explanation ใช้ template (message_th ของธง)
+  explain    : เรียบเรียงจาก JSON ผลตรวจ -> ถ้าไม่ผ่าน validate_explanation ใช้ template (message_th ของคำเตือน)
   answer_with_llm : แชต เรียบเรียงจากรายการที่ค้นได้ -> ถ้าไม่ผ่าน validate_answer ใช้ข้อความสกัดจากฐานข้อมูล
-engine (check.py) ไม่เรียกไฟล์นี้ LLM ไม่ตัดสินว่ามีธงหรือไม่ และไม่เพิ่มข้อเท็จจริง
+engine (check.py) ไม่เรียกไฟล์นี้ LLM ไม่ตัดสินว่ามีคำเตือนหรือไม่ และไม่เพิ่มข้อเท็จจริง
 complete(system, user) -> str ฉีดจากภายนอกได้ (ใช้ทดสอบโดยไม่เรียกเครือข่าย)
 """
 import json
@@ -196,7 +196,7 @@ def _numbers(s: str) -> set:
 _BAD_CHARS = re.compile("[^฀-๿ -~\n–—‘’“”…·]")
 _MARKUP = re.compile(r"https?://|www\.|<[^>]*>|```|\]\(|javascript:", re.I)
 _LATIN = re.compile(r"[A-Za-z]{3,}")
-MAX_ITEM, MAX_SUMMARY = 400, 300  # ข้อความต่อธง/สรุป: ยาวกว่านี้ผิดปกติสำหรับการเรียบเรียงสั้น ๆ
+MAX_ITEM, MAX_SUMMARY = 400, 300  # ข้อความต่อคำเตือน/สรุป: ยาวกว่านี้ผิดปกติสำหรับการเรียบเรียงสั้น ๆ
 
 
 def _foreign(text: str, limit: int, forbidden: list | None = None) -> str | None:
@@ -241,7 +241,7 @@ def validate_explanation(out, flags: list, allowed_text: str, all_herb_names: li
         if n.lower() in blob.lower() and n.lower() not in allowed:
             return f"มีชื่อยานอกผลตรวจ: {n}"
     by_id = {f["flag_id"]: f for f in flags}
-    for i in out["items"]:  # ตรวจการกลับความหมายแบบหยาบ: ธงที่เป็นข้อห้าม ข้อความต้องยังมีคำปฏิเสธ
+    for i in out["items"]:  # ตรวจการกลับความหมายแบบหยาบ: คำเตือนที่เป็นข้อห้าม ข้อความต้องยังมีคำปฏิเสธ
         src = by_id[i["flag_id"]]["message_th"]
         if re.search(r"ไม่|ห้าม", src) and not re.search(r"ไม่|ห้าม|หลีกเลี่ยง", i["text_th"]):
             return f"ความหมายของ {i['flag_id']} อาจถูกกลับ"
@@ -251,7 +251,7 @@ def validate_explanation(out, flags: list, allowed_text: str, all_herb_names: li
 def _template(result: dict, reason: str | None) -> dict:
     n = len(result["flags"])
     return {"source": "template", "rejected_reason": reason,
-            "summary_th": f"พบธงเตือน {n} รายการจากฐานข้อมูลนี้" if n else "ไม่พบธงเตือนในฐานข้อมูลนี้",
+            "summary_th": f"พบคำเตือน {n} รายการจากฐานข้อมูลนี้" if n else "ไม่พบคำเตือนในฐานข้อมูลนี้",
             "items": [{"flag_id": f["flag_id"], "text_th": f["message_th"]} for f in result["flags"]],
             "disclaimer_th": result["disclaimer_th"]}
 

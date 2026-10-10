@@ -198,7 +198,7 @@ describe("ExplainBox", () => {
       const user = userEvent.setup();
       const { unmount } = render(<ThisPeriod store={store} meta={META} today={T} />);
       await user.click(await screen.findByRole("button", { name: "ให้ AI อธิบายผลเป็นภาษาง่าย ๆ (ไม่บังคับ)" }));
-      expect(await screen.findByText("ตอนนี้ใช้ AI ไม่ได้ ข้อความธงด้านบนยังอ่านได้เหมือนเดิม")).toBeInTheDocument();
+      expect(await screen.findByText("ตอนนี้ใช้ AI ไม่ได้ ข้อความคำเตือนด้านบนยังอ่านได้เหมือนเดิม")).toBeInTheDocument();
       unmount();
     }
   });

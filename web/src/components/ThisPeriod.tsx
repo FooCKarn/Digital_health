@@ -67,7 +67,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
           <li><strong>ดูคำเตือน</strong> ระบบตรวจจากหนังสือแนวทางฯ ไม่ใช่การวินิจฉัย</li>
         </ol>
       )}
-      {/* ขอบเขต + ไม่ใช่การวินิจฉัย อยู่เหนือธงแรกเสมอ */}
+      {/* ขอบเขต + ไม่ใช่การวินิจฉัย อยู่เหนือคำเตือนแรกเสมอ */}
       <div class="scope">
         <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
         <Disclaimer text={meta.disclaimer_th} />
@@ -84,7 +84,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
 
       {r && s && groups && (
         <section class="result" aria-busy={a.status === "loading"}>
-          {/* ผลที่ไม่ตรงกับข้อมูลปัจจุบันห้ามใช้หัวข้อ "ไม่พบธง" หรือหัวข้อผล */}
+          {/* ผลที่ไม่ตรงกับข้อมูลปัจจุบันห้ามใช้หัวข้อ "ไม่พบคำเตือน" หรือหัวข้อผล */}
           {a.current ? <h2>{none ? NO_FLAG : s.headline_th}</h2> : <h2 class="stale-line">{STALE}</h2>}
           {!a.current && a.status === "loading" && <p class="status-line">กำลังตรวจ…</p>}
           {a.current && none && <p class="nonote">{NO_FLAG_NOTE}</p>}

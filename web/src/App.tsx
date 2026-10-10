@@ -18,7 +18,6 @@ import type { Meta } from "./types";
 const VIEWS = [
   { id: "now", label: "ช่วงนี้" },
   { id: "diary", label: "บันทึก" },
-  { id: "history", label: "ที่เคยใช้" },
   { id: "mine", label: "ข้อมูลของฉัน" },
 ] as const;
 
@@ -52,7 +51,7 @@ export function App() {
         <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C6 6 4 12 9 20c1-1 2-2 3-4 1 2 2 3 3 4 5-8 3-14-3-18z"/></svg></span>
         <div>
           <h1>HerbGuard TTM</h1>
-          <p class="meta">ตัวติดตามสมุนไพรและยาของฉัน · ตรวจธงเตือนจากหนังสือ TTM first</p>
+          <p class="meta">ตัวติดตามสมุนไพรและยาของฉัน · ตรวจคำเตือนจากหนังสือ TTM first</p>
         </div>
         </div>
         <p class="proto-banner"><strong>ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง</strong></p>
@@ -68,9 +67,9 @@ export function App() {
       <footer>
         <details class="opt-box noprint">
           <summary>เกี่ยวกับเครื่องมือนี้</summary>
-          <p>HerbGuard TTM เป็นต้นแบบช่วยดูว่าสมุนไพรไทยที่ใช้ร่วมกับยาแผนปัจจุบันมีธงเตือนอะไรบ้าง ตัดสินด้วยกฎที่เขียนเป็นโค้ด ไม่ได้ให้ AI ตัดสิน</p>
+          <p>HerbGuard TTM เป็นต้นแบบช่วยดูว่าสมุนไพรไทยที่ใช้ร่วมกับยาแผนปัจจุบันมีคำเตือนอะไรบ้าง ตัดสินด้วยกฎที่เขียนเป็นโค้ด ไม่ได้ให้ AI ตัดสิน</p>
           <p>แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ) ส่วนข้อห้ามของ “ตำรับยาบำรุงโลหิต” มาจากแนวทางการตั้งตำรับยาบำรุงโลหิตของสถาบันการแพทย์แผนไทย</p>
-          <p>ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบธงเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร</p>
+          <p>ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบคำเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร</p>
         </details>
         <Policy />
         {meta && <p class="meta">{meta.disclaimer_th}</p>}
@@ -94,7 +93,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   const openChat = (prefill?: string) => setChatOpen((o) => ({ n: (o?.n ?? 0) + 1, prefill }));
   const closeChat = () => { setChatOpen(null); fab.current?.focus(); };
   const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? meta.formulas?.find((f) => f.id === id)?.name_th ?? id;
-  const askFlag = useMemo(() => ({ herbName, ask: (f: { herb_id: string }) => openChat(`อธิบายธงของ${herbName(f.herb_id)}`) }), [meta]);
+  const askFlag = useMemo(() => ({ herbName, ask: (f: { herb_id: string }) => openChat(`อธิบายคำเตือนของ${herbName(f.herb_id)}`) }), [meta]);
 
   // แท็บแบบ roving tabindex: ลูกศรซ้าย/ขวา (วน), Home, End เหมือนหน้าเดิม
   const onKey = (e: KeyboardEvent) => {
@@ -132,8 +131,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
       <AskFlag.Provider value={askFlag}>
         <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
           {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} diary={diary} />
-            : v.id === "diary" ? <Diary diary={diary} store={store} today={today} analysis={a} />
-            : v.id === "history" ? <History store={store} />
+            : v.id === "diary" ? <><Diary diary={diary} store={store} today={today} analysis={a} /><History store={store} /></>
             : <MyData store={store} meta={meta} today={today} analysis={a} onClearAll={() => { chat.clear(); diary.clearAll(); }} />}
         </div>
       </AskFlag.Provider>
@@ -149,7 +147,6 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
 const TAB_PATH: Record<string, string> = {
   now: "M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10Z",
   diary: "M6 3h12v18H6ZM9 8h6M9 12h6M9 16h3",
-  history: "M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7M3 4v4h4",
   mine: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0",
 };
 function TabIcon({ id }: { id: string }) {

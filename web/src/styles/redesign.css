@@ -262,7 +262,7 @@ details.src > summary { font-size: .9rem; color: var(--c-muted); }
   .this-period, #app > header, main, #app > footer { max-width: 1120px; padding: 0 32px; }
   .this-period { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 0 32px; align-items: start; }
   .this-period > * { grid-column: 2; }
-  .this-period > .hero { grid-column: 1; grid-row: 1; position: sticky; top: 16px; }
+  .this-period > .hero { grid-column: 1; grid-row: 1; }
   .this-period > .active-list { grid-column: 1; grid-row: 2 / span 20; }
   .this-period > .sheet, .this-period > .sr-only { grid-column: 1 / -1; }
   .flag-card .msg { max-width: 68ch; }
@@ -270,3 +270,4 @@ details.src > summary { font-size: .9rem; color: var(--c-muted); }
 details[data-group][data-group] { border-left: 1px solid var(--c-line); }
 .flags { padding: 0 8px 4px; }
 @media (min-width: 900px) { .this-period { padding: 0; } }
+.or-line { margin: var(--sp-4) 0 0; text-align: center; }

@@ -5,7 +5,7 @@ import { body, flag, flush, META, respond, T } from "../test/fixtures";
 import type { Flag } from "../types";
 import { ThisPeriod } from "./ThisPeriod";
 
-const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้";
+const NO_FLAG = "ไม่พบคำเตือนในฐานข้อมูลนี้";
 const NO_FLAG_NOTE = "นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร";
 
 let store: TrackerStore;
@@ -29,7 +29,7 @@ const row = (label: string) => screen.getByText(label, { selector: "strong" }).c
 const resultStatus = () => document.querySelector<HTMLElement>(".this-period > [role=status]:not(.added-status)")!;
 const hasRow = (label: string) => screen.queryByText(label, { selector: "strong" }) !== null;
 
-test("(จ) ไม่มีธง + ไม่ได้กรอกอายุ: เห็นทั้งสถานะและรายการที่ไม่ได้ตรวจ พร้อมขอบเขตและ disclaimer", async () => {
+test("(จ) ไม่มีคำเตือน + ไม่ได้กรอกอายุ: เห็นทั้งสถานะและรายการที่ไม่ได้ตรวจ พร้อมขอบเขตและ disclaimer", async () => {
   add("herb", "khing", "ขิง");
   await show(body([], { coverage: { not_checked: ["age", "pregnancy"] } }));
   expect(screen.getByText(NO_FLAG_NOTE)).toBeInTheDocument();
@@ -40,31 +40,31 @@ test("(จ) ไม่มีธง + ไม่ได้กรอกอายุ: 
   expect(resultStatus()).toHaveTextContent(NO_FLAG);
 });
 
-test("(ฉ) ยาที่อยู่ใน unknown_inputs ได้ 'ยังไม่มีข้อมูลตรวจ'; ยาที่รู้จักไม่ได้ป้ายไม่พบธง", async () => {
+test("(ฉ) ยาที่อยู่ใน unknown_inputs ได้ 'ยังไม่มีข้อมูลตรวจ'; ยาที่รู้จักไม่ได้ป้ายไม่พบคำเตือน", async () => {
   add("herb", "khing", "ขิง");
   add("drug", "ยาแปลก");
   add("drug", "warfarin");
   await show(body([], { coverage: { unknown_inputs: ["ยาแปลก"] }, summary: { drugs_as_entered: ["ยาแปลก", "warfarin"] } }));
   const u = row("ยาแปลก");
   expect(within(u).getByText("ยังไม่มีข้อมูลตรวจ")).toBeInTheDocument();
-  expect(u.textContent).not.toContain("ไม่พบธง");
+  expect(u.textContent).not.toContain("ไม่พบคำเตือน");
   const w = row("warfarin");
   expect(w.querySelector("[data-kind='no_flag']")).toBeNull();
-  expect(w.textContent).not.toContain("ไม่พบธง");
-  // ผลตรวจไม่มีธงเลย: ห้ามชี้ไปแผงที่ว่าง และห้ามสื่อว่ายานี้ไม่มีธง/ปลอดภัย
+  expect(w.textContent).not.toContain("ไม่พบคำเตือน");
+  // ผลตรวจไม่มีคำเตือนเลย: ห้ามชี้ไปแผงที่ว่าง และห้ามสื่อว่ายานี้ไม่มีคำเตือน/ปลอดภัย
   expect(within(w).getByText("ผลตรวจไม่ได้แยกรายตัวยา")).toBeInTheDocument();
-  expect(w.textContent).not.toContain("ดูธงในแผงด้านบน");
+  expect(w.textContent).not.toContain("ดูคำเตือนในแผงด้านบน");
   expect(w.textContent).not.toContain("ปลอดภัย");
   expect(screen.getByText(/ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล: ยาแปลก/)).toBeInTheDocument();
 });
 
-test("(ช) กลุ่ม avoid เปิด กลุ่มอื่นพับ, กลุ่ม other แสดง, แบนเนอร์เด่นเมื่อมี avoid, ขอบเขตอยู่เหนือธงแรก", async () => {
+test("(ช) กลุ่ม avoid เปิด กลุ่มอื่นพับ, กลุ่ม other แสดง, แบนเนอร์เด่นเมื่อมี avoid, ขอบเขตอยู่เหนือคำเตือนแรก", async () => {
   add("herb", "khing", "ขิง");
   const flags: Flag[] = [
-    flag({ flag_id: "a", severity: "avoid", message_th: "ธง avoid" }),
-    flag({ flag_id: "c", severity: "caution", message_th: "ธง caution" }),
-    flag({ flag_id: "i", severity: "info", message_th: "ธง info" }),
-    flag({ flag_id: "o", severity: "weird" as Flag["severity"], message_th: "ธงแปลก" }),
+    flag({ flag_id: "a", severity: "avoid", message_th: "คำเตือน avoid" }),
+    flag({ flag_id: "c", severity: "caution", message_th: "คำเตือน caution" }),
+    flag({ flag_id: "i", severity: "info", message_th: "คำเตือน info" }),
+    flag({ flag_id: "o", severity: "weird" as Flag["severity"], message_th: "คำเตือนแปลก" }),
   ];
   const { container } = await show(body(flags));
   const g = (k: string) => container.querySelector<HTMLDetailsElement>(`details[data-group='${k}']`)!;
@@ -72,8 +72,8 @@ test("(ช) กลุ่ม avoid เปิด กลุ่มอื่นพั
   expect(g("caution").open).toBe(true); // ควรระวังเปิดไว้ ผู้ใช้ไม่พลาด
   expect(g("info").open).toBe(false);
   expect(g("other").open).toBe(false);
-  expect(within(g("other")).getByText("ธงแปลก")).toBeInTheDocument();
-  expect(g("other").querySelector("summary")!.textContent).toContain("ธงอื่น ๆ");
+  expect(within(g("other")).getByText("คำเตือนแปลก")).toBeInTheDocument();
+  expect(g("other").querySelector("summary")!.textContent).toContain("คำเตือนอื่น ๆ");
   expect(screen.getByText(/1 รายการที่ควรหลีกเลี่ยง/, { selector: ".banner-avoid *, .banner-avoid" })).toBeInTheDocument();
   const chip = container.querySelector(".scope-chip")!;
   const first = container.querySelector(".flag-card")!;
@@ -84,7 +84,7 @@ test("(ช) กลุ่ม avoid เปิด กลุ่มอื่นพั
   expect(link.getAttribute("href")).toBe("#group-caution");
   fireEvent.click(link);
   expect(g("caution").open).toBe(true);
-  // แถวสมุนไพรที่มีธงใช้ระดับสูงสุดจาก engine
+  // แถวสมุนไพรที่มีคำเตือนใช้ระดับสูงสุดจาก engine
   expect(within(row("ขิง")).getByText("ควรหลีกเลี่ยง")).toBeInTheDocument();
 });
 
@@ -103,7 +103,7 @@ test("(ซ) ข้อความจากเซิร์ฟเวอร์ท�
   expect((window as any).__x).toBeUndefined();
 });
 
-test("(ฌ) ไม่มีคำว่า ปลอดภัย ใน DOM ทั้งมุมมองไม่มีธงและมีธง", async () => {
+test("(ฌ) ไม่มีคำว่า ปลอดภัย ใน DOM ทั้งมุมมองไม่มีคำเตือนและมีคำเตือน", async () => {
   add("herb", "khing");
   add("drug", "warfarin");
   const a = await show(body([], { coverage: { not_checked: ["age"] } }));
@@ -113,7 +113,7 @@ test("(ฌ) ไม่มีคำว่า ปลอดภัย ใน DOM ท�
   expect(document.body.textContent).not.toContain("ปลอดภัย");
 });
 
-test("(ญ) ธง verified:false แสดงสถานะร่าง และประกาศร่างจาก summary.draft_notice_th", async () => {
+test("(ญ) คำเตือน verified:false แสดงสถานะร่าง และประกาศร่างจาก summary.draft_notice_th", async () => {
   add("herb", "khing");
   const notice = "ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (สถานะ: ร่าง)";
   const { container } = await show(body([flag({ verified: false })], { summary: { draft_notice_th: notice } }));
@@ -141,7 +141,7 @@ test("ต้องปรึกษาเภสัชกร + aggregate แสด�
   expect(screen.getByText("ข้อความรวม")).toBeInTheDocument();
 });
 
-test("มีแต่ยา: ยังไม่มีสมุนไพรให้ตรวจ ไม่เรียก API ไม่แสดงไม่พบธง แต่ยังมีขอบเขต", async () => {
+test("มีแต่ยา: ยังไม่มีสมุนไพรให้ตรวจ ไม่เรียก API ไม่แสดงไม่พบคำเตือน แต่ยังมีขอบเขต", async () => {
   add("drug", "warfarin");
   const f = vi.fn(async () => respond(body()));
   vi.stubGlobal("fetch", f);
@@ -217,7 +217,7 @@ describe("ผลเก่าห้ามแสดงเป็นผลปัจ�
     expect(row(label).querySelector("[data-kind='no_flag'],[data-kind='avoid'],[data-kind='caution'],[data-kind='info']")).toBeNull();
   };
 
-  test("เพิ่มยาระหว่างรอผลใหม่: แถวขิงไม่แสดง ไม่พบธง และหัวข้อเป็นผลก่อนแก้ไข", async () => {
+  test("เพิ่มยาระหว่างรอผลใหม่: แถวขิงไม่แสดง ไม่พบคำเตือน และหัวข้อเป็นผลก่อนแก้ไข", async () => {
     add("herb", "khing", "ขิง");
     const { fetch: f } = await show(body());
     expect(within(row("ขิง")).getByText(NO_FLAG)).toBeInTheDocument(); // ควรไม่เตือน: ผลปัจจุบันแสดงตามปกติ
@@ -235,9 +235,9 @@ describe("ผลเก่าห้ามแสดงเป็นผลปัจ�
     expect(screen.getByRole("note")).toBeInTheDocument();
   });
 
-  test("แก้โปรไฟล์แล้วตรวจล้มเหลว: แถวได้ ยังไม่มีข้อมูลตรวจ ไม่ใช่ป้ายระดับจากผลเก่า; ธงเก่ายังเห็นใต้หัวข้อผลก่อนแก้ไข", async () => {
+  test("แก้โปรไฟล์แล้วตรวจล้มเหลว: แถวได้ ยังไม่มีข้อมูลตรวจ ไม่ใช่ป้ายระดับจากผลเก่า; คำเตือนเก่ายังเห็นใต้หัวข้อผลก่อนแก้ไข", async () => {
     add("herb", "khing", "ขิง");
-    const { fetch: f } = await show(body([flag({ severity: "caution", message_th: "ธงเก่า" })]));
+    const { fetch: f } = await show(body([flag({ severity: "caution", message_th: "คำเตือนเก่า" })]));
     expect(within(row("ขิง")).getByText("ควรระวัง")).toBeInTheDocument();
     f.mockImplementation(async () => respond({ error: "x" }, 500));
     act(() => void store.setProfile({ age: 70, pregnant: null, breastfeeding: null, conditions: [] }));
@@ -246,11 +246,11 @@ describe("ผลเก่าห้ามแสดงเป็นผลปัจ�
     noFlagInRow("ขิง");
     expect(within(row("ขิง")).getByText("ยังไม่มีข้อมูลตรวจ")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: /พบธงเตือน/ })).toBeNull();
-    expect(screen.getByText("ธงเก่า")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /พบคำเตือน/ })).toBeNull();
+    expect(screen.getByText("คำเตือนเก่า")).toBeInTheDocument();
   });
 
-  test("ไม่มีธง + ตรวจล้มเหลวหลังเพิ่มยา: ไม่มีข้อความ ไม่พบธง ในหน้าเลย", async () => {
+  test("ไม่มีคำเตือน + ตรวจล้มเหลวหลังเพิ่มยา: ไม่มีข้อความ ไม่พบคำเตือน ในหน้าเลย", async () => {
     add("herb", "khing", "ขิง");
     const { fetch: f } = await show(body());
     f.mockImplementation(async () => respond({ error: "x" }, 500));

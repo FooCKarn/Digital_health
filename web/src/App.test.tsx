@@ -17,7 +17,7 @@ test("โหลด meta แล้วแสดงหน้า ช่วงนี�
   expect(screen.getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา", { selector: ".scope .scope-chip" })).toBeInTheDocument();
 });
 
-describe("แท็บ ช่วงนี้ · บันทึก · ที่เคยใช้ · ข้อมูลของฉัน", () => {
+describe("แท็บ ช่วงนี้ · บันทึก (รวมที่เคยใช้) · ข้อมูลของฉัน", () => {
   beforeEach(() => localStorage.clear());
 
   const mount = async () => {
@@ -30,30 +30,28 @@ describe("แท็บ ช่วงนี้ · บันทึก · ที่�
 
   test("roving tabindex + ลูกศร/Home/End (เทียบสถานการณ์เดิม 4)", async () => {
     const tabs = await mount();
-    expect(tabs.map((t) => t.textContent)).toEqual(["ช่วงนี้", "บันทึก", "ที่เคยใช้", "ข้อมูลของฉัน"]);
+    expect(tabs.map((t) => t.textContent)).toEqual(["ช่วงนี้", "บันทึก", "ข้อมูลของฉัน"]);
     const sel = () => tabs.map((t) => t.getAttribute("aria-selected"));
-    expect(sel()).toEqual(["true", "false", "false", "false"]);
-    expect(tabs.map((t) => t.tabIndex)).toEqual([0, -1, -1, -1]);
+    expect(sel()).toEqual(["true", "false", "false"]);
+    expect(tabs.map((t) => t.tabIndex)).toEqual([0, -1, -1]);
     tabs[0].focus();
     key("ArrowRight");
-    expect(sel()).toEqual(["false", "true", "false", "false"]);
+    expect(sel()).toEqual(["false", "true", "false"]);
     expect(tabs[1]).toHaveFocus();
-    expect(tabs.map((t) => t.tabIndex)).toEqual([-1, 0, -1, -1]);
+    expect(tabs.map((t) => t.tabIndex)).toEqual([-1, 0, -1]);
     expect(screen.getByRole("tabpanel")).toHaveAttribute("aria-labelledby", tabs[1].id);
     expect(screen.getByRole("heading", { name: "บันทึกสุขภาพของฉัน" })).toBeInTheDocument();
-    key("ArrowRight");
-    expect(tabs[2]).toHaveFocus();
-    expect(screen.getByText("ยังไม่มีรายการที่หยุดใช้")).toBeInTheDocument();
+    expect(screen.getByText("ยังไม่มีรายการที่หยุดใช้")).toBeInTheDocument(); // ประวัติที่เคยใช้รวมอยู่ในแท็บบันทึก
     key("End");
-    expect(tabs[3]).toHaveFocus();
+    expect(tabs[2]).toHaveFocus();
     expect(screen.getByRole("tabpanel", { name: "ข้อมูลของฉัน" })).toBeInTheDocument();
     key("ArrowRight"); // วนกลับแท็บแรก
     expect(tabs[0]).toHaveFocus();
     key("ArrowLeft");
-    expect(tabs[3]).toHaveFocus();
+    expect(tabs[2]).toHaveFocus();
     key("Home");
     expect(tabs[0]).toHaveFocus();
-    expect(sel()).toEqual(["true", "false", "false", "false"]);
+    expect(sel()).toEqual(["true", "false", "false"]);
     expect(screen.getByText("ยังไม่มีสมุนไพรให้ตรวจ", { selector: ".status-line" })).toBeInTheDocument();
   });
 
@@ -67,7 +65,7 @@ describe("แท็บ ช่วงนี้ · บันทึก · ที่�
     const analyzeBodies = () => f.mock.calls.filter((c) => c[0] === "/api/analyze").map((c) => JSON.parse(String(c[1].body)));
     await waitFor(() => expect(analyzeBodies()).toHaveLength(1));
     expect("pregnant" in analyzeBodies()[0].profile).toBe(false);
-    fireEvent.click(tabs[3]);
+    fireEvent.click(tabs[2]);
     fireEvent.change(screen.getByLabelText("ตั้งครรภ์"), { target: { value: "no" } });
     fireEvent.click(screen.getByRole("button", { name: "บันทึกข้อมูลสุขภาพ" }));
     await waitFor(() => expect(analyzeBodies()).toHaveLength(2));

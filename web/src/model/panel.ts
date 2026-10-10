@@ -65,7 +65,7 @@ const norm = (s: string) => s.trim().toLowerCase();
 /**
  * ข้อควรระวังสำหรับ UI: ผลตรวจไม่บอกว่ายาแต่ละตัวอยู่กลุ่มไหน (และห้ามเดาฝั่งเบราว์เซอร์)
  * ดังนั้น 'no_flag' ของแถวยาแปลว่า "ไม่ใช่ชื่อที่ระบบไม่รู้จัก" เท่านั้น
- * ห้ามแสดงว่า "ยานี้ไม่มีธง" ธงเกี่ยวกับยาอยู่ในแผงธงตามสมุนไพร
+ * ห้ามแสดงว่า "ยานี้ไม่มีคำเตือน" คำเตือนเกี่ยวกับยาอยู่ในแผงคำเตือนตามสมุนไพร
  */
 export function itemStatus(item: TrackerItem, result: AnalyzeResult, unsent?: Set<string>): ItemStatus {
   if (unsent?.has(key(item))) return "no_data"; // ไม่ได้ส่งไปตรวจ
@@ -89,7 +89,7 @@ export function groupFlags(result: AnalyzeResult): PanelGroups {
   return g;
 }
 
-/** สิ่งที่แถวในรายการแสดง: pending = กำลังตรวจ, see_panel = ดูธงในแผง (ยา/ระดับแปลก), drug_unsplit = ยาเมื่อผลไม่มีธงเลย */
+/** สิ่งที่แถวในรายการแสดง: pending = กำลังตรวจ, see_panel = ดูคำเตือนในแผง (ยา/ระดับแปลก), drug_unsplit = ยาเมื่อผลไม่มีคำเตือนเลย */
 export type RowView = Severity | "no_flag" | "no_data" | "pending" | "see_panel" | "drug_unsplit";
 
 /**
@@ -104,8 +104,8 @@ export function rowView(item: TrackerItem, a: { result: AnalyzeResult | null; su
   if (!covered) return "no_data";
   const st = itemStatus(item, r, unsent);
   if (st === "no_data") return "no_data";
-  // ผลตรวจไม่บอกว่ายาแต่ละตัวมีธงไหม จึงห้ามแสดงว่า "ยานี้ไม่พบธง"
-  // ผลไม่มีธงเลย = แผงว่าง ไม่ชี้ไปแผง แต่บอกตามจริงว่าผลไม่ได้แยกรายยา (ไม่ได้แปลว่ายานี้ไม่มีธง)
+  // ผลตรวจไม่บอกว่ายาแต่ละตัวมีคำเตือนไหม จึงห้ามแสดงว่า "ยานี้ไม่พบคำเตือน"
+  // ผลไม่มีคำเตือนเลย = แผงว่าง ไม่ชี้ไปแผง แต่บอกตามจริงว่าผลไม่ได้แยกรายยา (ไม่ได้แปลว่ายานี้ไม่มีคำเตือน)
   if (item.kind === "drug") return r.flags.length ? "see_panel" : "drug_unsplit";
   if (st === "no_flag") return "no_flag";
   return SEVERITIES.find((k) => r.flags.some((f) => f.herb_id === item.ref && f.severity === k)) ?? "see_panel";

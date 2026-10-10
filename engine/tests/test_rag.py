@@ -47,7 +47,7 @@ def test_scope_from_drug_name_synonym_and_condition_reverse_lookup():
 
 
 def test_scope_falls_back_to_checked_and_context_when_no_anchor():
-    assert rag.resolve_scope("ธงนี้เกี่ยวกับอะไร", INDEX, ["khing"], ["garlic"]) == {"khing", "garlic"}
+    assert rag.resolve_scope("คำเตือนนี้เกี่ยวกับอะไร", INDEX, ["khing"], ["garlic"]) == {"khing", "garlic"}
     assert rag.resolve_scope("ฟุตบอล", INDEX, [], []) == set()
 
 

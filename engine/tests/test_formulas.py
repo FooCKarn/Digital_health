@@ -40,7 +40,7 @@ def test_pregnant_with_formula_flags_avoid_with_formula_source_not_ttm_book():
     f = f[0]
     assert f["severity"] == "avoid" and f["evidence_tier"] == "A" and f["verified"] is False
     assert (f["source_page"], f["pdf_page"]) == (4, 5)
-    assert f["message_th"].startswith("แนวทางการตั้งตำรับยาบำรุงโลหิต ระบุ (ตำรับยาบำรุงโลหิต):")
+    assert f["message_th"].startswith("ตำรับยาบำรุงโลหิต:")
     assert "ยาบำรุงโลหิต" in f["source_doc_th"] and "TTM first" not in f["source_doc_th"]
     assert 0 < len(f["evidence_quote"]) <= 250
 
@@ -70,7 +70,7 @@ def test_ingredient_allergy_avoid_and_pollen_allergy_caution():
 
 
 def test_formula_rules_never_apply_to_single_herbs():
-    # ขิง/กระชาย/ไพล เป็นรสร้อนในเอกสารตำรับ แต่ข้อห้ามเป็นของตำรับ จึงต้องไม่มีธงข้อห้ามของตำรับกับสมุนไพรเดี่ยว
+    # ขิง/กระชาย/ไพล เป็นรสร้อนในเอกสารตำรับ แต่ข้อห้ามเป็นของตำรับ จึงต้องไม่มีคำเตือนข้อห้ามของตำรับกับสมุนไพรเดี่ยว
     for hid in ("khing", "krachai", "phlai"):
         r = run({"pregnant": True, "conditions": ["fever", "allergy_to_ingredient", "pollen_allergy"]}, herbs=[{"id": hid}])
         assert flags(r, rule_id="R1", condition="fever") == [] and flags(r, condition="pollen_allergy") == []
@@ -80,7 +80,7 @@ def test_formula_rules_never_apply_to_single_herbs():
 def test_herb_flags_keep_original_source_label_and_coverage_excludes_formulas():
     r = run({"pregnant": True}, herbs=[{"id": "khing"}, {"id": FID}])
     herb_flag = next(f for f in r["result"]["flags"] if f["herb_id"] == "khing")
-    assert herb_flag["message_th"].startswith("เล่มแนวทางฯ ระบุ (ขิง):") and "source_doc_th" not in herb_flag  # ผลของสมุนไพรเดิมไม่เปลี่ยนรูป
+    assert herb_flag["message_th"].startswith("ขิง:") and "source_doc_th" not in herb_flag  # ผลของสมุนไพรเดิมไม่เปลี่ยนรูป
     assert r["result"]["coverage"]["herbs_in_db"] == 21  # ตำรับไม่นับเป็นสมุนไพรในขอบเขต
 
 

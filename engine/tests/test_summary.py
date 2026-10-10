@@ -26,5 +26,5 @@ def test_summary_with_flags_lists_them_and_marks_draft():
 def test_summary_without_flags_never_says_safe_outside_disclaimer():
     s = summarize({"herbs": [{"id": "krachai"}], "drugs": [], "profile": {"age": 30}})
     assert s["flags"] == [] and s["draft_notice_th"] is None
-    assert "ปลอดภัย" not in s["headline_th"] and "ไม่พบธงเตือนในฐานข้อมูลนี้" in s["headline_th"]
+    assert "ปลอดภัย" not in s["headline_th"] and "ไม่พบคำเตือนในฐานข้อมูลนี้" in s["headline_th"]
     assert s["disclaimer_th"]

@@ -104,7 +104,7 @@ export function MyData({ store, meta, today, analysis: a, onClearAll }: {
       </details>
       <details class="opt-box noprint card">
         <summary>ช่วยเราปรับปรุง (ทดลองใช้)</summary>
-        {/* ไม่ remount ตามผล: การ์ดล้างเฉพาะคำตอบต่อธงเมื่อชุดธงของผลปัจจุบันเปลี่ยน */}
+        {/* ไม่ remount ตามผล: การ์ดล้างเฉพาะคำตอบต่อคำเตือนเมื่อชุดคำเตือนของผลปัจจุบันเปลี่ยน */}
         <FeedbackCard flags={flags} current={a.current && !!a.result} herbName={herbName} />
       </details>
     </section>

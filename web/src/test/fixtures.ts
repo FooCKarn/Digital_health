@@ -16,7 +16,7 @@ export const META: Meta = {
 export function flag(over: Partial<Flag> = {}): Flag {
   return {
     flag_id: "f1", rule_id: "R1", severity: "caution", evidence_tier: "A", mechanism_tag: null, herb_id: "khing",
-    message_th: "ข้อความธงทดสอบ", source_page: 12, pdf_page: 30, evidence_quote: "วลีทดสอบ", verified: true, ...over,
+    message_th: "ข้อความคำเตือนทดสอบ", source_page: 12, pdf_page: 30, evidence_quote: "วลีทดสอบ", verified: true, ...over,
   };
 }
 
@@ -28,7 +28,7 @@ export function body(flags: Flag[] = [], over: { result?: Partial<AnalyzeResult>
   const summary: Summary = {
     herbs: [{ id: "khing", name_th: "ขิง", part: null, days_in_use: 1 }], drugs_as_entered: [], flags, aggregates: [],
     pharmacist_review_required: false, unknown_inputs: coverage.unknown_inputs, not_checked: coverage.not_checked, coverage,
-    follow_up_questions_th: [], headline_th: flags.length ? `พบธงเตือน ${flags.length} รายการจากฐานข้อมูลนี้` : "ไม่พบธงเตือนในฐานข้อมูลนี้",
+    follow_up_questions_th: [], headline_th: flags.length ? `พบคำเตือน ${flags.length} รายการจากฐานข้อมูลนี้` : "ไม่พบคำเตือนในฐานข้อมูลนี้",
     draft_notice_th: null, disclaimer_th: "ผลนี้ไม่ใช่การวินิจฉัย", ...over.summary,
   };
   return { result, summary };

@@ -116,12 +116,12 @@ def test_r3_aggregates_distinct_sources_herbs_plus_drug_class():
     r = r3([_tagged("a"), _tagged("b")], drugs=["warfarin"])
     [agg] = r["aggregates"]
     assert agg["mechanism_tag"] == "bleeding_risk" and agg["count"] == 3 and agg["sources"] == ["a", "anticoagulant", "b"]
-    assert agg["label_th"] == "เสี่ยงเลือดออก" and "สรุปรวมโดยระบบ" in agg["message_th"]
+    assert agg["label_th"] == "เสี่ยงเลือดออก" and "ระบบสรุปรวม" in agg["message_th"]
     assert "%" not in agg["message_th"] and "คะแนน" not in agg["message_th"]  # ไม่มีคะแนน/ความน่าจะเป็น
 
 
 def test_r3_single_herb_one_drug_below_threshold_no_aggregate():
-    # 1 สมุนไพร + 1 กลุ่มยา = 2 แหล่ง => ถึงเกณฑ์ 2 ต้องออก; สมุนไพรเดียวไม่มียา = 0 ธง => ไม่ออก
+    # 1 สมุนไพร + 1 กลุ่มยา = 2 แหล่ง => ถึงเกณฑ์ 2 ต้องออก; สมุนไพรเดียวไม่มียา = 0 คำเตือน => ไม่ออก
     assert len(r3([_tagged("a")], drugs=["warfarin"])["aggregates"]) == 1
     assert r3([_tagged("a")])["aggregates"] == []
 

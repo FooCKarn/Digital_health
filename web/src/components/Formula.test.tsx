@@ -36,7 +36,7 @@ test("รายการที่กำลังใช้บอกชนิด�
   expect(screen.getByText(/^ตำรับ · เริ่มใช้ .*\(ใช้มา 1 วัน\)$/)).toBeInTheDocument();
 });
 
-test("การ์ดธงอ้างเอกสารต้นทางของธงนั้น: ตำรับอ้างแนวทางตำรับ ไม่ใช่เล่ม TTM first; ธงสมุนไพรยังอ้างเล่มเดิม", () => {
+test("การ์ดคำเตือนอ้างเอกสารต้นทางของคำเตือนนั้น: ตำรับอ้างแนวทางตำรับ ไม่ใช่เล่ม TTM first; คำเตือนสมุนไพรยังอ้างเล่มเดิม", () => {
   const { unmount } = render(<ul><FlagCard flag={flag({ herb_id: "tonic", source_page: 4, pdf_page: 5, source_doc_th: "แนวทางการตั้งตำรับยาบำรุงโลหิต" })} /></ul>);
   fireEvent.click(screen.getByText("ดูหลักฐาน"));
   expect(screen.getByText(/แนวทางการตั้งตำรับยาบำรุงโลหิต หน้า 4 \(หน้า 5 ในไฟล์ PDF\)/)).toBeInTheDocument();

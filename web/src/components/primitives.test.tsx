@@ -5,7 +5,7 @@ import { Disclaimer } from "./Disclaimer";
 
 const EXPECT = {
   avoid: "ควรหลีกเลี่ยง", caution: "ควรระวัง", info: "ข้อมูลเพิ่มเติม",
-  no_flag: "ไม่พบธงเตือนในฐานข้อมูลนี้", no_data: "ยังไม่มีข้อมูลตรวจ",
+  no_flag: "ไม่พบคำเตือนในฐานข้อมูลนี้", no_data: "ยังไม่มีข้อมูลตรวจ",
 } as const;
 
 describe("SeverityBadge", () => {

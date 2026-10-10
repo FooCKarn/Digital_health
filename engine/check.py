@@ -29,19 +29,26 @@ def _flag(rule_id, item, herb, evidence_tier="A", **extra):
         "evidence_tier": evidence_tier,
         "mechanism_tag": item.get("mechanism_tag"),
         "herb_id": herb["id"],
-        "message_th": f"{herb.get('source_label_th', DEFAULT_SOURCE_LABEL)} ระบุ ({herb['name_th']}): {item['text']}",
+        "message_th": f"{herb['name_th']}: {item['text']}",
         "source_page": item["source_page"],
         "pdf_page": item.get("pdf_page"),  # หน้าในไฟล์ PDF (หน้าพิมพ์ + 8) ไว้ให้ผู้ตรวจเปิดหาในเล่ม
         "evidence_quote": item.get("evidence_quote"),  # วลีสั้นจากหนังสือ ไว้ตรวจเทียบ (กฎข้อ 9: ห้ามยาว ดู test_data)
         "verified": item["verified"],
-        # เอกสารต้นทางของหน้าที่อ้าง: มีเฉพาะธงของตำรับ (ธงสมุนไพรอ้างเล่ม TTM first เป็นค่าเริ่มต้นของหน้าเว็บ ผลเดิมไม่เปลี่ยน)
+        # เอกสารต้นทางของหน้าที่อ้าง: มีเฉพาะคำเตือนของตำรับ (คำเตือนสมุนไพรอ้างเล่ม TTM first เป็นค่าเริ่มต้นของหน้าเว็บ ผลเดิมไม่เปลี่ยน)
         **({"source_doc_th": herb["source_doc_th"]} if herb.get("source_doc_th") else {}),
         **extra,
     }
 
 
-def _aggregates(flags: list, config: dict, tags: dict) -> list:
-    """R3: นับ 'แหล่งไม่ซ้ำ' (สมุนไพรแต่ละตัว + กลุ่มยาแต่ละกลุ่ม) ต่อ mechanism_tag จากธง R1/R2/R4 ที่ระดับนับได้
+def _display_names(herbs: dict, config: dict) -> dict:
+    """ชื่อไทยสำหรับแสดงในข้อความสรุปรวม: สมุนไพรจากข้อมูล กลุ่มยาจาก config (รหัสที่ไม่มีชื่อแสดงตามรหัสเดิม)"""
+    names = {h["id"]: h["name_th"] for h in herbs["herbs"]}
+    names.update(config.get("drug_class_labels_th", {}).get("value", {}))
+    return names
+
+
+def _aggregates(flags: list, config: dict, tags: dict, names: dict | None = None) -> list:
+    """R3: นับ 'แหล่งไม่ซ้ำ' (สมุนไพรแต่ละตัว + กลุ่มยาแต่ละกลุ่ม) ต่อ mechanism_tag จากคำเตือน R1/R2/R4 ที่ระดับนับได้
     ไม่มีคะแนนตัวเลข: ผลคือจำนวนแหล่ง + ข้อความว่าเป็นการสรุปรวมโดยระบบ"""
     counted = config["aggregate_counts_severities"]["value"]
     order = config["severity_order"]
@@ -61,7 +68,7 @@ def _aggregates(flags: list, config: dict, tags: dict) -> list:
             out.append({
                 "mechanism_tag": tag, "label_th": label, "sources": sorted(g["sources"]), "count": len(g["sources"]),
                 "severity": g["sev"], "flag_ids": g["flag_ids"],
-                "message_th": f"สรุปรวมโดยระบบ จากธงที่มีแหล่งอ้างอิงแต่ละใบ: มี {len(g['sources'])} แหล่งที่เกี่ยวกับ \"{label}\" ({', '.join(sorted(g['sources']))}) ดูรายละเอียดที่ธงแต่ละใบ",
+                "message_th": f"พบ {len(g['sources'])} รายการที่เกี่ยวกับ \"{label}\": {', '.join(names.get(x, x) for x in sorted(g['sources']))} (ระบบสรุปรวมให้ ดูรายละเอียดในคำเตือนแต่ละใบ)",
             })
     out.sort(key=lambda a: (order.index(a["severity"]), -a["count"], a["mechanism_tag"]))
     return out
@@ -110,7 +117,7 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | Non
             elif profile["age"] < cutoff:
                 f = _flag("R1", a, h, condition="age")
                 if a["min_age_years"] is None:
-                    f["message_th"] += f" (เล่มไม่ระบุอายุ ระบบใช้เกณฑ์ที่ทีมตั้ง: ต่ำกว่า {cutoff} ปี)"
+                    f["message_th"] += f" (หนังสือไม่ได้ระบุอายุ ระบบจึงใช้เกณฑ์ต่ำกว่า {cutoff} ปี ซึ่งเป็นเกณฑ์ที่ทีมตั้งเอง)"
                 flags.append(f)
         for c in h["condition_cautions"]:
             if c["condition"] in profile.get("conditions", []):
@@ -134,10 +141,16 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | Non
             if dl.get("group"):
                 group_days[dl["group"]] = (max(days, group_days.get(dl["group"], (0,))[0]), limit, dl, h)
             elif days > limit:
-                flags.append(_flag("R4", dl, h))
+                f = _flag("R4", dl, h)
+                if dl["max_days"] is None:
+                    f["message_th"] += f" (หนังสือระบุเป็นช่วง ระบบเตือนเมื่อใช้เกิน {limit} วัน ซึ่งเป็นเกณฑ์ที่ทีมตั้งเอง)"
+                flags.append(f)
     for g, (days, limit, dl, h) in group_days.items():
         if days > limit:
-            flags.append(_flag("R4", dl, h, group=g))
+            f = _flag("R4", dl, h, group=g)
+            if dl["max_days"] is None:
+                f["message_th"] += f" (หนังสือระบุเป็นช่วง ระบบเตือนเมื่อใช้เกิน {limit} วัน ซึ่งเป็นเกณฑ์ที่ทีมตั้งเอง)"
+            flags.append(f)
 
     order = config["severity_order"]
     flags.sort(key=lambda f: (order.index(f["severity"]), f["evidence_tier"], f["herb_id"], f["rule_id"]))
@@ -146,7 +159,7 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | Non
 
     return {
         "flags": flags,
-        "aggregates": _aggregates(flags, config, tags or {}),
+        "aggregates": _aggregates(flags, config, tags or {}, _display_names(herbs, config)),
         "swaps": [],  # R6 ยังไม่ทำ
         "pharmacist_review_required": bool(drug_classes & set(config["pharmacist_review_classes"]["value"])),
         "coverage": {

@@ -13,7 +13,7 @@ type Fx = { payload: AnalyzePayload; response: { result: AnalyzeResult; summary:
 const files = import.meta.glob<unknown>("../test/fixtures/*.json", { eager: true, import: "default" });
 const fx = (name: string) => files[`../test/fixtures/${name}.json`] as Fx;
 const META = files["../test/fixtures/meta.json"] as Meta;
-const NO_FLAG = "ไม่พบธงเตือนในฐานข้อมูลนี้";
+const NO_FLAG = "ไม่พบคำเตือนในฐานข้อมูลนี้";
 const NO_FLAG_NOTE = "นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร";
 const STALE = "ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)";
 const PREG_UNCHECKED = /ไม่ได้ตรวจเงื่อนไข \(ไม่ได้กรอก\): .*การตั้งครรภ์/;
@@ -99,7 +99,7 @@ describe("0) โครงหน้า", () => {
     serve("khing_garlic_warfarin_60");
     await mount();
     await result("khing_garlic_warfarin_60");
-    for (const t of ["ช่วงนี้", "ที่เคยใช้", "ข้อมูลของฉัน"]) {
+    for (const t of ["ช่วงนี้", "บันทึก", "ข้อมูลของฉัน"]) {
       tab(t);
       expect(sysText()).not.toContain("ปลอดภัย");
     }
@@ -199,20 +199,20 @@ describe("3-4) ขิง + กระเทียม + warfarin อายุ 60 (
     serve("khing_garlic_warfarin_60");
   });
 
-  test("3.1-3.9 รายการ หัวข้อผล+ประกาศ ขอบเขตก่อนธง ธงเป็น ul/li มีไอคอน+คำ แถวหลักฐาน ดูหลักฐาน(พับ) และแจ้งไม่ได้ตรวจตั้งครรภ์", async () => {
+  test("3.1-3.9 รายการ หัวข้อผล+ประกาศ ขอบเขตก่อนคำเตือน คำเตือนเป็น ul/li มีไอคอน+คำ แถวหลักฐาน ดูหลักฐาน(พับ) และแจ้งไม่ได้ตรวจตั้งครรภ์", async () => {
     await mount();
     const h = await result("khing_garlic_warfarin_60");
     // 3.1 รายการที่กำลังใช้ (แทนแถวที่เลือก + ชิปยา + สรุปจำนวน)
     for (const [label, kind] of [["ขิง", "สมุนไพร"], ["กระเทียม", "สมุนไพร"], ["warfarin", "ยา"]]) expect(activeRow(label)).toHaveTextContent(new RegExp(`${kind} · เริ่มใช้ .*\\(ใช้มา 1 วัน\\)`));
     // 3.2 หัวข้อผลจาก engine และประกาศในพื้นที่ประกาศ (ไม่ย้ายโฟกัสเอง เพราะตรวจอัตโนมัติทุกครั้งที่แก้)
-    expect(h.textContent).toMatch(/^พบธงเตือน/);
+    expect(h.textContent).toMatch(/^พบคำเตือน/);
     expect(status()).toHaveTextContent(h.textContent!);
-    // 3.3 ขอบเขต + ไม่ใช่การวินิจฉัย อยู่ก่อนรายการธง
+    // 3.3 ขอบเขต + ไม่ใช่การวินิจฉัย อยู่ก่อนรายการคำเตือน
     const scope = view().querySelector(".scope")!;
     const list = view().querySelector("ul.flags")!;
     expect(scope.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(scope as HTMLElement).getByRole("note")).toHaveTextContent(META.disclaimer_th);
-    // 3.4 ธงเป็นรายการ ul/li ทุกข้อมีไอคอน (aria-hidden) + คำ
+    // 3.4 คำเตือนเป็นรายการ ul/li ทุกข้อมีไอคอน (aria-hidden) + คำ
     const items = [...view().querySelectorAll<HTMLElement>("ul.flags > li")];
     const { flags, aggregates } = fx("khing_garlic_warfarin_60").response.result;
     expect(items.length).toBe(flags.length + aggregates.length);
@@ -231,7 +231,7 @@ describe("3-4) ขิง + กระเทียม + warfarin อายุ 60 (
       expect(chips.some((x) => x.startsWith("ยังรอ") || x === "ตรวจแล้ว")).toBe(true);
       expect(chips.some((x) => /^กฎ R\d$|\(กฎ R\d\)$/.test(x))).toBe(true);
     }
-    expect(view().textContent).toContain("ยังรอผู้เชี่ยวชาญตรวจ (ใช้สาธิต)"); // fixture ทุกธงยัง verified:false
+    expect(view().textContent).toContain("ยังรอผู้เชี่ยวชาญตรวจ (ใช้สาธิต)"); // fixture ทุกคำเตือนยัง verified:false
     // 3.6-3.7 ดูหลักฐาน: พับไว้ วลีสั้น <= 250 ตัวอักษร หน้าพิมพ์/หน้า PDF ข้อความเต็มอยู่ในเล่ม
     const evd = [...view().querySelectorAll<HTMLDetailsElement>("li details.evd")];
     expect(evd.length).toBeGreaterThanOrEqual(2);
@@ -283,7 +283,7 @@ test("5) หยุดใช้ยาหลังได้ผล: ผลเดิ
   expect(analyzeCalls.at(-1)).toEqual(fx("khing_garlic_60").payload);
 });
 
-test("6) กระชาย อายุ 30 (ผลจริง): ไม่พบธง ไม่มีรายการธง มีบรรทัดไม่ได้แปลว่าใช้ได้ + ขอบเขต ไม่มีสไตล์ผ่าน/เขียว ไม่เตือนเงื่อนไขที่ไม่มีกฎ", async () => {
+test("6) กระชาย อายุ 30 (ผลจริง): ไม่พบคำเตือน ไม่มีรายการคำเตือน มีบรรทัดไม่ได้แปลว่าใช้ได้ + ขอบเขต ไม่มีสไตล์ผ่าน/เขียว ไม่เตือนเงื่อนไขที่ไม่มีกฎ", async () => {
   seed([["herb", "krachai", "กระชาย"]], { age: 30 });
   serve("krachai_30");
   await mount();
@@ -343,7 +343,7 @@ describe("10) ตั้งครรภ์ ใช่ / ไม่ใช่ / ไ�
     ["yes", "khing_30_preg_yes", true, false],
     ["no", "khing_30_preg_no", false, false],
     [null, "khing_30_preg_unspecified", false, true],
-  ] as const)("10 ตั้งครรภ์=%s -> fixture %s ธง=%s ไม่ได้ตรวจ=%s", async (pregnant, name, expectFlag, expectUnchecked) => {
+  ] as const)("10 ตั้งครรภ์=%s -> fixture %s คำเตือน=%s ไม่ได้ตรวจ=%s", async (pregnant, name, expectFlag, expectUnchecked) => {
     seed([["herb", "khing", "ขิง"]], { age: 30, pregnant });
     serve(name);
     await mount();
@@ -372,7 +372,7 @@ function checkA11y(where: string) {
   expect(ctrls.filter((e) => !accName(e)).map((e) => `${where}: ${e.outerHTML.slice(0, 60)}`)).toEqual([]);
   // ชื่อที่โปรแกรมอ่านเสียงมีคำที่เห็นอยู่ด้วย (สั่งด้วยเสียงได้)
   const mismatch = [...document.querySelectorAll("button[aria-label]")]
-    .filter((b) => b.textContent!.trim() && b.textContent!.trim() !== "×" && !b.getAttribute("aria-label")!.includes(b.textContent!.trim()));
+    .filter((b) => b.textContent!.trim() && !["×", "‹", "›"].includes(b.textContent!.trim()) && !b.getAttribute("aria-label")!.includes(b.textContent!.trim()));
   expect(mismatch.map((b) => `${where}: ${b.textContent}`)).toEqual([]);
   expect(document.querySelectorAll("div[aria-label]:not([role])")).toHaveLength(0);
   const ids = [...document.querySelectorAll("[id]")].map((e) => e.id);
@@ -402,12 +402,12 @@ test("11) โครงสร้างการเข้าถึง (ผลจ�
   const form = document.querySelector("form.profile-form")!;
   expect(document.getElementById(form.getAttribute("aria-labelledby")!)).toHaveTextContent("ข้อมูลสุขภาพที่ใช้ตรวจ");
   const ids = fx("r3_diabetes_58").response.result.flags.map((f) => f.flag_id);
-  const names = [...document.querySelectorAll(".feedback select")].map(accName).filter((n) => n.startsWith("ความเห็นต่อธง"));
-  expect(names[0]).toMatch(/^ความเห็นต่อธงที่ 1 \(มะแว้งเครือ\)/);
+  const names = [...document.querySelectorAll(".feedback select")].map(accName).filter((n) => n.startsWith("ความเห็นต่อคำเตือน"));
+  expect(names[0]).toMatch(/^ความเห็นต่อคำเตือนที่ 1 \(มะแว้งเครือ\)/);
   for (const n of names) for (const id of ids) expect(n).not.toContain(id);
 
-  tab("ที่เคยใช้");
-  checkA11y("ที่เคยใช้");
+  tab("บันทึก");
+  checkA11y("บันทึก");
 });
 
 test("12) แก้รายการหลายครั้งภายในช่วงหน่วง: ส่งคำขอเดียวด้วยข้อมูลล่าสุด (แทนการกันกดปุ่ม ตรวจ ซ้ำ)", async () => {
@@ -447,7 +447,7 @@ test("13) ตรวจล้มเหลวหลังแก้ข้อมู�
   fireEvent.click(screen.getByRole("button", { name: "ลองใหม่" }));
   await result("khing_garlic_60");
   tab("ข้อมูลของฉัน");
-  // ผลใหม่ (ไม่มี warfarin = engine ไม่พบธง) แสดงในใบสรุปเป็นผลปัจจุบัน
+  // ผลใหม่ (ไม่มี warfarin = engine ไม่พบคำเตือน) แสดงในใบสรุปเป็นผลปัจจุบัน
   expect(within(pharm()).getByText(NO_FLAG)).toBeInTheDocument();
   expect(pharm()).toHaveTextContent("ยา (ตามที่กรอก): ไม่มี");
   expect(pharm()).not.toHaveTextContent("ยังไม่มีผลตรวจของรายการล่าสุด");

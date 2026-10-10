@@ -22,7 +22,7 @@ def fake(obj):
 
 
 def items_from(result, mutate=lambda t: t):
-    return {"summary_th": f"พบธงเตือน {len(result['flags'])} รายการ",
+    return {"summary_th": f"พบคำเตือน {len(result['flags'])} รายการ",
             "items": [{"flag_id": f["flag_id"], "text_th": mutate(f["message_th"])} for f in result["flags"]]}
 
 
@@ -67,7 +67,7 @@ def test_explain_accepts_alias_of_same_drug():
 def test_explain_falls_back_to_template_on_violations(name, mutate, reason):
     out = explain(INP, RESULT, HERBS, DRUGS, CONFIG, fake(items_from(RESULT, mutate)))
     assert out["source"] == "template" and reason in out["rejected_reason"]
-    assert [i["text_th"] for i in out["items"]] == [f["message_th"] for f in RESULT["flags"]]  # ใช้ข้อความจากธงตรง ๆ
+    assert [i["text_th"] for i in out["items"]] == [f["message_th"] for f in RESULT["flags"]]  # ใช้ข้อความจากคำเตือนตรง ๆ
 
 
 # --- guardrail สิ่งแปลกปลอม ---
@@ -94,15 +94,14 @@ def test_explain_guardrail_checks_summary_too():
 
 def test_guardrail_does_not_reject_legit_negation_or_quoted_terms():
     # 'ไม่แนะนำให้ใช้' / ชื่อยาที่อยู่ใน JSON (anticoagulant, warfarin) / เครื่องหมายคำพูดแบบไทย ต้องผ่าน ไม่งั้นผู้ใช้ไม่เคยเห็นข้อความ AI
-    ok = items_from(RESULT, lambda t: t + " “ไม่แนะนำให้ใช้ร่วมกัน” (anticoagulant, warfarin) – โปรดปรึกษาเภสัชกร…")
+    ok = items_from(RESULT, lambda t: t + " “ไม่แนะนำให้ใช้ร่วมกัน” (warfarin) – โปรดปรึกษาเภสัชกร…")
     assert explain(INP, RESULT, HERBS, DRUGS, CONFIG, fake(ok))["source"] == "llm"
 
 
 def test_guardrail_accepts_real_gemma_26b_summary():
-    # ข้อความสรุปจริงที่ gemma-4-26b-a4b-it ตอบ (2026-10-05) ผ่านตัวตรวจ: มีเครื่องหมายคำพูด ASCII, คำอังกฤษจาก JSON, จำนวนแหล่ง
+    # ข้อความสรุปที่โมเดลคัดลอกข้อความสรุปรวมจาก JSON กลับมาต้องผ่านตัวตรวจ: มีเครื่องหมายคำพูด ASCII, ชื่อไทย, จำนวนรายการ
     real = items_from(RESULT)
-    real["summary_th"] = ('สรุปรวมโดยระบบ จากธงที่มีแหล่งอ้างอิงแต่ละใบ: มี 3 แหล่งที่เกี่ยวกับ "เสี่ยงเลือดออก" '
-                          "(anticoagulant, garlic, khing) ดูรายละเอียดที่ธงแต่ละใบ")
+    real["summary_th"] = RESULT["aggregates"][0]["message_th"]  # ข้อความสรุปรวมรูปแบบใหม่ (ชื่อไทย) ที่โมเดลคัดลอกกลับมา
     assert explain(INP, RESULT, HERBS, DRUGS, CONFIG, fake(real))["source"] == "llm"
 
 
@@ -343,6 +342,6 @@ def test_explain_no_flags_never_calls_llm_and_never_says_safe():
     inp = {"herbs": [{"id": "krachai"}], "drugs": [], "profile": {"age": 30}}
     res = check(inp, HERBS, DRUGS, CONFIG, TAGS)
     def must_not_call(system, user):
-        raise AssertionError("ไม่ควรเรียก LLM เมื่อไม่มีธง")
+        raise AssertionError("ไม่ควรเรียก LLM เมื่อไม่มีคำเตือน")
     out = explain(inp, res, HERBS, DRUGS, CONFIG, must_not_call)
-    assert out["source"] == "template" and out["summary_th"] == "ไม่พบธงเตือนในฐานข้อมูลนี้" and "ปลอดภัย" not in out["summary_th"]
+    assert out["source"] == "template" and out["summary_th"] == "ไม่พบคำเตือนในฐานข้อมูลนี้" and "ปลอดภัย" not in out["summary_th"]

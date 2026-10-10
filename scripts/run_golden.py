@@ -45,19 +45,19 @@ def evaluate(case):
     for w in exp.get("must_have_flags", []):
         hit = [f for f in r["flags"] if matches(f, w)]
         if not hit:
-            errs.append(f"ไม่พบธง {w}")
+            errs.append(f"ไม่พบคำเตือน {w}")
         elif "message_must_mention" in w and not any(w["message_must_mention"] in f["message_th"] for f in hit):
             errs.append(f"ข้อความไม่กล่าวถึง '{w['message_must_mention']}'")
     for w in exp.get("must_not_have_flags", []):
         if any(matches(f, w) for f in r["flags"]):
-            errs.append(f"พบธงที่ไม่ควรมี {w}")
+            errs.append(f"พบคำเตือนที่ไม่ควรมี {w}")
     for u in exp.get("must_have_unknown_inputs", []):
         if u not in r["coverage"]["unknown_inputs"]:
             errs.append(f"ไม่อยู่ใน unknown_inputs: {u}")
     if "pharmacist_review_required" in exp and r["pharmacist_review_required"] != exp["pharmacist_review_required"]:
         errs.append("pharmacist_review_required ไม่ตรง")
     if exp.get("must_not_state_safe") and any("ปลอดภัย" in f["message_th"] for f in r["flags"]):
-        errs.append("ข้อความธงใช้คำว่า 'ปลอดภัย'")
+        errs.append("ข้อความคำเตือนใช้คำว่า 'ปลอดภัย'")
     if exp.get("must_show_coverage") and not r["coverage"]["herbs_in_db"]:
         errs.append("ไม่มี coverage")
     if (exp.get("must_show_disclaimer") or exp.get("must_not_state_safe")) and not r["disclaimer_th"]:

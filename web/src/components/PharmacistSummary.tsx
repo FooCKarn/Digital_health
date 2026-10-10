@@ -25,7 +25,7 @@ function FlagTable({ flags }: { flags: Flag[] }) {
   return (
     <div class="tablewrap">
       <table>
-        <caption class="sr-only">ธงเตือนทั้งหมดเรียงตามความรุนแรง</caption>
+        <caption class="sr-only">คำเตือนทั้งหมดเรียงตามความรุนแรง</caption>
         <thead><tr>{head.map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
         <tbody>
           {flags.map((f) => (
@@ -75,7 +75,7 @@ export function PharmacistSummary({ analysis: a, meta, profile }: { analysis: An
           {none && <p class="nonote">{NO_FLAG_NOTE}</p>}
           {s.draft_notice_th && <p class="warn">{s.draft_notice_th}</p>}
           {s.pharmacist_review_required && <p class="warn">{PHARMACIST}</p>}
-          {s.flags.length > 0 && <><h3>ธงเรียงตามความรุนแรง</h3><FlagTable flags={s.flags} /></>}
+          {s.flags.length > 0 && <><h3>คำเตือนเรียงตามความรุนแรง</h3><FlagTable flags={s.flags} /></>}
           {s.aggregates.length > 0 && (
             <>
               <h3>ภาระความเสี่ยงรวม (สรุปโดยระบบ)</h3>

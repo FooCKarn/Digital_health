@@ -1,6 +1,6 @@
 """HerbGuard TTM prototype UI (Streamlit): กรอกข้อมูล -> ผลตรวจ -> ใบสรุปเภสัชกร
 รัน: streamlit run app/app.py   (ข้อมูลผู้ใช้สมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง)
-ยังไม่มี LLM: ผู้ใช้เลือกจากรายการ; ข้อความมาจาก message_th ของธงโดยตรง
+ยังไม่มี LLM: ผู้ใช้เลือกจากรายการ; ข้อความมาจาก message_th ของคำเตือนโดยตรง
 """
 import json
 import sys
@@ -22,7 +22,7 @@ NOT_CHECKED_TH = {"pregnancy": "การตั้งครรภ์", "breastfe
 
 st.set_page_config(page_title="HerbGuard TTM", page_icon="🌿", layout="wide")
 st.title("🌿 HerbGuard TTM")
-st.caption("ตรวจธงเตือนการใช้สมุนไพรร่วมกับยา จากหนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) · **ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น**")
+st.caption("ตรวจคำเตือนการใช้สมุนไพรร่วมกับยา จากหนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) · **ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น**")
 
 
 def coverage_box(cov):
@@ -102,7 +102,7 @@ with tab_pharm:
     st.write("**สมุนไพร:** " + (", ".join(f"{h['name_th']} ({h['part']})" + (f" {h['days_in_use']} วัน" if h["days_in_use"] else "") for h in summary["herbs"]) or "-"))
     st.write("**ยา (ตามที่กรอก):** " + (", ".join(summary["drugs_as_entered"]) or "ไม่มี"))
     st.write("**ผู้ใช้:** " + json.dumps(inp["profile"], ensure_ascii=False))
-    st.markdown("**ธงเรียงตามความรุนแรง**")
+    st.markdown("**คำเตือนเรียงตามความรุนแรง**")
     for f in summary["flags"]:
         st.write(f"- [{f['severity']}] {f['message_th']} (ชั้น {f['evidence_tier']}, หน้า {f['source_page']}, "
                  f"{'verified' if f['verified'] else 'ยังไม่ verified'})")

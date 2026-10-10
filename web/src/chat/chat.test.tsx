@@ -9,9 +9,9 @@ import base from "../styles/base.css?raw";
 import { CHAT_KEY, CHAT_MAX, ChatStore } from "./chatStore";
 
 const STL = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล ถามอีกครั้งเมื่อผลใหม่ขึ้น จะได้คำตอบที่ตรงกับข้อมูลล่าสุด";
-const FOLLOW = ["ทำไมถึงขึ้นธง", "ควรถามเภสัชกรว่าอะไร", "ข้อมูลนี้มาจากไหน", "คำถามที่สี่"];
+const FOLLOW = ["ทำไมถึงขึ้นคำเตือน", "ควรถามเภสัชกรว่าอะไร", "ข้อมูลนี้มาจากไหน", "คำถามที่สี่"];
 const MCHAT: Meta = { ...META, chat_followups_th: FOLLOW };
-const HEADLINE = "พบธงเตือน 1 รายการจากฐานข้อมูลนี้";
+const HEADLINE = "พบคำเตือน 1 รายการจากฐานข้อมูลนี้";
 
 const cite = (over: Partial<Cite> = {}): Cite => ({
   item_id: "khing:drug_cautions:0", herb_id: "khing", herb_name_th: "ขิง", source_page: 12, pdf_page: 30,
@@ -223,7 +223,7 @@ describe("16) ถาม-ตอบ ป้ายที่มา หลักฐา
     expect(chips).toHaveLength(2);
     fireEvent.click(chips[0]);
     await waitFor(() => { expect(answers()).toHaveLength(2); notBusy(); });
-    expect(askBodies()[1].question).toBe("ทำไมถึงขึ้นธง");
+    expect(askBodies()[1].question).toBe("ทำไมถึงขึ้นคำเตือน");
     expect(answers()[1]).toHaveTextContent("ขิง");
   });
 
@@ -287,7 +287,7 @@ describe("17) ฉุกเฉิน การปฏิเสธ ไม่มี�
     await mount();
     fireEvent.click(fab());
     askQueue.push(() => respond({ answer: ans({ source: "refusal", text_th: "ยังไม่มีผลตรวจ กรอกสมุนไพรแล้วกดตรวจก่อน", cites: [] }) }));
-    const m = await askN("ทำไมถึงขึ้นธง", 1);
+    const m = await askN("ทำไมถึงขึ้นคำเตือน", 1);
     expect(m).toHaveTextContent("ยังไม่มีผลตรวจ");
     expect(Object.keys(askBodies()[0]).sort()).toEqual(["context_herbs", "question"]);
     expect(m.querySelector(".stl")).toBeNull();
@@ -303,7 +303,7 @@ describe("17) ฉุกเฉิน การปฏิเสธ ไม่มี�
   });
 });
 
-describe("18) storage เสีย/ใช้ไม่ได้ + ผลตรวจเปลี่ยน + ปุ่มถามเรื่องธง", () => {
+describe("18) storage เสีย/ใช้ไม่ได้ + ผลตรวจเปลี่ยน + ปุ่มถามเรื่องคำเตือน", () => {
   test("18.1 sessionStorage เป็น JSON พัง: แชตยังใช้ได้", async () => {
     sessionStorage.setItem(CHAT_KEY, "{not json");
     await mount();
@@ -327,14 +327,14 @@ describe("18) storage เสีย/ใช้ไม่ได้ + ผลตรว
     expect(await askN("รางจืดกับยาเบาหวาน", 1)).toBeInTheDocument();
   });
 
-  test("18.4 การ์ดธงมีปุ่ม ถามเรื่องธงนี้ ชื่อขึ้นต้นด้วยคำที่เห็น; กดแล้วเปิดแชต เติมคำถาม โฟกัส ไม่ส่งเอง", async () => {
+  test("18.4 การ์ดคำเตือนมีปุ่ม ถามเรื่องคำเตือนนี้ ชื่อขึ้นต้นด้วยคำที่เห็น; กดแล้วเปิดแชต เติมคำถาม โฟกัส ไม่ส่งเอง", async () => {
     seed(); await mount({ checked: true });
-    const b = screen.getByRole("button", { name: "ถามเรื่องธงนี้: ขิง" });
-    expect(b).toHaveTextContent(/^ถามเรื่องธงนี้$/);
+    const b = screen.getByRole("button", { name: "ถามเรื่องคำเตือนนี้: ขิง" });
+    expect(b).toHaveTextContent(/^ถามเรื่องคำเตือนนี้$/);
     fireEvent.click(b);
     expect(panel()).toBeVisible();
     await waitFor(() => expect(input()).toHaveFocus());
-    expect(input().value).toBe("อธิบายธงของขิง");
+    expect(input().value).toBe("อธิบายคำเตือนของขิง");
     expect(panel().querySelectorAll(".cmsg")).toHaveLength(0);
     expect(askBodies()).toHaveLength(0);
   });
@@ -342,7 +342,7 @@ describe("18) storage เสีย/ใช้ไม่ได้ + ผลตรว
   test("18.5 แก้ข้อมูลหลังคุยแล้ว: แชตแจ้งว่าคำตอบก่อนหน้าอาจไม่ตรง (ไม่ซ้ำ)", async () => {
     seed(["warfarin", "simvastatin"]); await mount({ checked: true });
     fireEvent.click(fab());
-    await askN("อธิบายธงของขิง", 1);
+    await askN("อธิบายคำเตือนของขิง", 1);
     stopItem("warfarin");
     stopItem("simvastatin");
     const notes = [...panel().querySelectorAll(".cmsg.n")];
@@ -431,13 +431,13 @@ describe("19) API ล้มเหลว + ปุ่มกำลังทำง�
   });
 });
 
-describe("20) ตรวจแล้วไม่พบธง แล้วถาม ปลอดภัยไหม", () => {
-  test("20.1 คำตอบ ไม่พบธงเตือนในฐานข้อมูลนี้ แสดงตามเซิร์ฟเวอร์ และระบบไม่มีคำว่า ปลอดภัย", async () => {
+describe("20) ตรวจแล้วไม่พบคำเตือน แล้วถาม ปลอดภัยไหม", () => {
+  test("20.1 คำตอบ ไม่พบคำเตือนในฐานข้อมูลนี้ แสดงตามเซิร์ฟเวอร์ และระบบไม่มีคำว่า ปลอดภัย", async () => {
     await mount();
     fireEvent.click(fab());
-    askQueue.push(() => respond({ answer: ans({ text_th: "ไม่พบธงเตือนในฐานข้อมูลนี้ นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร", cites: [] }) }));
+    askQueue.push(() => respond({ answer: ans({ text_th: "ไม่พบคำเตือนในฐานข้อมูลนี้ นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร", cites: [] }) }));
     const m = await askN("กระชายปลอดภัยไหม", 1);
-    expect(m).toHaveTextContent("ไม่พบธงเตือนในฐานข้อมูลนี้");
+    expect(m).toHaveTextContent("ไม่พบคำเตือนในฐานข้อมูลนี้");
     expect(sysText()).not.toContain("ปลอดภัย");
   });
 });
@@ -446,13 +446,13 @@ describe("21) แก้ข้อมูลแล้วถามต่อ / แก
   test("21.1-21.5 ป้ายผลเดิม: ไม่มีเมื่อข้อมูลไม่เปลี่ยน; ไม่มีเมื่อถามหลังแก้ขณะตรวจใหม่ยังค้าง (เซิร์ฟเวอร์คำนวณจากข้อมูลปัจจุบัน); ไม่มีหลังตรวจเสร็จ; มีเมื่อแก้ระหว่างรอคำตอบ; เก็บในประวัติ", async () => {
     seed(["warfarin", "simvastatin"]); await mount({ checked: true });
     fireEvent.click(fab());
-    const m1 = await askN("ทำไมถึงขึ้นธง", 1);
+    const m1 = await askN("ทำไมถึงขึ้นคำเตือน", 1);
     expect(m1.querySelector(".stl")).toBeNull(); // 21.1
 
     const gate = deferred();
     analyzeGate = gate.p; // ตรวจใหม่ค้างอยู่ ผลที่เห็นยังเป็นของข้อมูลก่อนแก้
     stopItem("warfarin");
-    const m2 = await askN("ทำไมถึงขึ้นธง", 2);
+    const m2 = await askN("ทำไมถึงขึ้นคำเตือน", 2);
     const m3 = await askN("ควรถามเภสัชกรว่าอะไร", 3);
     for (const m of [m2, m3]) expect(m.querySelector(".stl")).toBeNull(); // 21.2 ถามด้วยข้อมูลปัจจุบัน ไม่ใช่คำตอบเก่า
     expect(askBodies()[1].drugs).toEqual(["simvastatin"]); // ส่งข้อมูลหลังแก้จริง
@@ -460,12 +460,12 @@ describe("21) แก้ข้อมูลแล้วถามต่อ / แก
     analyzeGate = null;
     await act(async () => { gate.open(); });
     await waitFor(() => expect(screen.queryByText("ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)")).toBeNull());
-    const m4 = await askN("ทำไมถึงขึ้นธง", 4);
+    const m4 = await askN("ทำไมถึงขึ้นคำเตือน", 4);
     expect(m4.querySelector(".stl")).toBeNull(); // 21.3
 
     const d = deferred();
     askQueue.push(async () => { await d.p; return respond({ answer: ans() }); });
-    send("ทำไมถึงขึ้นธง");
+    send("ทำไมถึงขึ้นคำเตือน");
     await waitFor(() => expect(askBodies()).toHaveLength(5));
     stopItem("simvastatin"); // แก้ระหว่างรอคำตอบ
     await act(async () => { d.open(); });
@@ -531,7 +531,7 @@ describe("23) ถาม กินได้ไหม เรื่องที่�
     askQueue.push(() => respond({ answer: ans({ text_th: "ขิง: ไม่ควรรับประทานร่วมกับยาต้านการแข็งตัวของเลือด" }) }));
     const m = await askN("ขิงกับวาร์ฟารินกินได้ไหม", 1);
     expect(m).toHaveTextContent("ไม่ควรรับประทาน");
-    expect(m).not.toHaveTextContent("ไม่พบธงเตือน");
+    expect(m).not.toHaveTextContent("ไม่พบคำเตือน");
     expect(m.querySelector("details")).not.toBeNull();
   });
 });

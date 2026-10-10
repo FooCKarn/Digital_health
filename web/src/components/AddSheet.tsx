@@ -41,6 +41,8 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
   return (
     <div class="sheet" role="dialog" aria-labelledby="sheet-h" onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); onClose(); } }}>
       <h2 id="sheet-h">เพิ่มสมุนไพรหรือยา</h2>
+      <ParseBox meta={meta} store={store} today={today} onDone={(labels) => { onAdded?.(labels); onClose(); }} />
+      <p class="meta or-line">หรือเลือกจากรายการ</p>
       <form onSubmit={submit} noValidate>
         <label for="sheet-q">ค้นหา หรือพิมพ์ชื่อยา</label>
         <input id="sheet-q" ref={first} type="search" value={q} onInput={(e) => setQ(e.currentTarget.value)} />
@@ -79,7 +81,6 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
           <button type="button" onClick={onClose}>ปิด</button>
         </div>
       </form>
-      <ParseBox meta={meta} store={store} today={today} onDone={(labels) => { onAdded?.(labels); onClose(); }} />
     </div>
   );
 }

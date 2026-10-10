@@ -32,7 +32,7 @@ def no_claim_of_safety(text):
     ("หายใจไม่ออกหลังกินขิง", "emergency"), ("หายใจไม่ออกหลังกินขิงกี่เม็ด", "emergency"),   # ฉุกเฉินชนะ dose
     ("ขิงกินวันละกี่เม็ด", "dose"), ("ฉันเป็นโรคอะไร", "diagnosis"),
     ("ขิงกับ warfarin ปลอดภัยไหม", "safety_yesno"), ("ใช้ร่วมกันได้ไหม", "safety_yesno"),
-    ("ควรถามเภสัชกรว่าอะไร", "pharmacist_q"), ("ทำไมถึงขึ้นธง", "explain_flags"), ("อธิบายธงของขิง", "explain_flags"),
+    ("ควรถามเภสัชกรว่าอะไร", "pharmacist_q"), ("ทำไมถึงขึ้นคำเตือน", "explain_flags"), ("อธิบายคำเตือนของขิง", "explain_flags"),
     ("รางจืดไม่ควรใช้เกินกี่วัน", "lookup"),  # 'กี่วัน' คือระยะเวลา ไม่ใช่ขนาดยา
 ])
 def test_classify(q, intent):
@@ -63,13 +63,13 @@ def test_safety_yesno_without_flags_uses_standard_no_flag_wording():
 
 def test_safety_yesno_and_explain_without_any_check_ask_to_check_first():
     assert ask("กินได้ไหม", result=None, checked=())["text_th"] == MSG["no_check"]
-    assert ask("ทำไมถึงขึ้นธง", result=None, checked=())["text_th"] == MSG["no_check"]
+    assert ask("ทำไมถึงขึ้นคำเตือน", result=None, checked=())["text_th"] == MSG["no_check"]
 
 
 def test_explain_flags_lists_all_flags_or_only_the_named_herb():
-    allf = ask("ทำไมถึงขึ้นธง")
+    allf = ask("ทำไมถึงขึ้นคำเตือน")
     assert allf["source"] == "database" and len(allf["cites"]) == len(KW["flags"])
-    one = ask("อธิบายธงของขิง")
+    one = ask("อธิบายคำเตือนของขิง")
     assert one["cites"] and all(c["herb_id"] == "khing" for c in one["cites"])
 
 
@@ -116,7 +116,7 @@ def ids(a):
 
 
 def test_safety_question_naming_an_unchecked_drug_shows_database_items_not_no_flag():
-    # กฎข้อ 5: ขิงตรวจแล้วแต่ไม่ได้กรอกยา ถามเรื่องวาร์ฟาริน ห้ามตอบ 'ไม่พบธง' ทั้งที่ฐานมีคำเตือน khing.drug_cautions.0
+    # กฎข้อ 5: ขิงตรวจแล้วแต่ไม่ได้กรอกยา ถามเรื่องวาร์ฟาริน ห้ามตอบ 'ไม่พบคำเตือน' ทั้งที่ฐานมีคำเตือน khing.drug_cautions.0
     assert not KHING_ONLY["flags"]
     a = ask("ขิงกับวาร์ฟารินกินได้ไหม", result=KHING_ONLY, checked=("khing",))
     assert a["text_th"] != MSG["safety_no_flag"] and MSG["asked_unchecked"] in a["text_th"] and no_claim_of_safety(a["text_th"])
@@ -133,7 +133,7 @@ def test_explain_question_naming_an_unchecked_herb_keeps_current_flags_and_adds_
     a = ask("ทำไมถึงเตือนเรื่องขี้เหล็ก", result=check({"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}}, HERBS, DRUGS, CONFIG, TAGS),
             checked=("khing",))
     assert a["text_th"] != MSG["safety_no_flag"] and MSG["asked_unchecked"] in a["text_th"]
-    assert any(i.startswith("flag:") for i in ids(a)) and any(i.startswith("khilek.") for i in ids(a))   # ธงจริงของขิงยังแสดง
+    assert any(i.startswith("flag:") for i in ids(a)) and any(i.startswith("khilek.") for i in ids(a))   # คำเตือนจริงของขิงยังแสดง
 
 
 def test_safety_question_about_unchecked_thing_with_nothing_in_db_uses_fixed_message():
@@ -142,7 +142,7 @@ def test_safety_question_about_unchecked_thing_with_nothing_in_db_uses_fixed_mes
 
 
 def test_no_flag_wording_is_still_used_when_question_names_only_checked_things():
-    # ไม่ควรเตือน: ถามเฉพาะสิ่งที่ตรวจแล้วและไม่มีธงจริง = ข้อความไม่พบธงมาตรฐาน
+    # ไม่ควรเตือน: ถามเฉพาะสิ่งที่ตรวจแล้วและไม่มีคำเตือนจริง = ข้อความไม่พบคำเตือนมาตรฐาน
     for q in ("กระชายกินได้ไหม", "กระชายปลอดภัยไหม"):
         assert ask(q, result=NONE, checked=("krachai",))["text_th"] == MSG["safety_no_flag"], q
     a = ask("ขิงกับวาร์ฟารินกินได้ไหม", result=check({"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 60}}, HERBS, DRUGS, CONFIG, TAGS),
@@ -156,7 +156,7 @@ def test_explain_named_checked_herb_without_flags_shows_all_flags():
 
 
 def test_topic_word_question_with_no_flag_still_shows_database_item():
-    # กฎข้อ 5: ติ๊กขิง ไม่มีธง ถามเรื่องเด็ก ต้องเห็นข้อห้ามเด็กจากฐานข้อมูล ไม่ใช่ "ไม่พบธงเตือน"
+    # กฎข้อ 5: ติ๊กขิง ไม่มีคำเตือน ถามเรื่องเด็ก ต้องเห็นข้อห้ามเด็กจากฐานข้อมูล ไม่ใช่ "ไม่พบคำเตือน"
     q = "ขิงให้เด็กกินได้ไหม"
     assert rag.classify(q, CONFIG) == "safety_yesno" and not KHING_ONLY["flags"]
     a = ask(q, result=KHING_ONLY, checked=("khing",))
@@ -165,13 +165,13 @@ def test_topic_word_question_with_no_flag_still_shows_database_item():
 
 
 def test_same_question_without_topic_word_keeps_standard_no_flag_text():
-    # ไม่ควรเตือน: ถามเฉพาะสิ่งที่ตรวจแล้ว ไม่มีคำหัวข้อ และไม่มีธง = ข้อความมาตรฐาน
+    # ไม่ควรเตือน: ถามเฉพาะสิ่งที่ตรวจแล้ว ไม่มีคำหัวข้อ และไม่มีคำเตือน = ข้อความมาตรฐาน
     a = ask("ขิงกินได้ไหม", result=KHING_ONLY, checked=("khing",))
     assert a["text_th"] == MSG["safety_no_flag"] and a["cites"] == []
 
 
 def test_topic_word_not_covered_by_existing_flags_still_shows_database_item():
-    # กฎข้อ 5: มีธงอื่นอยู่แล้ว (ขิง+วาร์ฟาริน) แต่ถามเรื่องเด็กซึ่งไม่มีธงใดครอบคลุม ต้องแสดงทั้งธงเดิมและรายการเด็กจากฐานข้อมูล
+    # กฎข้อ 5: มีคำเตือนอื่นอยู่แล้ว (ขิง+วาร์ฟาริน) แต่ถามเรื่องเด็กซึ่งไม่มีคำเตือนใดครอบคลุม ต้องแสดงทั้งคำเตือนเดิมและรายการเด็กจากฐานข้อมูล
     res = check({"herbs": [{"id": "khing"}], "drugs": ["warfarin"], "profile": {"age": 30}}, HERBS, DRUGS, CONFIG, TAGS)
     assert res["flags"] and not any(f.get("condition") == "age" for f in res["flags"])
     a = ask("ขิงให้เด็กกินได้ไหม", result=res, checked=("khing",))
@@ -180,7 +180,7 @@ def test_topic_word_not_covered_by_existing_flags_still_shows_database_item():
 
 
 def test_topic_word_covered_by_existing_flag_does_not_add_unchecked_block():
-    # ไม่ควรเตือนซ้ำ: อายุ 5 ปี มีธงอายุของขิงอยู่แล้ว ถามเรื่องเด็ก = แสดงธงตามปกติ ไม่เพิ่มบล็อก 'อาจยังไม่อยู่ในข้อมูลที่ตรวจ'
+    # ไม่ควรเตือนซ้ำ: อายุ 5 ปี มีคำเตือนอายุของขิงอยู่แล้ว ถามเรื่องเด็ก = แสดงคำเตือนตามปกติ ไม่เพิ่มบล็อก 'อาจยังไม่อยู่ในข้อมูลที่ตรวจ'
     res = check({"herbs": [{"id": "khing"}], "drugs": [], "profile": {"age": 5}}, HERBS, DRUGS, CONFIG, TAGS)
     assert any(f.get("condition") == "age" for f in res["flags"])
     a = ask("ขิงให้เด็กกินได้ไหม", result=res, checked=("khing",))
