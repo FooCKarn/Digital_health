@@ -3,6 +3,7 @@ import { ApiError, getMeta } from "./api";
 import { ChatFab } from "./chat/ChatFab";
 import { ChatPanel, type OpenRequest } from "./chat/ChatPanel";
 import { AskFlag, ChatStore, getSessionStorage } from "./chat/chatStore";
+import { Assistant, type GoTo } from "./components/Assistant";
 import { Diary } from "./components/Diary";
 import { History } from "./components/History";
 import { Policy } from "./components/Policy";
@@ -17,6 +18,7 @@ import type { Meta } from "./types";
 
 const VIEWS = [
   { id: "now", label: "ช่วงนี้" },
+  { id: "assistant", label: "ผู้ช่วย" },
   { id: "diary", label: "บันทึก" },
   { id: "mine", label: "ข้อมูลของฉัน" },
 ] as const;
@@ -131,20 +133,31 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
       <AskFlag.Provider value={askFlag}>
         <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
           {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} diary={diary} />
+            : v.id === "assistant" ? (
+              <>
+                <Assistant store={store} diary={diary} meta={meta} today={today} analysis={a} ask={(q) => openChat(q)}
+                  go={(to: GoTo) => setTab(VIEWS.findIndex((x) => x.id === to))}>
+                  <ChatPanel inline chat={chat} store={store} meta={meta} today={today} open={chatOpen ?? { n: 0 }} onClose={closeChat} />
+                </Assistant>
+              </>
+            )
             : v.id === "diary" ? <><Diary diary={diary} store={store} today={today} analysis={a} /><History store={store} /></>
             : <MyData store={store} meta={meta} today={today} analysis={a} onClearAll={() => { chat.clear(); diary.clearAll(); }} />}
         </div>
       </AskFlag.Provider>
       {/* แชตอยู่ระดับ App นอกแผงแท็บ ใช้ได้ทุกแท็บ ใช้ store/meta/analysis ชุดเดียวกัน */}
-      <div class="chat-ui">
-        <ChatFab open={!!chatOpen} btnRef={fab} onClick={() => (chatOpen ? closeChat() : openChat())} />
-        <ChatPanel chat={chat} store={store} meta={meta} today={today} open={chatOpen} onClose={closeChat} />
-      </div>
+      {v.id !== "assistant" && (
+        <div class="chat-ui">
+          <ChatFab open={!!chatOpen} btnRef={fab} onClick={() => (chatOpen ? closeChat() : openChat())} />
+          <ChatPanel chat={chat} store={store} meta={meta} today={today} open={chatOpen} onClose={closeChat} />
+        </div>
+      )}
     </>
   );
 }
 
 const TAB_PATH: Record<string, string> = {
+  assistant: "M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4ZM18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9Z",
   now: "M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10Z",
   diary: "M6 3h12v18H6ZM9 8h6M9 12h6M9 16h3",
   mine: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0",

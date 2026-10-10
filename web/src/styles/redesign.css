@@ -273,3 +273,18 @@ details[data-group][data-group] { border-left: 1px solid var(--c-line); }
 .flags { padding: 0 8px 4px; }
 @media (min-width: 900px) { .this-period { padding: 0; } }
 .or-line { margin: var(--sp-4) 0 0; text-align: center; }
+
+/* หน้าผู้ช่วย: สรุปวันนี้ + ทางลัด + แชตแบบอยู่ในหน้า */
+.brief h2 { margin: 0; font-size: 1.25rem; }
+.brief-list { list-style: none; margin: var(--sp-3) 0; padding: 0; display: grid; gap: var(--sp-3); }
+.brief-list li { display: grid; gap: 4px; padding: var(--sp-3) 0; border-top: 1px solid var(--c-line); }
+.brief-list li:first-child { border-top: 0; }
+.brief-list strong { font-size: .9rem; color: var(--c-muted); font-weight: 600; }
+.brief-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.brief-scope { margin-bottom: 0; }
+.shortcuts h3 { margin: 0 0 var(--sp-2); }
+#chatPanel.inline { position: static; width: auto; height: auto; max-height: none; min-height: 420px; margin: var(--sp-4) 0; box-shadow: none; }
+#chatPanel.inline .chat-log { min-height: 220px; max-height: 50vh; }
+@media (min-width: 900px) {
+  .assistant { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 var(--sp-5); align-items: start; }
+}
