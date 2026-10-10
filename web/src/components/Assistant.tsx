@@ -131,12 +131,11 @@ function AiBrief({ facts }: { facts: import("../types").BriefFacts }) {
   );
 }
 
-/** พิมพ์สั้น ๆ เช่น "กินขิงแล้ว" -> AI เสนอรายการที่จะบันทึก คุณกดยืนยันก่อนจึงบันทึกจริง (AI ไม่บันทึกเอง) */
+/** พิมพ์สั้น ๆ เช่น "กินขิงแล้ว" หรือ "กินครบแล้ว" -> AI แปลงเป็นคำสั่ง หน้าเว็บบันทึกให้ทันที เลิกทำได้ (AI ไม่ได้เขียนอะไรลงข้อมูลเอง) */
 function IntentBox({ store, diary, today }: { store: TrackerStore; diary: DiaryStore; today: string }) {
   const items = store.active();
   const [text, setText] = useState("");
-  const [prop, setProp] = useState<{ intent: IntentOut; labels: string[] } | null>(null);
-  const [msg, setMsg] = useState("");
+  const [done, setDone] = useState<{ msg: string; undo: (() => void) | null } | null>(null);
   const b = useBusy();
   if (items.length === 0) return null;
 
@@ -145,39 +144,38 @@ function IntentBox({ store, diary, today }: { store: TrackerStore; diary: DiaryS
     const t = text.trim();
     if (!t) return;
     void b.run(async () => {
-      setMsg(""); setProp(null);
+      setDone(null);
       try {
-        const intent = await intentAi(t, items.map((i) => ({ id: i.id, label: i.label })));
-        const labels = intent.item_ids.map((id) => items.find((i) => i.id === id)?.label).filter((x): x is string => !!x);
-        if (intent.action === "none" || labels.length === 0) setMsg("ผู้ช่วยยังไม่เข้าใจว่าจะบันทึกอะไร ลองพิมพ์ชื่อรายการที่ใช้อยู่ เช่น “กินขิงแล้ว” หรือกดปุ่มบันทึกในสรุปวันนี้");
-        else setProp({ intent: { ...intent, item_ids: intent.item_ids.filter((id) => items.some((i) => i.id === id)) }, labels });
+        const intent: IntentOut = await intentAi(t, items.map((i) => ({ id: i.id, label: i.label })));
+        const hit = intent.item_ids.map((id) => items.find((i) => i.id === id)).filter((x): x is NonNullable<typeof x> => !!x);
+        if (intent.action === "none" || hit.length === 0) {
+          setDone({ msg: "ผู้ช่วยยังไม่เข้าใจว่าจะบันทึกอะไร ลองพิมพ์ชื่อรายการ เช่น “กินขิงแล้ว” หรือ “กินครบแล้ว” หรือกดปุ่มบันทึกในสรุปวันนี้", undo: null });
+          return;
+        }
+        const want = intent.action === "taken";
+        const changed = hit.filter((i) => diary.isTaken(i.id, today) !== want);
+        for (const i of changed) diary.toggleTaken(i.id, today);
+        const names = hit.map((i) => i.label).join(", ");
+        setText("");
+        setDone({
+          msg: changed.length === 0 ? `${names} ${want ? "บันทึกว่าใช้" : "ยังไม่ได้ใช้"}อยู่แล้ววันนี้` : `บันทึกแล้ว: ${want ? "ใช้" : "ไม่ได้ใช้"} ${names} วันนี้`,
+          undo: changed.length === 0 ? null : () => { for (const i of changed) diary.toggleTaken(i.id, today); setDone({ msg: "เลิกทำแล้ว", undo: null }); },
+        });
       } catch (e2) {
-        setMsg(e2 instanceof ApiError && e2.thaiMessage !== new ApiError("server").thaiMessage ? e2.thaiMessage : "ตอนนี้ใช้ AI ไม่ได้ กดปุ่มบันทึกในสรุปวันนี้แทนได้");
+        setDone({ msg: e2 instanceof ApiError && e2.thaiMessage !== new ApiError("server").thaiMessage ? e2.thaiMessage : "ตอนนี้ใช้ AI ไม่ได้ กดปุ่มบันทึกในสรุปวันนี้แทนได้", undo: null });
       }
     });
-  };
-  const apply = () => {
-    if (!prop) return;
-    for (const id of prop.intent.item_ids) if (diary.isTaken(id, today) !== (prop.intent.action === "taken")) diary.toggleTaken(id, today);
-    setMsg(`บันทึกแล้ว: ${prop.intent.action === "taken" ? "ใช้" : "ไม่ได้ใช้"} ${prop.labels.join(", ")} วันนี้`);
-    setProp(null); setText("");
   };
   return (
     <div class="card intent-box">
       <h3>บอกผู้ช่วยให้บันทึก</h3>
       <form onSubmit={send} noValidate>
         <label for="intent-q" class="sr-only">พิมพ์สิ่งที่ต้องการบันทึก</label>
-        <input id="intent-q" type="text" maxLength={200} placeholder="เช่น กินขิงแล้ว" autoComplete="off" value={text} onInput={(e) => setText(e.currentTarget.value)} />
+        <input id="intent-q" type="text" maxLength={200} placeholder="เช่น กินขิงแล้ว หรือ กินครบแล้ว" autoComplete="off" value={text} onInput={(e) => setText(e.currentTarget.value)} />
         <button type="submit" aria-disabled={b.busy}>ส่งให้ผู้ช่วย</button>
       </form>
-      <p class="meta">AI อ่านข้อความนี้เพื่อเสนอรายการที่จะบันทึก คุณต้องกดยืนยันก่อน ข้อความที่พิมพ์จะถูกส่งไปประมวลผลเมื่อกดส่งเท่านั้น</p>
-      {prop && (
-        <div class="proposal" role="group" aria-label="ผู้ช่วยเสนอให้บันทึก">
-          <p>{`เสนอให้บันทึกว่า${prop.intent.action === "taken" ? "ใช้" : "ไม่ได้ใช้"} ${prop.labels.join(", ")} วันนี้`}</p>
-          <div class="brief-actions"><button type="button" class="primary" onClick={apply}>ยืนยัน</button><button type="button" onClick={() => setProp(null)}>ยกเลิก</button></div>
-        </div>
-      )}
-      <p role="status">{msg}</p>
+      <p class="meta">AI อ่านข้อความนี้เพื่อแปลงเป็นการกดบันทึกการใช้วันนี้ ข้อความที่พิมพ์ส่งไปประมวลผลเมื่อกดส่งเท่านั้น บันทึกให้ทันที ถ้าผิดกด “เลิกทำ”</p>
+      <p role="status" class="intent-done">{done?.msg}{done?.undo && <button type="button" onClick={done.undo}>เลิกทำ</button>}</p>
     </div>
   );
 }

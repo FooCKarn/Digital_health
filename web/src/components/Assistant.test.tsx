@@ -78,19 +78,26 @@ test("สรุปโดย AI ใช้ไม่ได้: แจ้งข้�
   expect(screen.getByText("ใช้แล้ว 0 จาก 1 รายการ")).toBeInTheDocument();
 });
 
-test("บอกผู้ช่วย: เสนอรายการ ยังไม่บันทึกจนกดยืนยัน ยกเลิกแล้วไม่บันทึก", async () => {
+test("บอกผู้ช่วย: บันทึกให้ทันที แสดงผล และเลิกทำได้", async () => {
   const { store, diary } = setup([["khing", "ขิง"]]);
   const id = store.active()[0].id;
   mockApi({ "/api/intent": { intent: { action: "taken", item_ids: [id] } } });
   fireEvent.input(screen.getByLabelText("พิมพ์สิ่งที่ต้องการบันทึก"), { target: { value: "กินขิงแล้ว" } });
   fireEvent.click(screen.getByRole("button", { name: "ส่งให้ผู้ช่วย" }));
-  expect(await screen.findByText("เสนอให้บันทึกว่าใช้ ขิง วันนี้")).toBeInTheDocument();
-  expect(diary.isTaken(id, TODAY)).toBe(false);
-  fireEvent.click(screen.getByRole("button", { name: "ยกเลิก" }));
-  expect(diary.isTaken(id, TODAY)).toBe(false);
-  fireEvent.click(screen.getByRole("button", { name: "ส่งให้ผู้ช่วย" }));
-  fireEvent.click(await screen.findByRole("button", { name: "ยืนยัน" }));
+  expect(await screen.findByText(/บันทึกแล้ว: ใช้ ขิง วันนี้/)).toBeInTheDocument();
   expect(diary.isTaken(id, TODAY)).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "เลิกทำ" }));
+  expect(diary.isTaken(id, TODAY)).toBe(false);
+  expect(screen.getByText("เลิกทำแล้ว")).toBeInTheDocument();
+});
+
+test("บอกผู้ช่วย: AI คืนรหัสที่ไม่ใช่รายการของผู้ใช้ ไม่บันทึกอะไร", async () => {
+  const { store, diary } = setup([["khing", "ขิง"]]);
+  mockApi({ "/api/intent": { intent: { action: "taken", item_ids: ["ไม่ใช่รายการของเรา"] } } });
+  fireEvent.input(screen.getByLabelText("พิมพ์สิ่งที่ต้องการบันทึก"), { target: { value: "กินขิงแล้ว" } });
+  fireEvent.click(screen.getByRole("button", { name: "ส่งให้ผู้ช่วย" }));
+  expect(await screen.findByText(/ยังไม่เข้าใจว่าจะบันทึกอะไร/)).toBeInTheDocument();
+  expect(diary.isTaken(store.active()[0].id, TODAY)).toBe(false);
 });
 
 test("บอกผู้ช่วย: AI ตอบ none หรือใช้ไม่ได้ ไม่บันทึกอะไร", async () => {
@@ -99,7 +106,6 @@ test("บอกผู้ช่วย: AI ตอบ none หรือใช้ไ
   fireEvent.input(screen.getByLabelText("พิมพ์สิ่งที่ต้องการบันทึก"), { target: { value: "ขิงดีไหม" } });
   fireEvent.click(screen.getByRole("button", { name: "ส่งให้ผู้ช่วย" }));
   expect(await screen.findByText(/ยังไม่เข้าใจว่าจะบันทึกอะไร/)).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "ยืนยัน" })).toBeNull();
   expect(diary.isTaken(store.active()[0].id, TODAY)).toBe(false);
   mockApi({});
   fireEvent.click(screen.getByRole("button", { name: "ส่งให้ผู้ช่วย" }));

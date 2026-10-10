@@ -418,7 +418,7 @@ def brief(facts: dict, herbs_db: dict, drug_map: dict, config: dict, complete=No
 
 
 # ---------- จุดที่ 5: คำสั่งสั้น ๆ เช่น "กินขิงแล้ว" -> เสนอให้ผู้ใช้ยืนยันการกดบันทึกว่าใช้ ----------
-# ผลลัพธ์ไม่มีข้อความอิสระเลย: action อยู่ใน enum และ item_ids ต้องเป็นรหัสของรายการที่ผู้ใช้กำลังใช้ และชื่อรายการต้องปรากฏในข้อความผู้ใช้
+# ผลลัพธ์ไม่มีข้อความอิสระเลย: action อยู่ใน enum และ item_ids ต้องเป็นรหัสของรายการที่ผู้ใช้กำลังใช้ และชื่อรายการต้องปรากฏในข้อความผู้ใช้ (หรือบอกว่า "ครบ/ทั้งหมด")
 INTENT_SYSTEM = (
     "คุณแปลงข้อความสั้น ๆ ของผู้ใช้เป็นคำสั่งบันทึกการใช้ ตอบเป็น JSON เท่านั้น: "
     '{"action":"taken" หรือ "not_taken" หรือ "none","item_ids":["รหัสรายการ"]} '
@@ -429,7 +429,7 @@ INTENT_SYSTEM = (
 
 
 def parse_intent(text: str, items: list, complete=None) -> dict:
-    """items = [{id,label}] ของรายการที่ใช้อยู่; คืน {"action","item_ids"} หลังตรวจแล้ว (ผู้ใช้ต้องกดยืนยันก่อนบันทึกจริง)"""
+    """items = [{id,label}] ของรายการที่ใช้อยู่; คืน {"action","item_ids"} หลังตรวจแล้ว (หน้าเว็บบันทึกให้ทันทีและมีปุ่มเลิกทำ)"""
     complete = complete or default_complete
     raw = _json_from(complete(INTENT_SYSTEM, f"รายการที่ใช้อยู่: {json.dumps(items, ensure_ascii=False)}\n<user_text>{text}</user_text>"))
     action = raw.get("action") if isinstance(raw, dict) else None
@@ -437,8 +437,9 @@ def parse_intent(text: str, items: list, complete=None) -> dict:
         return {"action": "none", "item_ids": []}
     label_of = {i["id"]: i["label"] for i in items}
     low = text.lower()
+    everything = bool(re.search(r"ทั้งหมด|ครบ|ทุกอย่าง|ทุกตัว|ทุกรายการ", text))  # "กินครบแล้ว" = ทุกรายการที่ใช้อยู่ ไม่ต้องเอ่ยชื่อ
     ids = []
     for i in raw.get("item_ids", []) if isinstance(raw.get("item_ids"), list) else []:
-        if isinstance(i, str) and i in label_of and i not in ids and label_of[i].strip().lower() in low:
+        if isinstance(i, str) and i in label_of and i not in ids and (everything or label_of[i].strip().lower() in low):
             ids.append(i)
     return {"action": action, "item_ids": ids} if ids else {"action": "none", "item_ids": []}

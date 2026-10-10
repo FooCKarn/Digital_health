@@ -69,6 +69,12 @@ def test_intent_not_taken_and_none_cases():
     assert parse_intent("กินขิงแล้ว", ITEMS, fake({"action": "delete_all", "item_ids": ["i1"]})) == {"action": "none", "item_ids": []}
 
 
+def test_intent_everything_words_allow_all_items_without_naming_them():
+    both = fake({"action": "taken", "item_ids": ["i1", "i2"]})
+    assert parse_intent("กินครบแล้ว", ITEMS, both) == {"action": "taken", "item_ids": ["i1", "i2"]}
+    assert parse_intent("กินแล้ว", ITEMS, both) == {"action": "none", "item_ids": []}  # ไม่เอ่ยชื่อและไม่ได้บอกว่าครบ = ไม่บันทึก
+
+
 def test_service_validates_payloads():
     ok = service.brief({"item_count": 2, "taken_count": 1, "untaken": ["ขิง"], "warnings": None, "no_entry_today": False})
     assert ok["brief"]["source"] in ("llm", "template")
