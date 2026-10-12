@@ -33,11 +33,20 @@ export function Msg({ m }: { m: ChatMsg }) {
       <span class="src">{SRC_LABEL[m.src] ?? "ผู้ช่วย AI"}</span>
       {m.t}
       {m.old && <span class="stl">{STALE_LINE}</span>}
-      {m.cites.filter((c) => c.evidence_quote).slice(0, 6).map((c, i) => (
-        <Evidence key={i} summary={`ดูหลักฐาน: ${c.herb_name_th}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={c.source_doc_th}>
+      {(() => {
+        const shown = m.cites.filter((c) => c.evidence_quote).slice(0, 6);
+        const same = (n: string) => shown.filter((c) => c.herb_name_th === n).length;
+        const seen: Record<string, number> = {};
+        return shown.map((c, i) => {
+          seen[c.herb_name_th] = (seen[c.herb_name_th] ?? 0) + 1;
+          const label = same(c.herb_name_th) > 1 ? `${c.herb_name_th} (ข้อ ${seen[c.herb_name_th]})` : c.herb_name_th; // หลายข้อของสมุนไพรเดียวกัน แยกป้ายให้ต่างกัน
+          return (
+        <Evidence key={i} summary={`ดูหลักฐาน: ${label}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={c.source_doc_th}>
           <p class="meta">{`รหัสรายการ ${c.item_id} · ${c.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}`}</p>
         </Evidence>
-      ))}
+          );
+        });
+      })()}
     </div>
   );
 }
