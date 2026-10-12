@@ -31,8 +31,8 @@ export function AccountCard({ cloud }: { cloud: CloudSync }) {
 
   if (cloud.handle === null) {
     return (
-      <section class="noprint card account-card" aria-labelledby="acct-h">
-        <h3 id="acct-h">บัญชีและซิงก์ข้อมูล (ไม่บังคับ)</h3>
+      <details class="noprint card account-card account-opt">
+        <summary>ใช้หลายเครื่อง? สมัครบัญชีเพื่อซิงก์ (ไม่บังคับ)</summary>
         <p class="meta">ตอนนี้ข้อมูลอยู่ในเครื่องนี้เท่านั้น สมัครบัญชีถ้าอยากใช้ข้อมูลเดียวกันหลายเครื่อง ข้อมูลรายการที่ใช้ บันทึกสุขภาพ และเวลาเตือนจะถูกเก็บในคลาวด์ของเรา</p>
         <div class="tabs-mini" role="group" aria-label="เลือกการทำรายการ">
           <button type="button" aria-pressed={mode === "login"} onClick={() => setMode("login")}>มีบัญชีแล้ว</button>
@@ -58,7 +58,7 @@ export function AccountCard({ cloud }: { cloud: CloudSync }) {
           </button>
         </form>
         {cloud.message && <p class="err" role="alert">{cloud.message}</p>}
-      </section>
+      </details>
     );
   }
 

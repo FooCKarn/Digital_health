@@ -60,7 +60,7 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
         {pick?.kind === "formula" && <p class="meta">{meta.formulas?.find((f) => f.id === pick.ref)?.note_th}</p>}
         {itemErr && <p class="err" role="alert">{itemErr}</p>}
         <label for="sheet-date">เริ่มใช้ครั้งแรกเมื่อไหร่</label>
-        <p class="meta" id="sheet-date-help">ถ้าใช้มาก่อนแล้ว ให้เลือกวันที่เริ่มใช้จริง ระบบนับจำนวนวันที่ใช้จากวันนี้ ไม่ใช่จากวันที่กดเพิ่ม</p>
+        <p class="meta" id="sheet-date-help">ถ้าใช้มาก่อนแล้ว ให้เลือกวันที่เริ่มใช้จริง ระบบจะนับจำนวนวันที่ใช้จากวันที่เริ่มนั้น</p>
         <div class="quick-dates" role="group" aria-label="เลือกวันเริ่มใช้แบบเร็ว">
           {([["เพิ่งเริ่มวันนี้", 0], ["1 สัปดาห์ก่อน", 7], ["1 เดือนก่อน", 30]] as const).map(([t, n]) => {
             const v = addDays(today, -n) ?? today;
@@ -71,12 +71,15 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
           onInput={(e) => { setDate(e.currentTarget.value); setDateErr(""); }} />
         {dateErr && <p class="err" role="alert" id="sheet-date-err">{dateErr}</p>}
         {diary && validateStart(date, today) === null && dayNumber(date, today) > 1 && (
+          <>
           <label class="check-line">
-            <input type="checkbox" checked={backfill} onChange={(e) => setBackfill(e.currentTarget.checked)} />
-            {`ใช้ทุกวันตั้งแต่วันที่เริ่ม (ติ๊กว่าใช้แล้วให้ ${dayNumber(date, today)} วัน แก้ทีหลังได้ในปฏิทิน)`}
+            <input type="checkbox" checked={backfill} onChange={(e) => setBackfill(e.currentTarget.checked)} aria-describedby="sheet-backfill-help" />
+            <span>{`บันทึกว่าใช้ทุกวันตั้งแต่วันที่เริ่ม (รวม ${dayNumber(date, today)} วัน)`}</span>
           </label>
+          <p class="meta check-help" id="sheet-backfill-help">ถ้าบางวันไม่ได้ใช้ ไปที่หน้า บันทึก แตะวันนั้นในปฏิทิน แล้วยกเลิกช่องของรายการนี้ได้</p>
+          </>
         )}
-        <div class="row-actions">
+        <div class="row-actions form-actions">
           <button type="submit" class="primary">เพิ่ม</button>
           <button type="button" onClick={onClose}>ปิด</button>
         </div>

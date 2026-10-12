@@ -141,6 +141,7 @@ function DayPanel({ diary, store, date, today, msg, onMsg }: {
   const isToday = date === today;
   const when = isToday ? "วันนี้" : `วันที่ ${thaiDate(date)}`;
   const mine = diary.entryOn(date);
+  const usedThen = store.state.items.filter((i) => i.start_date <= date && (i.end_date === null || date <= i.end_date));
   const [mood, setMood] = useState<number | null>(mine?.mood ?? null);
   const [symptom, setSymptom] = useState(mine?.symptom ?? "");
   const [sys, setSys] = useState(mine?.sys?.toString() ?? "");
@@ -158,6 +159,19 @@ function DayPanel({ diary, store, date, today, msg, onMsg }: {
   return (
     <form class="card day-panel" onSubmit={save} noValidate aria-labelledby="day-h">
       <h3 id="day-h">{isToday ? "วันนี้เป็นอย่างไรบ้าง" : `บันทึกของ${when}`}</h3>
+
+      {usedThen.length > 0 && (
+        <fieldset class="took-day">
+          <legend>{`สิ่งที่ใช้${isToday ? "วันนี้" : when}`}</legend>
+          <p class="meta">แตะเพื่อติ๊กว่าใช้ หรือแตะอีกครั้งเพื่อยกเลิก บันทึกให้ทันที ไม่ต้องกดปุ่มบันทึก</p>
+          {usedThen.map((i) => (
+            <label key={i.id} class="check-line took-row">
+              <input type="checkbox" checked={diary.isTaken(i.id, date)} onChange={() => diary.toggleTaken(i.id, date)} />
+              <span>{i.label}</span>
+            </label>
+          ))}
+        </fieldset>
+      )}
 
       <div role="radiogroup" aria-label={`ความรู้สึก${when}`} class="moods">
         {MOODS.map((m) => (

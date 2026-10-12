@@ -75,8 +75,6 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
 
       <PharmacistSummary analysis={a} meta={meta} profile={store.state.profile} />
 
-      {cloud && <AccountCard cloud={cloud} />}
-
       <section class="noprint card" aria-labelledby="backup-h">
         <h3 id="backup-h">สำรอง ย้ายเครื่อง หรือลบข้อมูล</h3>
         <div class="data-row">
@@ -105,6 +103,8 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
         </div>
         {msg && (msg.ok ? <p role="status">{msg.text}</p> : <p class="err" role="alert">{msg.text}</p>)}
       </section>
+
+      {cloud && <AccountCard cloud={cloud} />}
 
       <details class="opt-box noprint card">
         <summary>อธิบายชั้นหลักฐาน (A/B/C)</summary>
