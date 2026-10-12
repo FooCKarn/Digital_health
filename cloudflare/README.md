@@ -13,7 +13,23 @@
 สิ่งที่ทำไว้แล้ว: ซิงก์เป็นตัวเลือก (ค่าเริ่มต้นข้อมูลอยู่ในเครื่อง), บันทึกความยินยอม+เวอร์ชันนโยบายตอนสมัคร, ไม่เก็บอีเมล/เบอร์โทร, เก็บแฮชรหัสผ่านและแฮชโทเค็น, ลบบัญชีลบทุกแถว, ข้อมูลบันทึกสุขภาพไม่ส่งให้ AI
 สิ่งที่ยังไม่ได้ทำ: เข้ารหัสรายฟิลด์, ช่องทางติดต่อ/คำขอใช้สิทธิ์, การเลือกที่ตั้งข้อมูล, บันทึกการเข้าถึงโดยผู้ดูแล
 
-## ขึ้นระบบ (ครั้งแรก)
+## ขึ้นระบบแบบสั้น (PowerShell บน Windows)
+
+```powershell
+cd cloudflare
+npm i -D wrangler
+npx wrangler login
+npx wrangler d1 create herbguard            # คัดลอก database_id ไปใส่ใน wrangler.jsonc
+.\deploy.ps1                                # ทดสอบ + build + migrations + seed + deploy ทีละขั้น หยุดทันทีถ้าพัง
+npx wrangler secret put GEMINI_API_KEY      # ครั้งเดียว (ไม่ตั้ง = ปุ่ม AI ใช้ข้อความสำรอง)
+python ..\scripts\smoke_test.py https://herbguard-ttm.<บัญชีของคุณ>.workers.dev
+```
+
+เปลี่ยนโค้ดแล้วขึ้นใหม่: `.\deploy.ps1 -SkipSeed` (ข้าม seed เพื่อไม่ทับข้อมูลที่ผู้เชี่ยวชาญแก้ใน D1)
+รันในเครื่องก่อนขึ้นจริง: คัดลอก `.dev.vars.example` เป็น `.dev.vars` แล้ว `python ..\scripts\build_worker.py ; npx wrangler dev`
+ลองพฤติกรรมของ Worker โดยไม่ต้องมี Cloudflare: `$env:HERBGUARD_DEV_ROUTER="all" ; python ..\scripts\dev_server.py 8000` แล้ว `python ..\scripts\smoke_test.py http://localhost:8000`
+
+## ขึ้นระบบ (ครั้งแรก) แบบ bash
 
 ```bash
 cd cloudflare && npm i -D wrangler && npx wrangler login

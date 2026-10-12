@@ -1,0 +1,6 @@
+# คัดลอกเป็นไฟล์ชื่อ .dev.vars (ไม่ถูก commit) ใช้ตอนรัน npx wrangler dev ในเครื่องเท่านั้น
+# ของจริงบน Cloudflare ตั้งด้วย: npx wrangler secret put GEMINI_API_KEY
+GEMINI_API_KEY=ใส่คีย์ของคุณ
+# LLM_PROVIDER=gemini
+# GEMINI_MODEL=gemini-flash-lite-latest
+# ถ้าใช้ Anthropic แทน: ANTHROPIC_API_KEY=...  และ LLM_PROVIDER=anthropic

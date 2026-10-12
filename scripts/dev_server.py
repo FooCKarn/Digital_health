@@ -50,7 +50,9 @@ ROUTES = {("GET", "/api/meta"): meta.handler.do_GET, ("POST", "/api/analyze"): a
 class Dev(SimpleHTTPRequestHandler):
     def _router(self, method):
         path = self.path.split("?")[0]
-        if not path.startswith(ROUTER_PREFIXES):
+        # HERBGUARD_DEV_ROUTER=all: ทุกเส้นทาง /api/* ผ่าน router ตัวเดียวกับ Cloudflare Worker (ตรวจ Origin, header ความปลอดภัย, บัญชี)
+        # ไว้ลองพฤติกรรมของ Worker ในเครื่องและรัน scripts/smoke_test.py; ค่าเริ่มต้นเลียนแบบ Vercel (เส้นทางเดิม) + เส้นทางบัญชีเพิ่ม
+        if not (path.startswith(ROUTER_PREFIXES) or (os.environ.get("HERBGUARD_DEV_ROUTER") == "all" and path.startswith("/api/"))):
             return False
         import json
         router, ctx = _router_parts()

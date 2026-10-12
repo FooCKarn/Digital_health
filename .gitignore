@@ -11,3 +11,6 @@ web/dist/
 cloudflare/build/
 cloudflare/.wrangler/
 .dev/
+.dev.vars
+*.dev.vars
+cloudflare/node_modules/
