@@ -378,3 +378,6 @@ label.check input { width: 24px; height: 24px; flex: none; margin: 2px 0 0; }
 .logo { padding: 2px; box-sizing: border-box; object-fit: contain; }
 /* รายการเลือกเลื่อนได้: ไล่จางที่ขอบล่างให้รู้ว่ายังมีต่อ แทนการตัดขอบกลางปุ่มแบบเฉย ๆ */
 .pick-list { scroll-padding-bottom: 40px; -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent); padding-bottom: 44px; }
+
+/* โลโก้เป็น SVG ที่มีกรอบมนในตัว: ไม่ต้องมีพื้นหลัง/ขอบเพิ่ม (กันเส้นขาดจากการย่อภาพ) */
+.logo { background: none; padding: 0; border-radius: 0; object-fit: contain; }

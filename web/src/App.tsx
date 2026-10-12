@@ -53,7 +53,7 @@ export function App() {
     <>
       <header>
         <div class="appbar">
-        <img class="logo" src="/logo-192.png" alt="" width="56" height="56" />
+        <img class="logo" src="/logo.svg" alt="" width="56" height="56" />
         <div>
           <h1>ใบพลู</h1>
           <p class="meta">ติดตามสมุนไพรและยา ตรวจคำเตือนให้</p>
