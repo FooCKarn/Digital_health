@@ -5,9 +5,9 @@ Python Workers ยังเป็นเบต้า: ต้องทดสอบ
 import os
 import time
 
-from js import AbortSignal, Headers, Object, Uint8Array, TextEncoder, crypto, fetch as js_fetch
+from js import AbortSignal, Function, Headers, Object, Uint8Array, TextEncoder, crypto, fetch as js_fetch
 from js import Response as JsResponse
-from pyodide.ffi import jsnull, to_js
+from pyodide.ffi import to_js
 from workers import WorkerEntrypoint
 
 import hashlib
@@ -23,6 +23,10 @@ MAX_RAW_BODY = 400 * 1024
 
 def _obj(d):
     return to_js(d, dict_converter=Object.fromEntries)
+
+
+# to_js แปลง None เป็น undefined ซึ่ง D1 ไม่รับ จึงแปลงเป็น null ฝั่ง JS (ไม่พึ่ง pyodide.ffi.jsnull ที่บาง runtime ไม่มี)
+_undefined_to_null = Function.new("a", "return a.map(x => x === undefined ? null : x)")
 
 
 class WebCrypto:
@@ -53,7 +57,7 @@ class D1Db:
         self.d1 = d1
 
     def _stmt(self, sql, params):
-        return self.d1.prepare(sql).bind(*[jsnull if p is None else p for p in params])
+        return self.d1.prepare(sql).bind(*_undefined_to_null(to_js(list(params))))
 
     async def all(self, sql, params=()):
         res = await self._stmt(sql, params).all()
@@ -61,7 +65,7 @@ class D1Db:
 
     async def first(self, sql, params=()):
         r = await self._stmt(sql, params).first()
-        return None if r is None or r is jsnull else r.to_py()
+        return None if r is None else r.to_py()
 
     async def run(self, sql, params=()):
         res = await self._stmt(sql, params).run()
