@@ -3,6 +3,7 @@
 ความปลอดภัย: ตรวจ Origin = Host ทุกคำขอที่แก้ข้อมูล (กัน CSRF) + คุกกี้ HttpOnly SameSite=Lax, จำกัดขนาดตัว, ไม่ใส่ traceback/ความลับในคำตอบ
 """
 import json
+import traceback
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from urllib.parse import urlparse
@@ -91,7 +92,9 @@ async def handle(req: Request, ctx: Ctx) -> Response:
         if type(e).__name__ == "ServiceUnavailable":      # ฟีเจอร์ LLM ใช้ไม่ได้ ไม่ใช่บั๊ก
             r = Response(503, {"error": "llm_unavailable", "message": str(e)})
         else:
-            r = Response(500, {"error": "server_error", "detail": type(e).__name__})  # ไม่ส่งข้อความ/traceback ออกไป (อาจมีข้อมูลผู้ใช้)
+            # รายละเอียดเขียนลง log ของเซิร์ฟเวอร์เท่านั้น (ท้าย traceback: ชนิดและข้อความของ error ไม่มีเนื้อหาคำขอ) ผู้ใช้ได้แค่ชนิดของ error
+            print("SERVER_ERROR " + req.method + " " + req.path + "\n" + traceback.format_exc()[-1800:])
+            r = Response(500, {"error": "server_error", "detail": type(e).__name__})
     r.headers = {**SECURITY_HEADERS, **r.headers}
     return r
 
