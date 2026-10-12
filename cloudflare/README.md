@@ -13,7 +13,11 @@
 สิ่งที่ทำไว้แล้ว: ซิงก์เป็นตัวเลือก (ค่าเริ่มต้นข้อมูลอยู่ในเครื่อง), บันทึกความยินยอม+เวอร์ชันนโยบายตอนสมัคร, ไม่เก็บอีเมล/เบอร์โทร, เก็บแฮชรหัสผ่านและแฮชโทเค็น, ลบบัญชีลบทุกแถว, ข้อมูลบันทึกสุขภาพไม่ส่งให้ AI
 สิ่งที่ยังไม่ได้ทำ: เข้ารหัสรายฟิลด์, ช่องทางติดต่อ/คำขอใช้สิทธิ์, การเลือกที่ตั้งข้อมูล, บันทึกการเข้าถึงโดยผู้ดูแล
 
-## ขึ้นระบบ (ครั้งแรก)
+## Deploy อัตโนมัติ (GitHub Actions)
+
+ทุกครั้งที่ push เข้า `main` workflow `.github/workflows/deploy-cloudflare.yml` จะ build, apply migrations แล้ว `wrangler deploy` ต้องตั้ง secret ใน GitHub: `CLOUDFLARE_API_TOKEN` (สิทธิ์ Workers Scripts:Edit, D1:Edit) และ `CLOUDFLARE_ACCOUNT_ID` ครั้งแรกให้สั่งรัน workflow ด้วยมือ (Actions > Run workflow) แล้วติ๊ก `seed` หนึ่งครั้งเพื่อใส่ข้อมูลอ้างอิง ห้ามติ๊กอีกหลังมีคนแก้ข้อมูลใน D1
+
+## ขึ้นระบบด้วยมือ (ครั้งแรก)
 
 ```bash
 cd cloudflare && npm i -D wrangler && npx wrangler login

@@ -1,6 +1,6 @@
 {
   // HerbGuard TTM บน Cloudflare: Python Worker (ตัวตรวจ + บัญชีผู้ใช้) + D1 (ข้อมูลอ้างอิง/บัญชี/ข้อมูลที่ซิงก์) + Static Assets (เว็บ)
-  // ก่อน deploy: รัน `python scripts/build_worker.py` (สร้าง cloudflare/build/) และสร้าง D1 ตาม cloudflare/README.md แล้วใส่ database_id
+  // deploy อัตโนมัติด้วย .github/workflows/deploy-cloudflare.yml เมื่อ push เข้า main (ต้องมี secret CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID) ด้วยมือ: รัน `python scripts/build_worker.py` (สร้าง cloudflare/build/) และสร้าง D1 ตาม cloudflare/README.md แล้วใส่ database_id
   "name": "herbguard-ttm",
   "main": "build/worker.py",
   "compatibility_date": "2025-09-01",
@@ -9,7 +9,7 @@
     {
       "binding": "DB",
       "database_name": "herbguard",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_id": "937c34b4-5bb3-4cc8-8c32-fce4d7d70085",
       "migrations_dir": "migrations"
     }
   ],
