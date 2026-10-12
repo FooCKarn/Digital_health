@@ -10,9 +10,9 @@
 
 | # | สถานการณ์เดิม | สถานะ | ครอบคลุมโดย |
 |---|---|---|---|
-| 0.1 | title มี HerbGuard TTM + lang=th | GAP | `web/src/seo.test.ts::lang=th, title, meta description` |
+| 0.1 | title มี ใบพลู + lang=th | GAP | `web/src/seo.test.ts::lang=th, title, meta description` |
 | 0.2 | meta description > 60 ตัวอักษร + robots noindex, nofollow | GAP | `web/src/seo.test.ts::lang=th, title, meta description` `web/src/seo.test.ts::meta description/theme-color/og/twitter` |
-| 0.3 | h1 เดียว + header/main/footer | GAP+FIX | `web/src/parity/legacy.test.tsx::0.3 h1 เดียว` `web/src/App.test.tsx::แสดงหัวข้อ HerbGuard` (เดิมไม่มี header/footer: คืนข้อความหัว "ต้นแบบ ใช้ข้อมูลสมมติ" และ "เกี่ยวกับเครื่องมือนี้" จากหน้าเดิม) |
+| 0.3 | h1 เดียว + header/main/footer | GAP+FIX | `web/src/parity/legacy.test.tsx::0.3 h1 เดียว` `web/src/App.test.tsx::แสดงหัวข้อ ใบพลู` (เดิมไม่มี header/footer: คืนข้อความหัว "ต้นแบบ ใช้ข้อมูลสมมติ" และ "เกี่ยวกับเครื่องมือนี้" จากหน้าเดิม) |
 | 0.4 | JSON-LD อ่านได้ เป็น WebApplication | GAP+FIX | `web/src/seo.test.ts::JSON-LD อ่านได้` (คืน JSON-LD จากหน้าเดิมใน web/index.html) |
 | 0.5 | ไม่มีคำว่า ปลอดภัย นอกเชิงปฏิเสธ | GAP | `web/src/parity/legacy.test.tsx::0.5 ผลจริงจาก engine` `web/src/source-scan.test.ts::ไม่มีคำว่า ปลอดภัย` `web/src/components/ThisPeriod.test.tsx::(ฌ) ไม่มีคำว่า ปลอดภัย` |
 | 1.1 | dropdown ครบ (สมุนไพร ≥21 ยา ≥5 โรค ≥20) | GAP | `web/src/parity/legacy.test.tsx::1.1 รายการให้เลือกครบ` |

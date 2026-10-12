@@ -148,7 +148,7 @@ def test_http_internal_error_returns_json_500_with_cause(base, monkeypatch):
 def test_http_index_page_served(base):
     with urllib.request.urlopen(base + "/") as r:
         html = r.read().decode()
-    assert "HerbGuard TTM" in html and "innerHTML" not in html  # ห้ามใช้ innerHTML กับข้อมูล (กัน XSS)
+    assert "ใบพลู" in html and "innerHTML" not in html  # ห้ามใช้ innerHTML กับข้อมูล (กัน XSS)
 
 
 def test_index_page_seo_basics_and_noindex_until_verified():
@@ -156,7 +156,7 @@ def test_index_page_seo_basics_and_noindex_until_verified():
     html = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
     title = re.search(r"<title>(.*?)</title>", html).group(1)
     desc = re.search(r'<meta name="description" content="(.*?)">', html).group(1)
-    assert "HerbGuard TTM" in title and len(title) <= 90 and 60 <= len(desc) <= 300
+    assert "ใบพลู" in title and len(title) <= 90 and 60 <= len(desc) <= 300
     assert html.count("<h1") == 1 and '<html lang="th">' in html and "<header>" in html and "<main>" in html and "<footer>" in html
     assert '<meta name="robots" content="noindex, nofollow">' in html          # ข้อมูลยังเป็นร่าง ปิดดัชนีไว้ก่อน
     ld = json.loads(re.search(r'<script type="application/ld\+json">\s*(\{.*?\})\s*</script>', html, re.S).group(1))

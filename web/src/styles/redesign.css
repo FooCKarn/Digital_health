@@ -367,3 +367,6 @@ label.check, .check-line { font-weight: 400; }
 .check-line span { font-weight: 500; }
 label.check { display: flex; gap: var(--sp-3); align-items: flex-start; margin: var(--sp-3) 0; }
 label.check input { width: 24px; height: 24px; flex: none; margin: 2px 0 0; }
+
+/* โลโก้ใบพลู: ภาพพื้นอ่อนในกรอบมน (ธีมมืดยังเห็นชัด) */
+.logo { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; background: #F5FAF4; padding: 0; }
