@@ -16,7 +16,9 @@ if ((Get-Content wrangler.jsonc -Raw) -match "REPLACE_WITH_D1_DATABASE_ID") {
   throw "ยังไม่ได้ใส่ database_id ใน cloudflare\wrangler.jsonc (ได้จาก: npx wrangler d1 create herbguard)"
 }
 
-Step "ทดสอบก่อนขึ้น (engine + cloudflare)" { Push-Location $root; python -m pytest engine/tests cloudflare/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
+# engine/tests กับ cloudflare/tests ต้องรันแยกกัน (รวมกันแล้วไฟล์ conftest ชนกัน)
+Step "ทดสอบ engine"                        { Push-Location $root; python -m pytest engine/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
+Step "ทดสอบ cloudflare"                    { Push-Location $root; python -m pytest cloudflare/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
 Step "build เว็บ"                          { Push-Location "$root\web"; npm ci; if ($LASTEXITCODE -eq 0) { npm run build }; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
 Step "สร้าง build\ และ seed.sql"           { python "$root\scripts\build_worker.py" }
 Step "สร้างตารางใน D1 (migrations)"         { npx wrangler d1 migrations apply herbguard --remote }
