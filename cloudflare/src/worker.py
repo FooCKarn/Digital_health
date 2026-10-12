@@ -2,10 +2,11 @@
 ไฟล์นี้ถูกคัดลอกเป็น cloudflare/build/worker.py พร้อม engine/*.py และ app/*.py (scripts/build_worker.py)
 Python Workers ยังเป็นเบต้า: ต้องทดสอบด้วย `wrangler dev` / `wrangler deploy` ก่อนใช้จริง (ดู cloudflare/README.md)
 """
+import json
 import os
 import time
 
-from js import AbortSignal, Function, Headers, Object, Uint8Array, TextEncoder, crypto, fetch as js_fetch
+from js import AbortSignal, Headers, JSON, Object, Uint8Array, TextEncoder, crypto, fetch as js_fetch
 from js import Response as JsResponse
 from pyodide.ffi import to_js
 from workers import WorkerEntrypoint
@@ -23,10 +24,6 @@ MAX_RAW_BODY = 400 * 1024
 
 def _obj(d):
     return to_js(d, dict_converter=Object.fromEntries)
-
-
-# to_js แปลง None เป็น undefined ซึ่ง D1 ไม่รับ จึงแปลงเป็น null ฝั่ง JS (ไม่พึ่ง pyodide.ffi.jsnull ที่บาง runtime ไม่มี)
-_undefined_to_null = Function.new("a", "return a.map(x => x === undefined ? null : x)")
 
 
 class WebCrypto:
@@ -57,7 +54,10 @@ class D1Db:
         self.d1 = d1
 
     def _stmt(self, sql, params):
-        return self.d1.prepare(sql).bind(*_undefined_to_null(to_js(list(params))))
+        # to_js แปลง None เป็น undefined ซึ่ง D1 ไม่รับ และ Workers ห้าม eval/Function จึงสร้างอาร์เรย์ JS (มี null จริง) ผ่าน JSON.parse
+        # พารามิเตอร์ทั้งหมดเป็น str/int/float/None (เก็บ salt เป็น hex) แล้วส่งต่อด้วย bind.apply เพื่อไม่ให้ null ถูกแปลงกลับเป็น None
+        stmt = self.d1.prepare(sql)
+        return stmt.bind.apply(stmt, JSON.parse(json.dumps(list(params))))
 
     async def all(self, sql, params=()):
         res = await self._stmt(sql, params).all()
@@ -105,7 +105,6 @@ class Default(WorkerEntrypoint):
         return self._reply(resp)
 
     def _reply(self, resp):
-        import json
         h = Headers.new()
         for k, v in resp.headers.items():
             h.append(k, v)
