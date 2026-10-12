@@ -25,7 +25,8 @@ if (-not $SkipTests) {
     throw "pytest is not installed. Run: python -m pip install pytest   (then .\deploy.ps1 again) or skip tests with: .\deploy.ps1 -SkipTests"
   }
   # engine/tests and cloudflare/tests must run separately (their conftest files clash when combined)
-  Step "tests: engine"     { Push-Location $root; python -m pytest engine/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
+  # test_ui.py tests the old Streamlit prototype (needs streamlit installed) and is unrelated to this deployment, so it is skipped here
+  Step "tests: engine"     { Push-Location $root; python -m pytest engine/tests -q --ignore=engine/tests/test_ui.py; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
   Step "tests: cloudflare" { Push-Location $root; python -m pytest cloudflare/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
 }
 Step "build web"         { Push-Location "$root\web"; npm ci; if ($LASTEXITCODE -eq 0) { npm run build }; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
