@@ -48,6 +48,7 @@ HerbGuard TTM: ระบบ rule-based ตรวจความปลอดภ�
 # ติดตั้ง:        pip install -r requirements-dev.txt   (Python 3.12; ห้ามตั้งชื่อ requirements.txt ที่ root เพราะ Vercel จะติดตั้ง Streamlit/PyMuPDF ให้ฟังก์ชันเว็บโดยไม่จำเป็น)
 # รัน engine test: python -m pytest engine/tests
 # รัน golden set:  python scripts/run_golden.py
+# ทดสอบ Cloudflare (D1/บัญชี/ซิงก์; รันแยกจาก engine/tests): python -m pytest cloudflare/tests    เตรียมขึ้นระบบ: python scripts/build_worker.py (ดู cloudflare/README.md)
 # สกัดข้อมูล:      python scripts/extract_pdf.py <pdf> && python scripts/round_a.py && python scripts/verify_extraction.py
 # หน้าเว็บใหม่ (web/, Vite + Preact, Node):  cd web && npm ci
 #   เทสต์หน้าเว็บ:   cd web && npm test          (ตรวจชนิด: npm run typecheck)

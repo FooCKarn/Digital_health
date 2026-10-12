@@ -14,6 +14,17 @@ test("นโยบายระบุคีย์ที่เก็บจริ�
   expect(within(row).getByText("ไม่ส่งไปที่ใดเลย")).toBeInTheDocument();
 });
 
+test("นโยบายบอกชัดว่ามีบัญชีเป็นตัวเลือก ข้อมูลที่ซิงก์เก็บที่ไหน กู้รหัสผ่านไม่ได้ และห้ามข้อมูลจริง", () => {
+  render(<Policy />);
+  const row = screen.getByRole("rowheader", { name: /บัญชีและข้อมูลที่ซิงก์/ }).closest("tr")!;
+  expect(row.textContent).toContain("D1 ของ Cloudflare");
+  expect(row.textContent).toContain("แฮชของรหัสผ่าน");
+  expect(row.textContent).toContain("hg_session");
+  expect(text()).toContain("กู้รหัสผ่านที่ลืมให้ไม่ได้");
+  expect(text()).toContain("ต้นแบบนี้จึงห้ามใส่ข้อมูลผู้ป่วยจริง");
+  expect(text()).toContain("ลบบัญชี");
+});
+
 test("ฟิลด์ที่ส่งตรวจ (buildPayload) ต้องถูกระบุไว้ในนโยบายครบ", () => {
   render(<Policy />);
   const p = buildPayload(

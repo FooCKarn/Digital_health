@@ -301,3 +301,9 @@ input[type="time"] { border: 1.5px solid var(--c-muted); border-radius: 12px; pa
 .asst-form .primary { border-radius: 999px; }
 .asst-foot { margin-top: 0; }
 @media (max-width: 600px) { .asst-form { bottom: calc(64px + env(safe-area-inset-bottom)); } .assistant { min-height: calc(100vh - 260px); } }
+
+/* บัญชี/ซิงก์ */
+.account-card .tabs-mini { display: flex; gap: var(--sp-2); margin: var(--sp-2) 0; }
+.account-card .tabs-mini [aria-pressed="true"] { background: var(--c-primary); color: var(--c-on-primary); }
+.acct-form { display: grid; gap: var(--sp-2); max-width: 420px; }
+.account-card .danger-zone { margin-top: var(--sp-3); }

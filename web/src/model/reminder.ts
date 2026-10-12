@@ -35,6 +35,16 @@ export class ReminderStore {
     this.commit({ time, last: null });
     return true;
   }
+  /** แทนที่ทั้งก้อน (ใช้ตอนนำสถานะจากคลาวด์มาใส่) ค่าที่ผิดรูปแบบถูกปฏิเสธ */
+  replace(s: unknown): boolean {
+    const o = s as { time?: unknown; last?: unknown } | null;
+    if (!o || typeof o !== "object") return false;
+    const time = typeof o.time === "string" && TIME.test(o.time) ? o.time : null;
+    const last = typeof o.last === "string" && DATE.test(o.last) ? o.last : null;
+    if ((o.time !== null && o.time !== undefined && time === null) || (o.last !== null && o.last !== undefined && last === null)) return false;
+    this.commit({ time, last });
+    return true;
+  }
   markFired(today: string): void { this.commit({ ...this._s, last: today }); }
   /** ถึงเวลาแล้ว วันนี้ยังไม่เตือน และยังมีรายการที่ไม่ได้กดว่าใช้ */
   shouldFire(nowHHMM: string, today: string, hasUntaken: boolean): boolean {
