@@ -53,10 +53,10 @@ export function App() {
     <>
       <header>
         <div class="appbar">
-        <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C6 6 4 12 9 20c1-1 2-2 3-4 1 2 2 3 3 4 5-8 3-14-3-18z"/></svg></span>
+        <img class="logo" src="/logo-192.png" alt="" width="56" height="56" />
         <div>
-          <h1>HerbGuard TTM</h1>
-          <p class="meta">ตัวติดตามสมุนไพรและยาของฉัน · ตรวจคำเตือนจากหนังสือ TTM first</p>
+          <h1>ใบพลู</h1>
+          <p class="meta">ติดตามสมุนไพรและยา ตรวจคำเตือนให้</p>
         </div>
         </div>
         <p class="proto-banner"><strong>ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง</strong></p>
@@ -72,7 +72,7 @@ export function App() {
       <footer>
         <details class="opt-box noprint">
           <summary>เกี่ยวกับเครื่องมือนี้</summary>
-          <p>HerbGuard TTM เป็นต้นแบบช่วยดูว่าสมุนไพรไทยที่ใช้ร่วมกับยาแผนปัจจุบันมีคำเตือนอะไรบ้าง ตัดสินด้วยกฎที่เขียนเป็นโค้ด ไม่ได้ให้ AI ตัดสิน</p>
+          <p>ใบพลู เป็นต้นแบบช่วยดูว่าสมุนไพรไทยที่ใช้ร่วมกับยาแผนปัจจุบันมีคำเตือนอะไรบ้าง ตัดสินด้วยกฎที่เขียนเป็นโค้ด ไม่ได้ให้ AI ตัดสิน</p>
           <p>แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ) ส่วนข้อห้ามของ “ตำรับยาบำรุงโลหิต” มาจากแนวทางการตั้งตำรับยาบำรุงโลหิตของสถาบันการแพทย์แผนไทย</p>
           <p>ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบคำเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร</p>
         </details>
@@ -103,7 +103,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
       if (!reminder.shouldFire(hhmm(new Date()), t, store.active().some((i) => !diary.isTaken(i.id, t)))) return;
       reminder.markFired(t);
       setReminderBanner(true);
-      try { if (typeof Notification !== "undefined" && Notification.permission === "granted") new Notification("HerbGuard TTM", { body: "ถึงเวลาบันทึกการใช้วันนี้แล้ว" }); } catch { /* มีแบนเนอร์ในหน้าแทน */ }
+      try { if (typeof Notification !== "undefined" && Notification.permission === "granted") new Notification("ใบพลู", { body: "ถึงเวลาบันทึกการใช้วันนี้แล้ว" }); } catch { /* มีแบนเนอร์ในหน้าแทน */ }
     };
     tick();
     const id = setInterval(tick, 30000);

@@ -46,7 +46,6 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
       <form onSubmit={submit} noValidate>
         <label for="sheet-q">ค้นหา หรือพิมพ์ชื่อยา</label>
         <input id="sheet-q" ref={first} type="search" value={q} onInput={(e) => setQ(e.currentTarget.value)} />
-        <p class="meta">พิมพ์ชื่อยาที่ไม่มีในรายการได้ ถ้าไม่รู้จักชื่อนั้นจะขึ้นว่า ยังไม่มีข้อมูลตรวจ</p>
         <div role="group" aria-label="รายการที่เลือกได้" class="pick-list">
           {herbs.length > 0 && <p class="pick-h">สมุนไพร</p>}
           {herbs.map((h) => <PickBtn key={`h-${h.id}`} on={pick?.kind === "herb" && pick.ref === h.id} text={`${h.name_th} (สมุนไพร)`} onPick={() => setPick({ kind: "herb", ref: h.id, label: h.name_th })} />)}
@@ -60,23 +59,21 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
         {pick?.kind === "formula" && <p class="meta">{meta.formulas?.find((f) => f.id === pick.ref)?.note_th}</p>}
         {itemErr && <p class="err" role="alert">{itemErr}</p>}
         <label for="sheet-date">เริ่มใช้ครั้งแรกเมื่อไหร่</label>
-        <p class="meta" id="sheet-date-help">ถ้าใช้มาก่อนแล้ว ให้เลือกวันที่เริ่มใช้จริง ระบบจะนับจำนวนวันที่ใช้จากวันที่เริ่มนั้น</p>
         <div class="quick-dates" role="group" aria-label="เลือกวันเริ่มใช้แบบเร็ว">
           {([["เพิ่งเริ่มวันนี้", 0], ["1 สัปดาห์ก่อน", 7], ["1 เดือนก่อน", 30]] as const).map(([t, n]) => {
             const v = addDays(today, -n) ?? today;
             return <button type="button" key={t} aria-pressed={date === v} onClick={() => { setDate(v); setDateErr(""); }}>{t}</button>;
           })}
         </div>
-        <input id="sheet-date" type="date" max={today} value={date} aria-invalid={!!dateErr} aria-describedby={dateErr ? "sheet-date-err" : "sheet-date-help"}
+        <input id="sheet-date" type="date" max={today} value={date} aria-invalid={!!dateErr} aria-describedby={dateErr ? "sheet-date-err" : undefined}
           onInput={(e) => { setDate(e.currentTarget.value); setDateErr(""); }} />
         {dateErr && <p class="err" role="alert" id="sheet-date-err">{dateErr}</p>}
         {diary && validateStart(date, today) === null && dayNumber(date, today) > 1 && (
           <>
           <label class="check-line">
-            <input type="checkbox" checked={backfill} onChange={(e) => setBackfill(e.currentTarget.checked)} aria-describedby="sheet-backfill-help" />
+            <input type="checkbox" checked={backfill} onChange={(e) => setBackfill(e.currentTarget.checked)} />
             <span>{`บันทึกว่าใช้ทุกวันตั้งแต่วันที่เริ่ม (รวม ${dayNumber(date, today)} วัน)`}</span>
           </label>
-          <p class="meta check-help" id="sheet-backfill-help">ถ้าบางวันไม่ได้ใช้ ไปที่หน้า บันทึก แตะวันนั้นในปฏิทิน แล้วยกเลิกช่องของรายการนี้ได้</p>
           </>
         )}
         <div class="row-actions form-actions">

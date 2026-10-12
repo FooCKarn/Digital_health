@@ -56,7 +56,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
           })}
         </ul>
       )}
-      {diary && items.length > 0 && <p class="meta legend">จุดเรียงตามวัน (ซ้ายเก่าสุด ขวาคือวันนี้) จุดทึบคือวันที่กด “ใช้แล้ว” จุดโปร่งคือวันที่ยังไม่ได้กด</p>}
+      {diary && items.length > 0 && <p class="meta legend">จุดเรียงจากเก่า (ซ้าย) ถึงวันนี้ (ขวา) ทึบ = ใช้แล้ว</p>}
     </section>
   );
 }

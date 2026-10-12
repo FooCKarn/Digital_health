@@ -70,7 +70,6 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
             })}
           </ul>
         )}
-        <p class="meta">นับจากที่คุณกดเอง ไม่ได้ตรวจว่าใช้ถูกขนาดหรือไม่</p>
       </section>
 
       <section class="card print-me" aria-labelledby="pharm-h">
@@ -125,7 +124,7 @@ function MoodDots({ diary, today }: { diary: DiaryStore; today: string }) {
   }
   return (
     <>
-    <p class="meta mood-cap">ความรู้สึก 7 วันล่าสุด (ซ้ายสุดเก่าสุด ขวาสุดคือวันนี้ · เลข 1 = แย่มาก ถึง 5 = ดีมาก · “·” คือไม่ได้บันทึก)</p>
+    <p class="meta mood-cap">ความรู้สึก 7 วันล่าสุด (ขวาสุดคือวันนี้ · 1 = แย่มาก ถึง 5 = ดีมาก)</p>
     <div class="mooddots" role="img" aria-label={`ความรู้สึก 7 วันล่าสุด: ${days.map((x) => (x.mood === null ? "ไม่ได้บันทึก" : MOODS[x.mood - 1].th)).join(", ")}`}>
       {days.map((x) => <span key={x.d} class="dot" data-m={x.mood ?? 0}>{x.mood ?? "·"}</span>)}
     </div>
@@ -163,7 +162,6 @@ function DayPanel({ diary, store, date, today, msg, onMsg }: {
       {usedThen.length > 0 && (
         <fieldset class="took-day">
           <legend>{`สิ่งที่ใช้${isToday ? "วันนี้" : when}`}</legend>
-          <p class="meta">แตะเพื่อติ๊กว่าใช้ หรือแตะอีกครั้งเพื่อยกเลิก บันทึกให้ทันที ไม่ต้องกดปุ่มบันทึก</p>
           {usedThen.map((i) => (
             <label key={i.id} class="check-line took-row">
               <input type="checkbox" checked={diary.isTaken(i.id, date)} onChange={() => diary.toggleTaken(i.id, date)} />

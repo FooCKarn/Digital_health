@@ -108,7 +108,7 @@ export function Calendar({ items, diary, today, selected, onSelect }: Props) {
         ))}
       </div>
       <p class="cal-legend meta">
-        <span>เลข 1-5 คือความรู้สึกที่จดไว้</span> <span>จุดทึบ = ใช้แล้ว จุดโปร่ง = ยังไม่ได้ติ๊ก</span> <span>แตะวันที่เพื่อดูหรือแก้ย้อนหลัง</span>
+        <span>เลข 1-5 คือความรู้สึกที่จดไว้</span> <span>จุดทึบ = ใช้แล้ว จุดโปร่ง = ยังไม่ได้ติ๊ก</span>
       </p>
       <p class="meta cal-sum">{`เดือนนี้: จดบันทึก ${totals.entryDays} วัน · กดบันทึกว่าใช้ ${totals.takenMarks} ครั้ง`}</p>
       {!atCurrent && <button type="button" class="cal-today" onClick={() => { setView([ty, tm]); moveTo(today); onSelect(today); }}>กลับไปวันนี้</button>}

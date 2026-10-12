@@ -79,7 +79,6 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
         <h3 id="backup-h">สำรอง ย้ายเครื่อง หรือลบข้อมูล</h3>
         <div class="data-row">
           <button type="button" class="wide-sm" onClick={() => downloadJSON(`herbguard-${today}.json`, store.exportJSON())}>ส่งออกข้อมูลเป็นไฟล์</button>
-          <p class="meta">ดาวน์โหลดเป็นไฟล์ไว้สำรองหรือย้ายไปเครื่องอื่น</p>
         </div>
         <div class="data-row">
           <label class="file-btn" for="import-file">
