@@ -56,3 +56,21 @@ test("ปุ่มใช้แล้ววันนี้ สลับสถา�
   fireEvent.click(screen.getByRole("button", { name: "ลบ ขิง" }));
   expect(diary.state.taken[r.item.id]).toBeUndefined();
 });
+
+test("แก้ย้อนหลังได้: เลือกวันในปฏิทินแล้วติ๊ก/ยกเลิกการใช้ของรายการ และวันก่อนเริ่มใช้ไม่มีช่อง", () => {
+  const { store, diary } = setup();
+  const r = store.addItem({ kind: "herb", ref: "khing", label: "ขิง", start_date: "2026-10-05" });
+  if (!r.ok) throw new Error("setup");
+  diary.markRange(r.item.id, "2026-10-05", TODAY);
+  const { container } = render(<Diary diary={diary} store={store} today={TODAY} analysis={idle} />);
+  fireEvent.click(container.querySelector<HTMLButtonElement>('[data-date="2026-10-06"]')!);
+  const box = screen.getByRole("checkbox", { name: "ขิง" });
+  expect(box).toBeChecked();
+  fireEvent.click(box);
+  expect(diary.isTaken(r.item.id, "2026-10-06")).toBe(false);
+  expect(diary.isTaken(r.item.id, "2026-10-05")).toBe(true);
+  fireEvent.click(screen.getByRole("checkbox", { name: "ขิง" }));
+  expect(diary.isTaken(r.item.id, "2026-10-06")).toBe(true);
+  fireEvent.click(container.querySelector<HTMLButtonElement>('[data-date="2026-10-04"]')!);
+  expect(screen.queryByRole("checkbox", { name: "ขิง" })).toBeNull();
+});

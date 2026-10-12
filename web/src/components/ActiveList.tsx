@@ -78,9 +78,9 @@ function StartEditor({ store, diary, item, today }: { store: TrackerStore; diary
     <div class="start-editor">
       <label for={`se-${item.id}`}>{`เริ่มใช้ ${item.label} เมื่อ`}</label>
       <input id={`se-${item.id}`} type="date" max={today} value={date} onInput={(e) => { setDate(e.currentTarget.value); setErr(""); }} />
-      {diary && <label class="check-line"><input type="checkbox" checked={fill} onChange={(e) => setFill(e.currentTarget.checked)} />ติ๊กว่าใช้ทุกวันตั้งแต่วันที่เริ่ม</label>}
+      {diary && <label class="check-line"><input type="checkbox" checked={fill} onChange={(e) => setFill(e.currentTarget.checked)} /><span>บันทึกว่าใช้ทุกวันตั้งแต่วันที่เริ่ม</span></label>}
       {err && <p class="err" role="alert">{err}</p>}
-      <div class="row-actions">
+      <div class="row-actions form-actions">
         <button type="button" class="primary" onClick={save}>บันทึกวันเริ่ม</button>
         <button type="button" onClick={() => { setOpen(false); setDate(item.start_date); setErr(""); }}>ยกเลิก</button>
       </div>
