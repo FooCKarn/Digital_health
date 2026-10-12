@@ -57,7 +57,6 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
         </div>
         {diary && items.length > 0 && <div class="hero-bar" role="presentation"><i style={{ width: `${Math.round((takenToday / items.length) * 100)}%` }} /></div>}
         <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>+ เพิ่ม</button>
-        <p class="meta">เพิ่มสมุนไพรหรือยาที่คุณใช้ แล้วระบบจะตรวจให้</p>
       </section>
       {a.status === "idle" && (
         <ol class="steps card" aria-label="วิธีใช้ 3 ขั้น">
