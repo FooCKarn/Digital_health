@@ -32,7 +32,23 @@ def _timeout() -> float:
         return 45.0
 
 
+# ตัวส่งคำขอ HTTP แบบเปลี่ยนได้: ค่าเริ่มต้น None = ใช้ urllib (Vercel/เครื่องทดสอบ)
+# Cloudflare Workers (Pyodide) เปิดซ็อกเก็ตเองไม่ได้ จึงฉีดตัวส่งที่ "เล่นซ้ำ" ผลที่ดึงมาแล้วแบบอะซิงก์ (ดู cloudflare/app/llm_bridge.py)
+# ตัวส่งรับ (req, budget) คืน dict JSON หรือโยน urllib.error.HTTPError / LLMUnavailable เหมือน urlopen
+_transport = None
+
+
+def set_transport(fn) -> None:
+    global _transport
+    _transport = fn
+
+
 def _fetch(req, budget: float | None = None) -> dict:
+    if _transport is not None:
+        try:
+            return _transport(req, budget)
+        except urllib.error.HTTPError as e:  # แปลงเป็น LLMUnavailable (มีรหัสสถานะ) เหมือนทางปกติ เพื่อให้โซ่รุ่นสำรองทำงานเท่าเดิม
+            raise _unavailable(e, _timeout() if budget is None else budget) from e
     """เรียก HTTP แล้วคืน JSON; ข้อผิดพลาดทุกแบบเป็น LLMUnavailable โดยไม่เปิดเผยรายละเอียดต้นทาง (อาจมี URL/key)
     ลองใหม่ 1 ครั้งเมื่อผู้ให้บริการตอบ 5xx (ข้อผิดพลาดชั่วคราวฝั่งเขา) ภายใต้งบเวลา (budget หรือ LLM_TIMEOUT_SEC)"""
     t = _timeout() if budget is None else budget

@@ -15,16 +15,36 @@ from summary import pharmacist_summary
 
 ROOT = Path(__file__).resolve().parent.parent
 _load = lambda p: json.loads((ROOT / p).read_text(encoding="utf-8"))  # noqa: E731
-HERBS, DRUGS, CONFIG = _load("data/herbs.json"), _load("data/drug_class_map.json"), _load("data/config.json")
-CONDS = _load("data/conditions.json")["conditions"]
-TAGS = _load("data/mechanism_tags.json")["tags"]
-FORMULA_DOC = _load("data/formula_guidelines.json")
-FORMULAS = formula_entries(FORMULA_DOC)
-# ตำรับเข้ามาทางแถวที่แปลงแล้วและใช้ R1 เดิม; HERBS (ชุดสมุนไพรจริง) ใช้นับขอบเขตความครอบคลุมเท่านั้น
-ALL = {**HERBS, "herbs": HERBS["herbs"] + FORMULAS}
-RAG = rag.build_index(ALL, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"], CONFIG["rag_kind_keywords"]["value"])
-HERB_IDS = {h["id"] for h in HERBS["herbs"]}
-ENTRY_IDS = {h["id"] for h in ALL["herbs"]}
+# ชุดข้อมูลที่ engine ใช้ตัดสิน (ที่เหลือใน data/ เป็นข้อมูลอ้างอิง): ชื่อ -> ไฟล์
+DATASET_FILES = {"herbs": "data/herbs.json", "drug_class_map": "data/drug_class_map.json", "config": "data/config.json",
+                 "conditions": "data/conditions.json", "mechanism_tags": "data/mechanism_tags.json",
+                 "formula_guidelines": "data/formula_guidelines.json"}
+
+
+def load_files() -> dict:
+    """อ่านชุดข้อมูลจากไฟล์ใน repo (Vercel/เครื่องทดสอบ); Cloudflare อ่านจาก D1 แล้วเรียก configure() เอง"""
+    return {k: _load(p) for k, p in DATASET_FILES.items()}
+
+
+def configure(d: dict) -> None:
+    """ตั้งชุดข้อมูลที่ใช้ตัดสิน (แทนที่ของเดิมทั้งชุด) ฟังก์ชันด้านล่างอ่านค่าจากตัวแปรโมดูลเหล่านี้"""
+    global HERBS, DRUGS, CONFIG, CONDS, TAGS, FORMULA_DOC, FORMULAS, ALL, RAG, HERB_IDS, ENTRY_IDS
+    HERBS, DRUGS, CONFIG = d["herbs"], d["drug_class_map"], d["config"]
+    CONDS = d["conditions"]["conditions"]
+    TAGS = d["mechanism_tags"]["tags"]
+    FORMULA_DOC = d["formula_guidelines"]
+    FORMULAS = formula_entries(FORMULA_DOC)
+    # ตำรับเข้ามาทางแถวที่แปลงแล้วและใช้ R1 เดิม; HERBS (ชุดสมุนไพรจริง) ใช้นับขอบเขตความครอบคลุมเท่านั้น
+    ALL = {**HERBS, "herbs": HERBS["herbs"] + FORMULAS}
+    RAG = rag.build_index(ALL, DRUGS, CONDS, CONFIG["rag_synonyms"]["value"], CONFIG["rag_kind_keywords"]["value"])
+    HERB_IDS = {h["id"] for h in HERBS["herbs"]}
+    ENTRY_IDS = {h["id"] for h in ALL["herbs"]}
+
+
+try:
+    configure(load_files())
+except FileNotFoundError:  # Cloudflare Worker ไม่มีโฟลเดอร์ data/ ข้อมูลมาจาก D1 แล้ว router เรียก configure() ให้ (cloudflare/app/router.py)
+    pass
 
 
 def meta() -> dict:

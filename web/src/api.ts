@@ -10,10 +10,18 @@ export class ApiError extends Error {
 }
 
 // ไม่เอา detail/รหัสดิบจากเซิร์ฟเวอร์มาแสดง; 400 แสดงเฉพาะข้อความไทย, 503 แสดง message ของเซิร์ฟเวอร์ (ถ้าเป็นไทย)
+const send = (url: string, init: RequestInit) => fetch(url, init); // ที่เดียวที่เรียก fetch ทั้งเว็บ (ตรวจด้วย source-scan.test.ts)
+
+/** บัญชี/ซิงก์ (/api/auth/*, /api/state, /api/account): คืน {status, data} ทุกสถานะให้ CloudSync ตัดสินเอง ใช้คุกกี้ same-origin */
+export async function cloudCall(method: string, url: string, body?: unknown): Promise<{ status: number; data: any }> {
+  const res = await send(url, { method, headers: body === undefined ? undefined : { "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body), credentials: "same-origin" });
+  return { status: res.status, data: await res.json().catch(() => null) };
+}
+
 async function call<T>(url: string, init: RequestInit, check: (d: any) => boolean): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(url, init);
+    res = await send(url, init);
   } catch (e) {
     if (e instanceof DOMException && e.name === "AbortError") throw e;
     throw new ApiError("network");

@@ -1,0 +1,25 @@
+{
+  // HerbGuard TTM บน Cloudflare: Python Worker (ตัวตรวจ + บัญชีผู้ใช้) + D1 (ข้อมูลอ้างอิง/บัญชี/ข้อมูลที่ซิงก์) + Static Assets (เว็บ)
+  // ก่อน deploy: รัน `python scripts/build_worker.py` (สร้าง cloudflare/build/) และสร้าง D1 ตาม cloudflare/README.md แล้วใส่ database_id
+  "name": "herbguard-ttm",
+  "main": "build/worker.py",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["python_workers"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "herbguard",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": { "enabled": true }
+  // ความลับ (ไม่ใส่ในไฟล์นี้): npx wrangler secret put GEMINI_API_KEY   (หรือ ANTHROPIC_API_KEY)
+  // ตัวเลือก: vars เช่น GEMINI_MODEL, HERBGUARD_CHAT_LLM
+}

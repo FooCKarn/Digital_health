@@ -5,14 +5,16 @@ import { useStore } from "../hooks/useStore";
 import { MAX_IMPORT_BYTES, type TrackerStore } from "../model/tracker";
 import type { Meta } from "../types";
 import { FeedbackCard } from "./FeedbackCard";
+import type { CloudSync } from "../model/cloud";
+import { AccountCard } from "./AccountCard";
 import { Glossary } from "./Glossary";
 import { PharmacistSummary } from "./PharmacistSummary";
 import { ProfileForm } from "./ProfileForm";
 
 type Msg = { ok: boolean; text: string } | null;
 
-export function MyData({ store, meta, today, analysis: a, onClearAll }: {
-  store: TrackerStore; meta: Meta; today: string; analysis: Analysis; onClearAll?: () => void;
+export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
+  store: TrackerStore; meta: Meta; today: string; analysis: Analysis; onClearAll?: () => void; cloud?: CloudSync;
 }) {
   useStore(store);
   const [formKey, setFormKey] = useState(0); // ล้าง state ของฟอร์มหลังนำเข้า/ลบ
@@ -60,7 +62,11 @@ export function MyData({ store, meta, today, analysis: a, onClearAll }: {
     <section class="my-data" aria-labelledby="mydata-h">
       <h2 id="mydata-h" class="noprint">ข้อมูลของฉัน</h2>
       <div class="noprint card privacy-card">
-        <p><strong>ข้อมูลอยู่ในเครื่องของคุณเท่านั้น</strong> <span class="meta">ไม่ถูกส่งไปเก็บที่เซิร์ฟเวอร์ (ส่งไปตรวจแล้วไม่เก็บ)</span></p>
+        {cloud?.handle ? (
+          <p><strong>ข้อมูลซิงก์ไปคลาวด์ในบัญชีของคุณ</strong> <span class="meta">เครื่องนี้ยังเก็บสำเนาไว้ ใช้ข้อมูลสมมติเท่านั้น</span></p>
+        ) : (
+          <p><strong>ข้อมูลอยู่ในเครื่องของคุณเท่านั้น</strong> <span class="meta">ไม่ถูกส่งไปเก็บที่เซิร์ฟเวอร์ (ส่งไปตรวจแล้วไม่เก็บ)</span></p>
+        )}
         <p class="meta">กรอกเท่าที่จำเป็นต่อการตรวจ ห้ามใส่ชื่อจริง เลขประจำตัว หรือข้อมูลที่ระบุตัวตนได้</p>
       </div>
       <div class="noprint">
@@ -68,6 +74,8 @@ export function MyData({ store, meta, today, analysis: a, onClearAll }: {
       </div>
 
       <PharmacistSummary analysis={a} meta={meta} profile={store.state.profile} />
+
+      {cloud && <AccountCard cloud={cloud} />}
 
       <section class="noprint card" aria-labelledby="backup-h">
         <h3 id="backup-h">สำรอง ย้ายเครื่อง หรือลบข้อมูล</h3>

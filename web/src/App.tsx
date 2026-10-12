@@ -15,6 +15,7 @@ import { getLocalStorage } from "./model/storage";
 import { TrackerStore } from "./model/tracker";
 import { AssistantLog } from "./model/assistantLog";
 import { DiaryStore } from "./model/diary";
+import { CloudSync } from "./model/cloud";
 import { ReminderStore, hhmm } from "./model/reminder";
 import type { Meta } from "./types";
 
@@ -90,6 +91,9 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   const a = useAnalysis(store, today, Object.keys(meta.conditions));
   const [tab, setTab] = useState(0);
   const reminder = useMemo(() => new ReminderStore(getLocalStorage()), []);
+  const cloud = useMemo(() => new CloudSync(store, diary, reminder), [store, diary, reminder]);
+  const [, setCloudV] = useState(0);
+  useEffect(() => { const off = cloud.subscribe(() => setCloudV((v) => v + 1)); void cloud.init(); return off; }, [cloud]);
   const assistantLog = useMemo(() => new AssistantLog(), []); // บทสนทนาหน้าผู้ช่วย: อยู่ในหน่วยความจำ ไม่ลงที่เก็บ
   const [reminderBanner, setReminderBanner] = useState(false);
   // เตือนให้บันทึกการใช้: ทำงานตอนเปิดหน้านี้ค้างไว้ (ไม่มีเซิร์ฟเวอร์) ข้อความไม่ใส่ชื่อยา
@@ -163,7 +167,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
                 go={(to: GoTo) => setTab(VIEWS.findIndex((x) => x.id === to))} />
             )
             : v.id === "diary" ? <><Diary diary={diary} store={store} today={today} analysis={a} /><History store={store} /></>
-            : <MyData store={store} meta={meta} today={today} analysis={a} onClearAll={() => { chat.clear(); assistantLog.clear(); diary.clearAll(); }} />}
+            : <MyData store={store} meta={meta} today={today} analysis={a} cloud={cloud} onClearAll={() => { chat.clear(); assistantLog.clear(); diary.clearAll(); }} />}
         </div>
       </AskFlag.Provider>
       {/* แชตอยู่ระดับ App นอกแผงแท็บ ใช้ได้ทุกแท็บ ใช้ store/meta/analysis ชุดเดียวกัน */}
