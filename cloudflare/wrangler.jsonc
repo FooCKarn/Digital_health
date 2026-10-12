@@ -9,7 +9,7 @@
     {
       "binding": "DB",
       "database_name": "herbguard",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_id": "937c34b4-5bb3-4cc8-8c32-fce4d7d70085",
       "migrations_dir": "migrations"
     }
   ],

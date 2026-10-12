@@ -1,32 +1,35 @@
-# ขึ้นระบบ Cloudflare (PowerShell): รันทีละขั้น หยุดทันทีถ้าขั้นไหนพัง
-# ใช้:  cd cloudflare ; .\deploy.ps1            (ต้องผ่าน npx wrangler login แล้ว และใส่ database_id ใน wrangler.jsonc แล้ว)
-#       .\deploy.ps1 -SkipSeed                  (ข้ามการ seed ข้อมูลอ้างอิง: ใช้หลังมีผู้เชี่ยวชาญแก้ข้อมูลใน D1 แล้ว ไม่งั้น seed จะทับการแก้)
+# Deploy to Cloudflare (PowerShell). Runs step by step and stops at the first failure.
+# Usage:  cd cloudflare ; .\deploy.ps1            (run `npx wrangler login` first; database_id must be set in wrangler.jsonc)
+#         .\deploy.ps1 -SkipSeed                  (skip reference-data seed: use after experts edited data in D1, otherwise seed overwrites their edits)
+# This file is ASCII-only on purpose: Windows PowerShell 5.1 misreads UTF-8 files that have no BOM.
 param([switch]$SkipSeed)
 $ErrorActionPreference = "Stop"
 $env:PYTHONUTF8 = "1"
 $root = Split-Path -Parent $PSScriptRoot
 
 function Step($name, [scriptblock]$cmd) {
-  Write-Host "`n== $name" -ForegroundColor Cyan
+  Write-Host ""
+  Write-Host "== $name" -ForegroundColor Cyan
   & $cmd
-  if ($LASTEXITCODE -ne 0) { throw "ขั้นตอนไม่สำเร็จ: $name" }
+  if ($LASTEXITCODE -ne 0) { throw "Step failed: $name" }
 }
 
 if ((Get-Content wrangler.jsonc -Raw) -match "REPLACE_WITH_D1_DATABASE_ID") {
-  throw "ยังไม่ได้ใส่ database_id ใน cloudflare\wrangler.jsonc (ได้จาก: npx wrangler d1 create herbguard)"
+  throw "database_id is not set in cloudflare\wrangler.jsonc (get it from: npx wrangler d1 create herbguard)"
 }
 
-# engine/tests กับ cloudflare/tests ต้องรันแยกกัน (รวมกันแล้วไฟล์ conftest ชนกัน)
-Step "ทดสอบ engine"                        { Push-Location $root; python -m pytest engine/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
-Step "ทดสอบ cloudflare"                    { Push-Location $root; python -m pytest cloudflare/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
-Step "build เว็บ"                          { Push-Location "$root\web"; npm ci; if ($LASTEXITCODE -eq 0) { npm run build }; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
-Step "สร้าง build\ และ seed.sql"           { python "$root\scripts\build_worker.py" }
-Step "สร้างตารางใน D1 (migrations)"         { npx wrangler d1 migrations apply herbguard --remote }
+# engine/tests and cloudflare/tests must run separately (their conftest files clash when combined)
+Step "tests: engine"     { Push-Location $root; python -m pytest engine/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
+Step "tests: cloudflare" { Push-Location $root; python -m pytest cloudflare/tests -q; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
+Step "build web"         { Push-Location "$root\web"; npm ci; if ($LASTEXITCODE -eq 0) { npm run build }; $c = $LASTEXITCODE; Pop-Location; $global:LASTEXITCODE = $c }
+Step "build worker bundle and seed.sql" { python "$root\scripts\build_worker.py" }
+Step "D1 migrations (create tables)"    { npx wrangler d1 migrations apply herbguard --remote }
 if (-not $SkipSeed) {
-  Step "นำเข้าข้อมูลอ้างอิง (seed)"          { npx wrangler d1 execute herbguard --remote --file build/seed.sql }
+  Step "seed reference data into D1"    { npx wrangler d1 execute herbguard --remote --file build/seed.sql }
 }
-Step "deploy"                              { npx wrangler deploy }
+Step "deploy" { npx wrangler deploy }
 
-Write-Host "`nเสร็จแล้ว ตรวจหลังขึ้นระบบด้วย (ใส่ URL ที่ wrangler แสดง):" -ForegroundColor Green
-Write-Host "  python ..\scripts\smoke_test.py https://herbguard-ttm.<บัญชีของคุณ>.workers.dev"
-Write-Host "ตั้ง API key ของ AI (ครั้งเดียว): npx wrangler secret put GEMINI_API_KEY"
+Write-Host ""
+Write-Host "Done. Check the deployment (use the real URL printed by wrangler above, no angle brackets):" -ForegroundColor Green
+Write-Host "  python ..\scripts\smoke_test.py https://herbguard-ttm.YOUR-SUBDOMAIN.workers.dev"
+Write-Host "Set the AI key once (if not done yet): npx wrangler secret put GEMINI_API_KEY"

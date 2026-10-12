@@ -5,6 +5,7 @@
 """
 import http.cookiejar
 import json
+import re
 import secrets
 import sys
 import urllib.error
@@ -107,7 +108,18 @@ def main(base):
     return 1 if fails else 0
 
 
+def _valid_base(u: str) -> bool:
+    p = urlparse(u)
+    return p.scheme in ("http", "https") and bool(p.netloc) and u.isascii() and not re.search(r"[<>\s]", u)
+
+
 if __name__ == "__main__":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")  # Windows console: พิมพ์ภาษาไทยได้
+    except (AttributeError, ValueError):
+        pass
     if len(sys.argv) != 2:
         sys.exit(__doc__)
+    if not _valid_base(sys.argv[1]):
+        sys.exit("URL ไม่ถูกต้อง: ต้องเป็น https://... จริง (ห้ามมี < > หรือภาษาไทย) ใช้ URL ที่ wrangler แสดงตอน deploy เช่น https://herbguard-ttm.ชื่อของคุณ.workers.dev (ใส่ชื่อ subdomain จริงของบัญชีคุณ)")
     sys.exit(main(sys.argv[1]))

@@ -101,7 +101,10 @@ class Default(WorkerEntrypoint):
             v = request.headers.get(name)
             if v is not None:
                 hdrs[name] = str(v)
-        db = D1Db(self.env.DB)
+        d1 = getattr(self.env, "DB", None) or getattr(self.env, "herbguard", None)  # wrangler อาจตั้งชื่อ binding ให้เป็น herbguard
+        if d1 is None:
+            return self._reply(router.Response(500, {"error": "server_error", "detail": "D1 binding not found (expected DB)"}))
+        db = D1Db(d1)
         ctx = router.Ctx(
             db=db, crypto=WebCrypto(), secure_cookie=True,
             ensure_data=router.make_data_loader(db, time.monotonic),
