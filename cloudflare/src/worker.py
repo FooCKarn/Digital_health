@@ -2,12 +2,13 @@
 ไฟล์นี้ถูกคัดลอกเป็น cloudflare/build/worker.py พร้อม engine/*.py และ app/*.py (scripts/build_worker.py)
 Python Workers ยังเป็นเบต้า: ต้องทดสอบด้วย `wrangler dev` / `wrangler deploy` ก่อนใช้จริง (ดู cloudflare/README.md)
 """
+import json
 import os
 import time
 
-from js import AbortSignal, Headers, Object, Uint8Array, TextEncoder, crypto, fetch as js_fetch
+from js import AbortSignal, Headers, JSON, Object, Uint8Array, TextEncoder, crypto, fetch as js_fetch
 from js import Response as JsResponse
-from pyodide.ffi import jsnull, to_js
+from pyodide.ffi import to_js
 from workers import WorkerEntrypoint
 
 import hashlib
@@ -53,7 +54,10 @@ class D1Db:
         self.d1 = d1
 
     def _stmt(self, sql, params):
-        return self.d1.prepare(sql).bind(*[jsnull if p is None else p for p in params])
+        # Python None -> JS undefined ซึ่ง D1 ไม่รับ: สร้างอาร์เรย์ผ่าน JSON.parse เพื่อให้ได้ null จริง (ไม่พึ่ง pyodide.ffi.jsnull ที่รุ่นเก่าไม่มี)
+        # แล้วเรียก stmt.bind.apply(stmt, arr) ให้ส่งอาร์เรย์เข้าไปตรง ๆ ไม่ถูกแปลงกลับเป็น Python
+        stmt = self.d1.prepare(sql)
+        return stmt.bind.apply(stmt, JSON.parse(json.dumps(list(params))))
 
     async def all(self, sql, params=()):
         res = await self._stmt(sql, params).all()
@@ -61,7 +65,7 @@ class D1Db:
 
     async def first(self, sql, params=()):
         r = await self._stmt(sql, params).first()
-        return None if r is None or r is jsnull else r.to_py()
+        return None if r is None else r.to_py()
 
     async def run(self, sql, params=()):
         res = await self._stmt(sql, params).run()
@@ -90,7 +94,7 @@ class Default(WorkerEntrypoint):
         if not path.startswith("/api/"):
             return await self.env.ASSETS.fetch(request)       # run_worker_first = ["/api/*"] จึงปกติไม่มาถึงตรงนี้ เผื่อไว้
         body = (await request.text()).encode("utf-8") if request.method not in ("GET", "HEAD") else b""
-        hdrs = {k.lower(): v for k, v in request.headers.items()}
+        hdrs = {k.lower(): v for k, v in Object.fromEntries(request.headers).to_py().items()}
         db = D1Db(self.env.DB)
         ctx = router.Ctx(
             db=db, crypto=WebCrypto(), secure_cookie=True,
@@ -101,7 +105,6 @@ class Default(WorkerEntrypoint):
         return self._reply(resp)
 
     def _reply(self, resp):
-        import json
         h = Headers.new()
         for k, v in resp.headers.items():
             h.append(k, v)
