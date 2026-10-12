@@ -20,6 +20,7 @@ import router
 SECRETS = ("GEMINI_API_KEY", "ANTHROPIC_API_KEY", "LLM_PROVIDER", "GEMINI_MODEL", "HERBGUARD_MODEL", "HERBGUARD_CHAT_LLM",
            "GEMINI_THINKING_BUDGET", "GEMINI_THINKING_LEVEL", "LLM_TIMEOUT_SEC")
 MAX_RAW_BODY = 400 * 1024
+HEADERS_USED = ("host", "origin", "cookie", "content-type", "cf-connecting-ip")
 
 
 def _obj(d):
@@ -94,7 +95,12 @@ class Default(WorkerEntrypoint):
         if not path.startswith("/api/"):
             return await self.env.ASSETS.fetch(request)       # run_worker_first = ["/api/*"] จึงปกติไม่มาถึงตรงนี้ เผื่อไว้
         body = (await request.text()).encode("utf-8") if request.method not in ("GET", "HEAD") else b""
-        hdrs = {k.lower(): v for k, v in Object.fromEntries(request.headers).to_py().items()}
+        # อ่านเฉพาะ header ที่ router ใช้ ด้วย .get() (ไม่วนอ่านทั้งก้อน: ตัวห่อ headers ของ Python Workers วนอ่านด้วย Object.fromEntries ไม่ได้)
+        hdrs = {}
+        for name in HEADERS_USED:
+            v = request.headers.get(name)
+            if v is not None:
+                hdrs[name] = str(v)
         db = D1Db(self.env.DB)
         ctx = router.Ctx(
             db=db, crypto=WebCrypto(), secure_cookie=True,
