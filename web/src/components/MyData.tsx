@@ -75,13 +75,10 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
 
       <PharmacistSummary analysis={a} meta={meta} profile={store.state.profile} />
 
-      {cloud && <AccountCard cloud={cloud} />}
-
       <section class="noprint card" aria-labelledby="backup-h">
         <h3 id="backup-h">สำรอง ย้ายเครื่อง หรือลบข้อมูล</h3>
         <div class="data-row">
           <button type="button" class="wide-sm" onClick={() => downloadJSON(`herbguard-${today}.json`, store.exportJSON())}>ส่งออกข้อมูลเป็นไฟล์</button>
-          <p class="meta">ดาวน์โหลดเป็นไฟล์ไว้สำรองหรือย้ายไปเครื่องอื่น</p>
         </div>
         <div class="data-row">
           <label class="file-btn" for="import-file">
@@ -105,6 +102,8 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
         </div>
         {msg && (msg.ok ? <p role="status">{msg.text}</p> : <p class="err" role="alert">{msg.text}</p>)}
       </section>
+
+      {cloud && <AccountCard cloud={cloud} />}
 
       <details class="opt-box noprint card">
         <summary>อธิบายชั้นหลักฐาน (A/B/C)</summary>

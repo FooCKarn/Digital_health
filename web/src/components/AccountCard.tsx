@@ -7,7 +7,7 @@ const STATUS_TEXT: Record<string, string> = {
 };
 
 /** บัญชี + ซิงก์ข้อมูลไปคลาวด์ (ไม่บังคับ): ข้อมูลอยู่ในเครื่องเป็นค่าเริ่มต้น ซิงก์เฉพาะเมื่อผู้ใช้สมัครและเข้าสู่ระบบ */
-export function AccountCard({ cloud }: { cloud: CloudSync }) {
+export function AccountCard({ cloud, defaultOpen = false }: { cloud: CloudSync; defaultOpen?: boolean }) {
   const [, setV] = useState(0);
   useEffect(() => cloud.subscribe(() => setV((v) => v + 1)), [cloud]);
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -31,8 +31,8 @@ export function AccountCard({ cloud }: { cloud: CloudSync }) {
 
   if (cloud.handle === null) {
     return (
-      <section class="noprint card account-card" aria-labelledby="acct-h">
-        <h3 id="acct-h">บัญชีและซิงก์ข้อมูล (ไม่บังคับ)</h3>
+      <details class="noprint card account-card account-opt" open={defaultOpen || undefined}>
+        <summary>ใช้หลายเครื่อง? สมัครบัญชีเพื่อซิงก์ (ไม่บังคับ)</summary>
         <p class="meta">ตอนนี้ข้อมูลอยู่ในเครื่องนี้เท่านั้น สมัครบัญชีถ้าอยากใช้ข้อมูลเดียวกันหลายเครื่อง ข้อมูลรายการที่ใช้ บันทึกสุขภาพ และเวลาเตือนจะถูกเก็บในคลาวด์ของเรา</p>
         <div class="tabs-mini" role="group" aria-label="เลือกการทำรายการ">
           <button type="button" aria-pressed={mode === "login"} onClick={() => setMode("login")}>มีบัญชีแล้ว</button>
@@ -58,7 +58,7 @@ export function AccountCard({ cloud }: { cloud: CloudSync }) {
           </button>
         </form>
         {cloud.message && <p class="err" role="alert">{cloud.message}</p>}
-      </section>
+      </details>
     );
   }
 

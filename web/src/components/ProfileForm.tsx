@@ -64,7 +64,6 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
             aria-describedby={ageErr ? "pf-age-err" : undefined} onInput={(e) => { setAge(e.currentTarget.value); setAgeErr(""); }} />
           <span aria-hidden="true">ปี</span>
         </div>
-        <p class="meta">เว้นว่าง = ไม่ระบุ</p>
         {ageErr && <p class="err" role="alert" id="pf-age-err">{ageErr}</p>}
       </div>
       <YesNo id="pf-preg" label="ตั้งครรภ์" value={pregnant} onChange={setPregnant} />

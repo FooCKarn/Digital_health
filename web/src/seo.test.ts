@@ -9,7 +9,7 @@ const meta = (d: Document, sel: string) => d.querySelector<HTMLMetaElement>(`met
 
 test("lang=th, title, meta description ยาวพอ และ robots noindex, nofollow (ค่าเดียวกับหน้าเดิม)", () => {
   expect(web.documentElement.lang).toBe("th");
-  expect(web.title).toContain("HerbGuard TTM");
+  expect(web.title).toContain("ใบพลู");
   expect(web.title).toBe(legacy.title);
   expect(meta(web, "name=description")!.length).toBeGreaterThan(60);
   expect(meta(web, "name=robots")).toBe("noindex, nofollow");

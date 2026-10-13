@@ -1,0 +1,47 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "รัน seed.sql (ลบแล้วใส่ข้อมูลอ้างอิงใหม่จาก data/*.json ทับการแก้ใน D1) ใช้ครั้งแรกเท่านั้น"
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-cloudflare
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build worker
+        run: python scripts/build_worker.py
+      - name: Build web
+        run: npm ci && npm run build
+        working-directory: web
+      - name: Apply D1 migrations
+        run: npx --yes wrangler@4 d1 migrations apply herbguard --remote
+        working-directory: cloudflare
+      - name: Seed reference data (manual only)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.seed }}
+        run: npx --yes wrangler@4 d1 execute herbguard --remote --file build/seed.sql
+        working-directory: cloudflare
+      - name: Deploy
+        run: npx --yes wrangler@4 deploy
+        working-directory: cloudflare

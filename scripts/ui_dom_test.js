@@ -67,7 +67,7 @@ function accName(e, d) {
 (async () => {
   console.log("== 0) SEO / โครงสร้างหน้า ==");
   let { w, d, $ } = await load();
-  ok(d.title.includes("HerbGuard TTM") && d.documentElement.lang === "th", `title: "${d.title}"`);
+  ok(d.title.includes("ใบพลู") && d.documentElement.lang === "th", `title: "${d.title}"`);
   ok(d.querySelector('meta[name=description]').content.length > 60 && d.querySelector('meta[name=robots]').content === "noindex, nofollow", "description + robots noindex");
   ok(d.querySelectorAll("h1").length === 1 && !!d.querySelector("header") && !!d.querySelector("main") && !!d.querySelector("footer"), "h1 เดียว + header/main/footer");
   let ld = null; try { ld = JSON.parse(d.querySelector('script[type="application/ld+json"]').textContent); } catch (e) {}

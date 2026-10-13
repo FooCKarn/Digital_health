@@ -4,10 +4,10 @@ import { body, flag, META, respond } from "./test/fixtures";
 
 afterEach(() => vi.unstubAllGlobals());
 
-test("แสดงหัวข้อ HerbGuard", () => {
+test("แสดงหัวข้อ ใบพลู", () => {
   vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
   render(<App />);
-  expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("HerbGuard");
+  expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("ใบพลู");
 });
 
 test("โหลด meta แล้วแสดงหน้า ช่วงนี้ พร้อมขอบเขต", async () => {
