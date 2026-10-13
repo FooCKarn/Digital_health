@@ -14,7 +14,7 @@ sys.path.insert(0, str(CF / "app"))
 import dataset  # noqa: E402
 import service  # noqa: E402
 
-REFERENCE_DOCS = ("context_stats", "herb_priority", "ttm_code24", "herbal_substitution_groups")
+REFERENCE_DOCS = ("context_stats", "herb_priority", "ttm_code24", "herbal_substitution_groups", "primary_care_guidelines", "textbook_safety_notes")
 
 
 def build(out: Path | None = None) -> Path:

@@ -34,6 +34,10 @@ npx wrangler deploy
 ทดสอบในเครื่อง: `npx wrangler d1 migrations apply herbguard --local && npx wrangler d1 execute herbguard --local --file build/seed.sql && npx wrangler dev`
 ไม่มี Cloudflare ก็ลองบัญชี/ซิงก์ได้: `python scripts/dev_server.py 8000` (ใช้ `app/router.py` ตัวเดียวกับ Worker กับ SQLite ที่ `.dev/herbguard.sqlite`)
 
+## เก็บไฟล์ต้นฉบับ (PDF) ใน R2
+
+ไฟล์ต้นฉบับที่ได้จากหน่วยงาน (ถูก `.gitignore` ไม่เข้า git) เก็บไว้ใน R2 bucket ส่วนตัวชื่อ `herbguard-sources` ด้วย `scripts/upload_sources_r2.sh <โฟลเดอร์ไฟล์>` (ต้องเปิด R2 ในแดชบอร์ด Cloudflare ก่อน และ token ต้องมีสิทธิ์ R2:Edit) Worker ไม่ได้ผูก bucket นี้ เพราะไม่ต้องอ่านไฟล์เหล่านี้ ข้อมูลที่สกัดแล้วอยู่ใน D1 (`ref_docs`) ผ่าน seed
+
 ## แก้ข้อมูลอ้างอิง (ผู้เชี่ยวชาญ)
 
 - ข้อมูลอยู่ในตารางตามชื่อไฟล์เดิม: `herbs` + `herb_rules` (กฎรายแถว: `kind` = contraindications/age_limits/drug_cautions/condition_cautions/duration_limits/notes), `formulas` + `formula_rules`, `drug_entries`, `conditions`, `mechanism_tags`, `config` (พารามิเตอร์ที่ทีมตั้งเอง พร้อม note), `ref_docs`
