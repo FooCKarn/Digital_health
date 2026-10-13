@@ -2,30 +2,31 @@ import { downloadJSON } from "../download";
 import type { Analysis } from "../hooks/useAnalysis";
 import { isKnownSeverity, unknownConditions } from "../model/panel";
 import type { Profile } from "../model/tracker";
-import { NO_FLAG, NO_FLAG_NOTE, NOT_CHECKED, PHARMACIST } from "../texts";
+import { noFlag, noFlagNote, NOT_CHECKED, pharmacist } from "../texts";
 import type { Flag, Meta } from "../types";
 import { Disclaimer } from "./Disclaimer";
 import { ScopeChip } from "./ScopeChip";
 import { SEVERITY_TEXT, SeverityBadge } from "./SeverityBadge";
+import { t } from "../i18n";
 
-const yn = (v: Profile["pregnant"]) => (v === null ? "ไม่ระบุ" : v === "yes" ? "ใช่" : "ไม่ใช่");
-const sev = (s: string) => (isKnownSeverity(s) ? SEVERITY_TEXT[s] : `ระดับ ${s}`);
+const yn = (v: Profile["pregnant"]) => (v === null ? t("ไม่ระบุ", "Not specified") : v === "yes" ? t("ใช่", "Yes") : t("ไม่ใช่", "No"));
+const sev = (s: string) => (isKnownSeverity(s) ? SEVERITY_TEXT[s] : t(`ระดับ ${s}`, `Level ${s}`));
 
 function profileText(p: Profile, conditions: Record<string, string>) {
   return [
-    `อายุ: ${p.age === null ? "ไม่ระบุ" : `${p.age} ปี`}`,
-    `ตั้งครรภ์: ${yn(p.pregnant)}`,
-    `ให้นมบุตร: ${yn(p.breastfeeding)}`,
-    `โรค/สภาวะ: ${p.conditions.map((c) => (Object.hasOwn(conditions, c) ? conditions[c] : c)).join(", ") || "ไม่ระบุ"}`,
+    `${t("อายุ", "Age")}: ${p.age === null ? t("ไม่ระบุ", "Not specified") : t(`${p.age} ปี`, `${p.age} years`)}`,
+    `${t("ตั้งครรภ์", "Pregnant")}: ${yn(p.pregnant)}`,
+    `${t("ให้นมบุตร", "Breastfeeding")}: ${yn(p.breastfeeding)}`,
+    `${t("โรค/สภาวะ", "Conditions")}: ${p.conditions.map((c) => (Object.hasOwn(conditions, c) ? conditions[c] : c)).join(", ") || t("ไม่ระบุ", "Not specified")}`,
   ].join(" · ");
 }
 
 function FlagTable({ flags }: { flags: Flag[] }) {
-  const head = ["ความรุนแรง", "ข้อความ", "ชั้นหลักฐาน", "หน้า", "สถานะข้อมูล", "กฎ", "วลีหลักฐาน (ไว้ตรวจเทียบ)"];
+  const head = [t("ความรุนแรง", "Severity"), t("ข้อความ", "Message"), t("ชั้นหลักฐาน", "Evidence tier"), t("หน้า", "Page"), t("สถานะข้อมูล", "Data status"), t("กฎ", "Rule"), t("วลีหลักฐาน (ไว้ตรวจเทียบ)", "Evidence quote (for cross-checking)")];
   return (
     <div class="tablewrap">
       <table>
-        <caption class="sr-only">คำเตือนทั้งหมดเรียงตามความรุนแรง</caption>
+        <caption class="sr-only">{t("คำเตือนทั้งหมดเรียงตามความรุนแรง", "All warnings, sorted by severity")}</caption>
         <thead><tr>{head.map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
         <tbody>
           {flags.map((f) => (
@@ -34,7 +35,7 @@ function FlagTable({ flags }: { flags: Flag[] }) {
               <td data-label={head[1]} class="msg-cell">{f.message_th}</td>
               <td data-label={head[2]}>{f.evidence_tier}</td>
               <td data-label={head[3]}>{`${f.source_page}${f.pdf_page ? ` (PDF ${f.pdf_page})` : ""}`}</td>
-              <td data-label={head[4]}>{f.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจ"}</td>
+              <td data-label={head[4]}>{f.verified ? t("ตรวจแล้ว", "Checked") : t("ร่าง: ยังไม่ผ่านการตรวจ", "Draft: not yet checked")}</td>
               <td data-label={head[5]}>{f.rule_id}</td>
               <td data-label={head[6]}>{f.evidence_quote ? `“${f.evidence_quote}”` : "-"}</td>
             </tr>
@@ -50,11 +51,11 @@ export function PharmacistSummary({ analysis: a, meta, profile }: { analysis: An
   const s = a.current ? a.summary : null;
   const none = !!s && s.flags.length === 0 && s.aggregates.length === 0;
   const notChecked = s ? [...s.unknown_inputs, ...s.not_checked.map((c) => NOT_CHECKED[c] ?? c), ...unknownConditions(profile, Object.keys(meta.conditions))] : [];
-  const herbs = s?.herbs.map((h) => `${h.name_th || h.id}${h.part ? ` (${h.part})` : ""}${h.days_in_use ? ` ${h.days_in_use} วัน` : ""}`) ?? [];
+  const herbs = s?.herbs.map((h) => `${h.name_th || h.id}${h.part ? ` (${h.part})` : ""}${h.days_in_use ? ` ${t(`${h.days_in_use} วัน`, `${h.days_in_use} d`)}` : ""}`) ?? [];
 
   return (
     <section class="pharm-summary card" aria-labelledby="pharm-h">
-      <h2 id="pharm-h">ใบสรุปสำหรับเภสัชกร</h2>
+      <h2 id="pharm-h">{t("ใบสรุปสำหรับเภสัชกร", "Summary for the pharmacist")}</h2>
       <div class="scope">
         <ScopeChip coverage={a.current && a.result ? a.result.coverage : meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
         <Disclaimer text={s?.disclaimer_th ?? meta.disclaimer_th} />
@@ -62,32 +63,32 @@ export function PharmacistSummary({ analysis: a, meta, profile }: { analysis: An
       {!s ? (
         // ผลเก่า/ยังไม่มีผล: ไม่แสดงเนื้อหาเก่าเป็นปัจจุบัน
         <p class="status-line">
-          {a.status === "idle" ? "ยังไม่มีสมุนไพรให้ตรวจ ใบสรุปจะแสดงเมื่อมีผลตรวจ"
-            : a.status === "loading" ? "กำลังตรวจ… ใบสรุปจะแสดงเมื่อตรวจรายการล่าสุดเสร็จ"
-            : "ยังไม่มีผลตรวจของรายการล่าสุด ใบสรุปจึงยังไม่แสดง (ลองใหม่ในหน้า ช่วงนี้)"}
+          {a.status === "idle" ? t("ยังไม่มีสมุนไพรให้ตรวจ ใบสรุปจะแสดงเมื่อมีผลตรวจ", "No herbs to check yet. The summary appears once there is a result.")
+            : a.status === "loading" ? t("กำลังตรวจ… ใบสรุปจะแสดงเมื่อตรวจรายการล่าสุดเสร็จ", "Checking… the summary appears when the latest items are checked.")
+            : t("ยังไม่มีผลตรวจของรายการล่าสุด ใบสรุปจึงยังไม่แสดง (ลองใหม่ในหน้า ช่วงนี้)", "There is no result for the latest items yet, so the summary is hidden (try again in the This period tab).")}
         </p>
       ) : (
         <>
-          <p>{`สมุนไพร: ${herbs.join(", ") || "-"}`}</p>
-          <p>{`ยา (ตามที่กรอก): ${s.drugs_as_entered.join(", ") || "ไม่มี"}`}</p>
-          <p>{`ผู้ใช้: ${profileText(profile, meta.conditions)}`}</p>
-          <p class="headline"><strong>{none ? NO_FLAG : s.headline_th}</strong></p>
-          {none && <p class="nonote">{NO_FLAG_NOTE}</p>}
+          <p>{`${t("สมุนไพร", "Herbs")}: ${herbs.join(", ") || "-"}`}</p>
+          <p>{`${t("ยา (ตามที่กรอก)", "Medicines (as entered)")}: ${s.drugs_as_entered.join(", ") || t("ไม่มี", "None")}`}</p>
+          <p>{`${t("ผู้ใช้", "User")}: ${profileText(profile, meta.conditions)}`}</p>
+          <p class="headline"><strong>{none ? noFlag() : s.headline_th}</strong></p>
+          {none && <p class="nonote">{noFlagNote()}</p>}
           {s.draft_notice_th && <p class="warn">{s.draft_notice_th}</p>}
-          {s.pharmacist_review_required && <p class="warn">{PHARMACIST}</p>}
-          {s.flags.length > 0 && <><h3>คำเตือนเรียงตามความรุนแรง</h3><FlagTable flags={s.flags} /></>}
+          {s.pharmacist_review_required && <p class="warn">{pharmacist()}</p>}
+          {s.flags.length > 0 && <><h3>{t("คำเตือนเรียงตามความรุนแรง", "Warnings, sorted by severity")}</h3><FlagTable flags={s.flags} /></>}
           {s.aggregates.length > 0 && (
             <>
-              <h3>ภาระความเสี่ยงรวม (สรุปโดยระบบ)</h3>
+              <h3>{t("ภาระความเสี่ยงรวม (สรุปโดยระบบ)", "Combined risk load (summarised by the system)")}</h3>
               <ul>{s.aggregates.map((x) => <li key={x.mechanism_tag}>{x.message_th}</li>)}</ul>
             </>
           )}
-          <h3>คำถามที่ควรถามต่อ (ร่าง ผู้เชี่ยวชาญต้องตรวจ)</h3>
+          <h3>{t("คำถามที่ควรถามต่อ (ร่าง ผู้เชี่ยวชาญต้องตรวจ)", "Follow-up questions (draft, needs expert review)")}</h3>
           <ul>{s.follow_up_questions_th.map((q, i) => <li key={i}>{q}</li>)}</ul>
-          <p>{`ยังไม่ได้ตรวจ: ${notChecked.join(", ") || "-"}`}</p>
+          <p>{`${t("ยังไม่ได้ตรวจ", "Not checked")}: ${notChecked.join(", ") || "-"}`}</p>
           <p class="noprint row-actions">
-            <button type="button" onClick={() => downloadJSON("pharmacist_summary.json", JSON.stringify(s, null, 2))}>ดาวน์โหลดใบสรุปเป็นไฟล์</button>
-            <button type="button" onClick={() => window.print()}>พิมพ์ / บันทึกเป็น PDF</button>
+            <button type="button" onClick={() => downloadJSON("pharmacist_summary.json", JSON.stringify(s, null, 2))}>{t("ดาวน์โหลดใบสรุปเป็นไฟล์", "Download the summary as a file")}</button>
+            <button type="button" onClick={() => window.print()}>{t("พิมพ์ / บันทึกเป็น PDF", "Print / save as PDF")}</button>
           </p>
         </>
       )}

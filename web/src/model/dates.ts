@@ -1,3 +1,5 @@
+import { getLang, t } from "../i18n";
+
 // คำนวณจากสตริง YYYY-MM-DD ด้วย UTC เท่านั้น ไม่ผูกกับ DST/เขตเวลา
 const MS_DAY = 86400000;
 
@@ -37,9 +39,9 @@ export function startForDay(n: number, todayISOStr: string): string | null {
 
 export function validateStart(startISO: string, todayISOStr: string): string | null {
   const n = dayNumber(startISO, todayISOStr);
-  if (Number.isNaN(n)) return "วันที่ไม่ถูกต้อง";
-  if (n < 1) return "วันที่เริ่มเป็นอนาคตไม่ได้";
-  if (n > 365) return "วันที่เริ่มต้องไม่เกิน 365 วันที่ผ่านมา";
+  if (Number.isNaN(n)) return t("วันที่ไม่ถูกต้อง", "Invalid date");
+  if (n < 1) return t("วันที่เริ่มเป็นอนาคตไม่ได้", "The start date cannot be in the future");
+  if (n > 365) return t("วันที่เริ่มต้องไม่เกิน 365 วันที่ผ่านมา", "The start date must be within the last 365 days");
   return null;
 }
 
@@ -79,10 +81,17 @@ export function shiftMonth(year: number, month: number, delta: number): [number,
 
 export const THAI_MONTHS = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 export const THAI_WEEKDAYS = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+const EN_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const EN_WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-/** "8 ตุลาคม 2569" (พ.ศ.) */
+/** ชื่อเดือน/วัน/ปีตามภาษาที่เลือก (ไทยใช้ พ.ศ. อังกฤษใช้ ค.ศ.) */
+export const monthName = (m: number) => (getLang() === "en" ? EN_MONTHS : THAI_MONTHS)[m - 1];
+export const weekdayName = (i: number) => (getLang() === "en" ? EN_WEEKDAYS : THAI_WEEKDAYS)[i];
+export const displayYear = (y: number) => (getLang() === "en" ? y : y + 543);
+
+/** "8 ตุลาคม 2569" (พ.ศ.) หรือ "8 October 2026" เมื่อเลือกภาษาอังกฤษ */
 export function thaiDate(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   if (!m || utcDay(iso) === null) return iso;
-  return `${+m[3]} ${THAI_MONTHS[+m[2] - 1]} ${+m[1] + 543}`;
+  return `${+m[3]} ${monthName(+m[2])} ${displayYear(+m[1])}`;
 }

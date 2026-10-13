@@ -1,11 +1,17 @@
+import { getLang } from "./i18n";
 import type { BriefFacts, BriefOut, RouteOut, AnalyzePayload, AnalyzeResult, AskAnswer, AskPayload, Explanation, FeedbackPayload, Meta, ParseProposal, Summary } from "./types";
 
 const FIXED = "ตรวจไม่สำเร็จ ลองใหม่อีกครั้ง";
+const FIXED_EN = "The check did not complete. Please try again.";
 const THAI = /[฀-๿]/;
 
 export class ApiError extends Error {
-  constructor(public kind: "network" | "server" | "bad_request" | "unavailable", public thaiMessage: string = FIXED) {
+  constructor(public kind: "network" | "server" | "bad_request" | "unavailable", private serverMessage: string = FIXED) {
     super(kind);
+  }
+  /** ข้อความที่ผู้ใช้เห็น: ข้อความจากเซิร์ฟเวอร์เป็นภาษาไทยอย่างเดียว โหมดอังกฤษจึงใช้ข้อความกลางแทน */
+  get thaiMessage(): string {
+    return getLang() === "en" ? FIXED_EN : this.serverMessage;
   }
 }
 

@@ -2,7 +2,7 @@ import { useRef, useState } from "preact/hooks";
 import { AddSheet } from "./AddSheet";
 import { ExplainBox } from "./ExplainBox";
 import { useAnalysis, type Analysis } from "../hooks/useAnalysis";
-import { NO_FLAG, NO_FLAG_NOTE, NOT_CHECKED, PHARMACIST } from "../texts";
+import { noFlag, noFlagNote, NOT_CHECKED, pharmacist } from "../texts";
 import { groupFlags, isKnownSeverity, notCheckedLabels, unknownConditions, type PanelGroups } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Aggregate, Meta } from "../types";
@@ -14,9 +14,10 @@ import { Disclaimer } from "./Disclaimer";
 import { AggCard, FlagCard } from "./FlagCard";
 import { ScopeChip } from "./ScopeChip";
 import { GROUP_TITLE, SummaryStrip } from "./SummaryStrip";
+import { t } from "../i18n";
 
-const NO_HERBS = "ยังไม่มีสมุนไพรให้ตรวจ";
-const STALE = "ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)";
+const noHerbs = () => t("ยังไม่มีสมุนไพรให้ตรวจ", "No herbs to check yet");
+const stale = () => t("ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)", "Results from before your edit (the latest items have not been checked yet)");
 
 const aggBucket = (a: Aggregate): keyof PanelGroups => (isKnownSeverity(a.severity) ? a.severity : "other");
 
@@ -42,59 +43,59 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
   const badConds = unknownConditions(store.state.profile, known);
   const items = store.active();
   const takenToday = diary ? items.filter((i) => diary.isTaken(i.id, today)).length : 0;
-  const announce = a.status === "idle" ? NO_HERBS : a.current && s ? (none ? NO_FLAG : s.headline_th) : "";
+  const announce = a.status === "idle" ? noHerbs() : a.current && s ? (none ? noFlag() : s.headline_th) : "";
 
   return (
     <section class="this-period">
       <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">{announce}</p>
       <div class="tp-side">
-      <section class="hero" aria-label="สรุปวันนี้">
+      <section class="hero" aria-label={t("สรุปวันนี้", "Today's summary")}>
         <p class="hero-date">{thaiDate(today)}</p>
         <div class="hero-stats">
-          <div><span class="hero-n">{items.length}</span><span class="hero-l">รายการที่ใช้</span></div>
-          <div><span class="hero-n">{r && a.current ? r.flags.length : "–"}</span><span class="hero-l">{r && a.current ? "คำเตือนที่พบ" : "ยังไม่ตรวจ"}</span></div>
-          {diary && <div><span class="hero-n">{`${takenToday}/${items.length}`}</span><span class="hero-l">ใช้แล้ววันนี้</span></div>}
+          <div><span class="hero-n">{items.length}</span><span class="hero-l">{t("รายการที่ใช้", "Items in use")}</span></div>
+          <div><span class="hero-n">{r && a.current ? r.flags.length : "–"}</span><span class="hero-l">{r && a.current ? t("คำเตือนที่พบ", "Warnings found") : t("ยังไม่ตรวจ", "Not checked yet")}</span></div>
+          {diary && <div><span class="hero-n">{`${takenToday}/${items.length}`}</span><span class="hero-l">{t("ใช้แล้ววันนี้", "Taken today")}</span></div>}
         </div>
         {diary && items.length > 0 && <div class="hero-bar" role="presentation"><i style={{ width: `${Math.round((takenToday / items.length) * 100)}%` }} /></div>}
-        <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>+ เพิ่ม</button>
+        <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>{t("+ เพิ่ม", "+ Add")}</button>
       </section>
       {a.status === "idle" && (
-        <ol class="steps card" aria-label="วิธีใช้ 3 ขั้น">
-          <li><strong>เพิ่ม</strong> สมุนไพรหรือยาที่ใช้อยู่ (พิมพ์ชื่อ หรือพิมพ์เป็นประโยคก็ได้)</li>
-          <li><strong>ใส่วันที่เริ่มใช้</strong> ถ้าใช้มาก่อนแล้วให้ใส่วันที่เริ่มจริง</li>
-          <li><strong>ดูคำเตือน</strong> ระบบตรวจจากหนังสือแนวทางฯ ไม่ใช่การวินิจฉัย</li>
+        <ol class="steps card" aria-label={t("วิธีใช้ 3 ขั้น", "How to use, in 3 steps")}>
+          <li><strong>{t("เพิ่ม", "Add")}</strong> {t("สมุนไพรหรือยาที่ใช้อยู่ (พิมพ์ชื่อ หรือพิมพ์เป็นประโยคก็ได้)", "the herbs or medicines you use (type a name, or a whole sentence)")}</li>
+          <li><strong>{t("ใส่วันที่เริ่มใช้", "Enter the start date")}</strong> {t("ถ้าใช้มาก่อนแล้วให้ใส่วันที่เริ่มจริง", "If you were already using it, enter the real start date")}</li>
+          <li><strong>{t("ดูคำเตือน", "Read the warnings")}</strong> {t("ระบบตรวจจากหนังสือแนวทางฯ ไม่ใช่การวินิจฉัย", "Checked against the guidebook. This is not a diagnosis.")}</li>
         </ol>
       )}
       {/* ขอบเขต + ไม่ใช่การวินิจฉัย อยู่เหนือคำเตือนแรกเสมอ */}
       </div>
       <div class="tp-main">
       <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
-      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(`เพิ่ม ${l.join(", ")} แล้ว`)} />}
+      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(t(`เพิ่ม ${l.join(", ")} แล้ว`, `Added ${l.join(", ")}`))} />}
       <div class="scope">
         <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
         <Disclaimer text={meta.disclaimer_th} />
       </div>
 
-      {a.status === "idle" && <p class="status-line">{NO_HERBS}</p>}
-      {!r && a.status === "loading" && <p class="status-line">กำลังตรวจ…</p>}
+      {a.status === "idle" && <p class="status-line">{noHerbs()}</p>}
+      {!r && a.status === "loading" && <p class="status-line">{t("กำลังตรวจ…", "Checking…")}</p>}
       {a.error && (
         <div class="err" role="alert">
-          <span>{a.stale ? `ผลนี้เก่า ตรวจไม่สำเร็จ: ${a.error}` : a.error}</span>{" "}
-          <button type="button" onClick={a.retry}>ลองใหม่</button>
+          <span>{a.stale ? `${t("ผลนี้เก่า ตรวจไม่สำเร็จ", "This result is out of date. The check failed")}: ${a.error}` : a.error}</span>{" "}
+          <button type="button" onClick={a.retry}>{t("ลองใหม่", "Try again")}</button>
         </div>
       )}
 
       {r && s && groups && (
         <section class="result" aria-busy={a.status === "loading"}>
           {/* ผลที่ไม่ตรงกับข้อมูลปัจจุบันห้ามใช้หัวข้อ "ไม่พบคำเตือน" หรือหัวข้อผล */}
-          {a.current ? <h2>{none ? NO_FLAG : s.headline_th}</h2> : <h2 class="stale-line">{STALE}</h2>}
-          {!a.current && a.status === "loading" && <p class="status-line">กำลังตรวจ…</p>}
-          {a.current && none && <p class="nonote">{NO_FLAG_NOTE}</p>}
+          {a.current ? <h2>{none ? noFlag() : s.headline_th}</h2> : <h2 class="stale-line">{stale()}</h2>}
+          {!a.current && a.status === "loading" && <p class="status-line">{t("กำลังตรวจ…", "Checking…")}</p>}
+          {a.current && none && <p class="nonote">{noFlagNote()}</p>}
           {groups.avoid.length > 0 && (
-            <div class="banner-avoid">{`มี ${groups.avoid.length} รายการที่${GROUP_TITLE.avoid} อ่านรายละเอียดและถามเภสัชกรก่อนใช้`}</div>
+            <div class="banner-avoid">{t(`มี ${groups.avoid.length} รายการที่${GROUP_TITLE.avoid} อ่านรายละเอียดและถามเภสัชกรก่อนใช้`, `${groups.avoid.length} ${groups.avoid.length === 1 ? "item is" : "items are"} marked “${GROUP_TITLE.avoid}”. Read the details and ask a pharmacist before use.`)}</div>
           )}
           {s.draft_notice_th && <p class="warn">{s.draft_notice_th}</p>}
-          {r.pharmacist_review_required && <p class="warn">{PHARMACIST}</p>}
+          {r.pharmacist_review_required && <p class="warn">{pharmacist()}</p>}
           {!none && <SummaryStrip groups={groups} />}
           {(Object.keys(GROUP_TITLE) as (keyof PanelGroups)[]).map((k) => {
             const aggs = r.aggregates.filter((x) => aggBucket(x) === k);
@@ -110,12 +111,12 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
             );
           })}
           {r.coverage.unknown_inputs.length > 0 && (
-            <p class="warn">{`ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล: ${r.coverage.unknown_inputs.join(", ")} · ไม่ได้เดาให้ ลองถามเภสัชกร`}</p>
+            <p class="warn">{t(`ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล: ${r.coverage.unknown_inputs.join(", ")} · ไม่ได้เดาให้ ลองถามเภสัชกร`, `Not checked because not in the database: ${r.coverage.unknown_inputs.join(", ")} · We did not guess. Please ask a pharmacist.`)}</p>
           )}
           {r.coverage.not_checked.length > 0 && (
-            <p class="warn">{`ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก): ${notCheckedLabels(r, NOT_CHECKED).join(", ")}`}</p>
+            <p class="warn">{`${t("ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก)", "Conditions not checked (left blank)")}: ${notCheckedLabels(r, NOT_CHECKED).join(", ")}`}</p>
           )}
-          {badConds.length > 0 && <p class="warn">{`ไม่ได้ตรวจเงื่อนไข (ระบบไม่รู้จัก): ${badConds.join(", ")}`}</p>}
+          {badConds.length > 0 && <p class="warn">{`${t("ไม่ได้ตรวจเงื่อนไข (ระบบไม่รู้จัก)", "Conditions not checked (not recognised by the system)")}: ${badConds.join(", ")}`}</p>}
         </section>
       )}
 
