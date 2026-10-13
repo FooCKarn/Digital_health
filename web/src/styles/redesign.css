@@ -305,6 +305,8 @@ input[type="time"] { border: 1.5px solid var(--c-muted); border-radius: 12px; pa
 /* บัญชี/ซิงก์ */
 .account-card .tabs-mini { display: flex; gap: var(--sp-2); margin: var(--sp-3) var(--sp-4); }
 .account-card .tabs-mini button { flex: 1; }
+.account-embed { margin-top: var(--sp-4); }
+.account-embed .tabs-mini { margin-left: 0; margin-right: 0; }
 .account-card .tabs-mini [aria-pressed="true"] { background: var(--c-primary); color: var(--c-on-primary); }
 .acct-form { display: grid; gap: var(--sp-2); max-width: 420px; }
 .acct-form > label:not(.check-line) { margin-top: var(--sp-2); }

@@ -30,9 +30,9 @@ export function AccountCard({ cloud, defaultOpen = false }: { cloud: CloudSync; 
   };
 
   if (cloud.handle === null) {
-    return (
-      <details class="noprint card account-card account-opt" open={defaultOpen || undefined}>
-        <summary>ใช้หลายเครื่อง? สมัครบัญชีเพื่อซิงก์ (ไม่บังคับ)</summary>
+    const registerBlocked = mode === "register" && !consent;
+    const body = (
+      <>
         <p class="meta">ตอนนี้ข้อมูลอยู่ในเครื่องนี้เท่านั้น สมัครบัญชีถ้าอยากใช้ข้อมูลเดียวกันหลายเครื่อง ข้อมูลรายการที่ใช้ บันทึกสุขภาพ และเวลาเตือนจะถูกเก็บในคลาวด์ของเรา</p>
         <div class="tabs-mini" role="group" aria-label="เลือกการทำรายการ">
           <button type="button" aria-pressed={mode === "login"} onClick={() => setMode("login")}>มีบัญชีแล้ว</button>
@@ -53,11 +53,21 @@ export function AccountCard({ cloud, defaultOpen = false }: { cloud: CloudSync; 
               </label>
             </>
           )}
-          <button type="submit" class="primary" aria-disabled={busy || (mode === "register" && !consent)} disabled={mode === "register" && !consent}>
+          <button type="submit" class="primary" aria-disabled={busy || registerBlocked} disabled={registerBlocked} aria-describedby={registerBlocked ? "acct-need-consent" : undefined}>
             {mode === "register" ? "สมัครและซิงก์ข้อมูล" : "เข้าสู่ระบบ"}
           </button>
+          {registerBlocked && <p id="acct-need-consent" class="meta">ติ๊กยอมรับนโยบายความเป็นส่วนตัวด้านบนก่อน จึงจะสมัครได้</p>}
         </form>
         {cloud.message && <p class="err" role="alert">{cloud.message}</p>}
+      </>
+    );
+    // defaultOpen = ฝังในหน้าต้อนรับ: ผู้ใช้เลือกเข้าสู่ระบบแล้ว จึงไม่ต้องมีการ์ดพับซ้อนในการ์ด
+    return defaultOpen ? (
+      <div class="noprint account-card account-embed">{body}</div>
+    ) : (
+      <details class="noprint card account-card account-opt">
+        <summary>ใช้หลายเครื่อง? สมัครบัญชีเพื่อซิงก์ (ไม่บังคับ)</summary>
+        {body}
       </details>
     );
   }
