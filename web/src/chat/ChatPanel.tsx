@@ -9,12 +9,12 @@ import type { Meta } from "../types";
 import { toMsg, type ChatMsg, type ChatStore } from "./chatStore";
 
 // ข้อความตายตัวจากหน้าเดิม (public/index.html)
-const NOTICE = "ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้เท่านั้น · ห้ามพิมพ์ข้อมูลส่วนตัว";
+const NOTICE = "ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้ก่อน ถ้าไม่มีจะค้นเว็บภายนอกพร้อมแหล่งอ้างอิง · ห้ามพิมพ์ข้อมูลส่วนตัว";
 // หน้าใหม่ตรวจซ้ำอัตโนมัติ (ไม่มีปุ่ม ตรวจ) จึงไม่ใช้ถ้อยคำเดิม "กดตรวจใหม่"
 const STALE_LINE = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล ถามอีกครั้งเมื่อผลใหม่ขึ้น จะได้คำตอบที่ตรงกับข้อมูลล่าสุด";
 const CHANGED = "ผลตรวจเปลี่ยนแล้ว คำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน";
 const SRC_LABEL: Record<string, string> = {
-  database: "ข้อความจากฐานข้อมูล", llm: "AI เรียบเรียงจากข้อความที่ค้นได้", refusal: "ตอบไม่ได้ / ไม่มีข้อมูล", emergency: "ข้อควรทราบเร่งด่วน",
+  database: "ข้อความจากฐานข้อมูล", web: "ค้นจากเว็บภายนอก (ทีมยังไม่ได้ตรวจ)", llm: "AI เรียบเรียงจากข้อความที่ค้นได้", refusal: "ตอบไม่ได้ / ไม่มีข้อมูล", emergency: "ข้อควรทราบเร่งด่วน",
 };
 const FIXED = new ApiError("server").thaiMessage;
 
@@ -33,6 +33,12 @@ export function Msg({ m }: { m: ChatMsg }) {
       <span class="src">{SRC_LABEL[m.src] ?? "ผู้ช่วย AI"}</span>
       {m.t}
       {m.old && <span class="stl">{STALE_LINE}</span>}
+      {m.web && m.web.length > 0 && (
+        <span class="web-sources">
+          แหล่งอ้างอิง:{" "}
+          {m.web.map((w, i) => <a key={i} href={w.url} target="_blank" rel="noopener noreferrer nofollow">{w.title}</a>)}
+        </span>
+      )}
       {m.cites.filter((c) => c.evidence_quote).slice(0, 6).map((c, i) => (
         <Evidence key={i} summary={`ดูหลักฐาน: ${c.herb_name_th}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={c.source_doc_th}>
           <p class="meta">{`รหัสรายการ ${c.item_id} · ${c.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}`}</p>
@@ -101,7 +107,7 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
         if (cg !== chat.gen) return; // ล้างประวัติไปแล้ว ไม่แสดงคำตอบค้าง
         // เซิร์ฟเวอร์คำนวณจากข้อมูลที่ส่งไป: เก่าเฉพาะเมื่อผู้ใช้แก้ข้อมูลระหว่างรอคำตอบ
         const old = sentKey !== null && sentKey !== keyNow.current;
-        const m = toMsg({ r: "a", t: a.text_th, src: a.source, cites: a.cites, old });
+        const m = toMsg({ r: "a", t: a.text_th, src: a.source, cites: a.cites, old, web: a.web_sources });
         if (!m) throw new ApiError("server");
         chat.add(m);
         if (Array.isArray(a.follow_ups)) setChips(a.follow_ups.filter((x) => typeof x === "string").slice(0, 3));

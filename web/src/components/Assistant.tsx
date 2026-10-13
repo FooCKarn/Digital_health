@@ -81,7 +81,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
   const answer = async (q: string) => {
     const payload = buildPayload(items, store.state.profile, today, Object.keys(meta.conditions));
     const ans = await ask({ ...(payload ?? {}), question: q, context_herbs: [] });
-    const m = toMsg({ r: "a", t: ans.text_th, src: ans.source, cites: ans.cites });
+    const m = toMsg({ r: "a", t: ans.text_th, src: ans.source, cites: ans.cites, web: ans.web_sources });
     if (!m) throw new ApiError("server");
     log.add({ k: "answer", m });
   };
@@ -99,6 +99,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
   };
 
   const mark = (ids: string[], want: boolean) => {
+    if (items.length === 0) return say("ยังไม่มีรายการที่ใช้อยู่ บอกชื่อสมุนไพรหรือยาที่ใช้ได้เลย เช่น “เพิ่มขิงกับยา warfarin”");
     const hit = ids.map((id) => items.find((i) => i.id === id)).filter((x): x is NonNullable<typeof x> => !!x);
     if (hit.length === 0) return say("ยังไม่เข้าใจว่าจะบันทึกรายการไหน ลองพิมพ์ชื่อรายการ เช่น “กินขิงแล้ว” หรือ “กินครบแล้ว”");
     const changed = hit.filter((i) => diary.isTaken(i.id, today) !== want);
@@ -157,7 +158,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
       <header class="asst-head">
         <h2 id="asst-h">ผู้ช่วย</h2>
         <p class="meta">
-          <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} /> ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้เท่านั้น · ห้ามพิมพ์ข้อมูลส่วนตัว
+          <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} /> ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้ก่อน ถ้าไม่มีจะค้นเว็บภายนอกพร้อมแหล่งอ้างอิง · ห้ามพิมพ์ข้อมูลส่วนตัว
         </p>
       </header>
 
@@ -181,7 +182,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
         <input ref={input} id="asst-in" type="text" maxLength={300} autoComplete="off" placeholder="พิมพ์ข้อความ…" value={text} onInput={(e) => setText(e.currentTarget.value)} />
         <button type="submit" class="primary" aria-label="ส่งข้อความ" aria-disabled={b.busy}>ส่ง</button>
       </form>
-      <p class="meta asst-foot">ข้อความที่พิมพ์ส่งไปประมวลผลเมื่อกดส่งเท่านั้น ข้อมูลบันทึกสุขภาพ (ความรู้สึก อาการ ค่าที่วัด) ไม่ถูกส่ง{" "}
+      <p class="meta asst-foot">ข้อความที่พิมพ์ส่งไปประมวลผลเมื่อกดส่งเท่านั้น (ถ้าฐานข้อมูลไม่มีคำตอบ จะส่งเฉพาะข้อความคำถามไปค้นเว็บภายนอก) ข้อมูลบันทึกสุขภาพ (ความรู้สึก อาการ ค่าที่วัด) และรายการที่ใช้ไม่ถูกส่งไปค้น{" "}
         {log.msgs.length > 0 && <button type="button" class="link-btn" onClick={() => log.clear()}>ล้างบทสนทนา</button>}
       </p>
     </section>

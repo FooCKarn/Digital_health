@@ -115,7 +115,7 @@ describe("15) ปุ่มลอย เปิด/ปิด โฟกัส Esc",
     await mount();
     fireEvent.click(fab());
     const notice = within(panel()).getByText(/ไม่ใช่การวินิจฉัย/);
-    expect(notice).toHaveTextContent("ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้เท่านั้น · ห้ามพิมพ์ข้อมูลส่วนตัว");
+    expect(notice).toHaveTextContent("ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้ก่อน ถ้าไม่มีจะค้นเว็บภายนอกพร้อมแหล่งอ้างอิง · ห้ามพิมพ์ข้อมูลส่วนตัว");
     expect(within(panel()).getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา")).toBeVisible();
   });
 

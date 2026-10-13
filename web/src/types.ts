@@ -100,6 +100,8 @@ export interface AskAnswer {
   cites: Cite[];
   follow_ups: string[];
   rejected_reason: string | null;
+  /** แหล่งอ้างอิงจากการค้นภายนอก (เมื่อ source = web) */
+  web_sources?: { title: string; url: string }[];
 }
 
 export interface BriefFacts {

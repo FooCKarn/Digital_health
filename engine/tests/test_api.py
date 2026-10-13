@@ -109,7 +109,10 @@ def test_http_brief_without_api_key_falls_back_to_template_and_validates(base, m
 def test_http_assistant_without_api_key_is_503_and_bad_input_400(base, monkeypatch):
     for k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "LLM_PROVIDER"):
         monkeypatch.delenv(k, raising=False)
-    assert call(base + "/api/assistant", {"text": "กินขิงแล้ว", "items": [{"id": "a", "label": "ขิง"}]})[0] == 503
+    assert call(base + "/api/assistant", {"text": "เพิ่มขิงให้หน่อย", "items": [{"id": "a", "label": "ขิง"}]})[0] == 503
+    # คำสั่งชัดเจนใช้กฎตายตัว ไม่ต้องพึ่ง LLM
+    code, body = call(base + "/api/assistant", {"text": "กินขิงแล้ว", "items": [{"id": "a", "label": "ขิง"}]})
+    assert code == 200 and body["route"]["tool"] == "mark_taken" and body["route"]["item_ids"] == ["a"]
     assert call(base + "/api/assistant", {"text": "", "items": []})[0] == 400
 
 
@@ -298,8 +301,8 @@ def test_ask_never_logs_the_question(monkeypatch, capsys):
     assert "คำถามลับ" not in out.out and "คำถามลับ" not in out.err
 
 
-def test_ask_calls_llm_only_when_chat_llm_is_opted_in(monkeypatch):
-    # ค่าเริ่มต้น = ตอบแบบสกัดข้อความ แม้มี key; ใช้ LLM เมื่อตั้ง HERBGUARD_CHAT_LLM=1 เท่านั้น
+def test_ask_calls_llm_unless_chat_llm_is_switched_off(monkeypatch):
+    # ค่าเริ่มต้น (2026-10-13) = ให้ LLM เรียบเรียงจากรายการที่ค้นได้ (ไม่ผ่านตัวตรวจ = ข้อความสกัด); ปิดด้วย HERBGUARD_CHAT_LLM=0
     calls = []
 
     def spy(system, user, max_tokens=800):
@@ -308,12 +311,10 @@ def test_ask_calls_llm_only_when_chat_llm_is_opted_in(monkeypatch):
     monkeypatch.setattr(service.llm, "default_complete", spy)
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key")
     q = {"question": "รางจืดกับยาเบาหวาน"}
-    assert service.ask(q)["answer"]["source"] == "database" and calls == []
+    assert service.ask(q)["answer"]["source"] == "database" and len(calls) == 1   # LLM ล่ม = กลับแบบสกัดข้อความ
     monkeypatch.setenv("HERBGUARD_CHAT_LLM", "0")
     service.ask(q)
-    assert calls == []
-    monkeypatch.setenv("HERBGUARD_CHAT_LLM", "1")
-    assert service.ask(q)["answer"]["source"] == "database" and len(calls) == 1   # LLM ล่ม = กลับแบบสกัดข้อความ
+    assert len(calls) == 1
 
 
 def test_meta_exposes_chat_followups_from_config():

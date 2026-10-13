@@ -10,7 +10,10 @@ const MAX_TEXT = 4000;
 /** u = ผู้ใช้, a = ผู้ช่วย, n = หมายเหตุระบบ, e = ข้อผิดพลาด (อยู่ในหน่วยความจำเท่านั้น ไม่ลงประวัติ) */
 export type ChatMsg =
   | { r: "u" | "n" | "e"; t: string }
-  | { r: "a"; t: string; src: string; cites: Cite[]; old?: true };
+  | { r: "a"; t: string; src: string; cites: Cite[]; old?: true; web?: WebSource[] };
+
+/** แหล่งอ้างอิงภายนอก: เก็บเฉพาะลิงก์ https */
+export type WebSource = { title: string; url: string };
 
 type SessionStore = { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem(k: string): void };
 
@@ -35,6 +38,14 @@ function toCite(c: unknown): Cite | null {
   };
 }
 
+function toWeb(w: unknown): WebSource[] {
+  if (!Array.isArray(w)) return [];
+  return w.flatMap((x): WebSource[] => {
+    const o = x as Record<string, unknown> | null;
+    return o && txt(o.url, 600) && /^https:\/\//.test(o.url) && txt(o.title, 200) ? [{ title: o.title || o.url, url: o.url }] : [];
+  }).slice(0, 5);
+}
+
 export function toMsg(m: unknown, allowError = false): ChatMsg | null {
   if (!m || typeof m !== "object") return null;
   const o = m as Record<string, unknown>;
@@ -42,7 +53,8 @@ export function toMsg(m: unknown, allowError = false): ChatMsg | null {
   if (o.r === "u" || o.r === "n" || (allowError && o.r === "e")) return { r: o.r, t: o.t };
   if (o.r !== "a" || !txt(o.src, 50) || !(o.cites === undefined || Array.isArray(o.cites))) return null;
   const cites = ((o.cites as unknown[] | undefined) ?? []).map(toCite).filter((c): c is Cite => c !== null);
-  return { r: "a", t: o.t, src: o.src, cites, ...(o.old === true ? { old: true as const } : {}) };
+  const web = toWeb(o.web);
+  return { r: "a", t: o.t, src: o.src, cites, ...(o.old === true ? { old: true as const } : {}), ...(web.length ? { web } : {}) };
 }
 
 export class ChatStore {
