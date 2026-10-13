@@ -1,8 +1,9 @@
 import { useRef, useState } from "preact/hooks";
 import type { Profile, TrackerStore } from "../model/tracker";
+import { t } from "../i18n";
 
 type YN = Profile["pregnant"];
-const AGE_ERR = "อายุต้องเป็นจำนวนเต็ม 0-120 ปี หรือเว้นว่างถ้าไม่ระบุ";
+const ageErrText = () => t("อายุต้องเป็นจำนวนเต็ม 0-120 ปี หรือเว้นว่างถ้าไม่ระบุ", "Age must be a whole number from 0 to 120, or left blank if not specified");
 
 /** ว่าง = null; อื่น ๆ ต้องเป็นจำนวนเต็ม 0-120 ไม่งั้น undefined (ผิด) */
 function parseAge(s: string): number | null | undefined {
@@ -19,11 +20,11 @@ function YesNo({ id, label, value, onChange }: { id: string; label: string; valu
     <div class="field">
       <label for={id}>{label}</label>
       <select id={id} value={value ?? ""} onChange={(e) => { const v = e.currentTarget.value; onChange(v === "yes" || v === "no" ? v : null); }}>
-        <option value="">ไม่ระบุ</option>
-        <option value="yes">ใช่</option>
-        <option value="no">ไม่ใช่</option>
+        <option value="">{t("ไม่ระบุ", "Not specified")}</option>
+        <option value="yes">{t("ใช่", "Yes")}</option>
+        <option value="no">{t("ไม่ใช่", "No")}</option>
       </select>
-      {value === null && <p class="meta unspec">ยังไม่ระบุ: จะไม่ตรวจข้อนี้</p>}
+      {value === null && <p class="meta unspec">{t("ยังไม่ระบุ: จะไม่ตรวจข้อนี้", "Not specified: this will not be checked")}</p>}
     </div>
   );
 }
@@ -45,9 +46,9 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
     e.preventDefault();
     setAgeErr(""); setErr(""); setSaved("");
     const a = parseAge(age);
-    if (a === undefined) { setAgeErr(AGE_ERR); ageRef.current?.focus(); return; }
+    if (a === undefined) { setAgeErr(ageErrText()); ageRef.current?.focus(); return; }
     const r = store.setProfile({ age: a, pregnant, breastfeeding, conditions: conds });
-    if (r.ok) setSaved("บันทึกแล้ว ผลตรวจในหน้า ช่วงนี้ จะอัปเดตตามให้"); else setErr(r.message);
+    if (r.ok) setSaved(t("บันทึกแล้ว ผลตรวจในหน้า ช่วงนี้ จะอัปเดตตามให้", "Saved. The results in the This period tab will update.")); else setErr(r.message);
   };
   const all = Object.entries(conditions);
   const needle = q.trim().toLowerCase();
@@ -55,37 +56,37 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
 
   return (
     <form class="profile-form card" onSubmit={submit} onInput={() => setSaved("")} onChange={() => setSaved("")} noValidate aria-labelledby="profile-h">
-      <h3 id="profile-h">ข้อมูลสุขภาพที่ใช้ตรวจ</h3>
-      <p class="meta">ถ้าไม่ระบุ จะแจ้งว่าไม่ได้ตรวจเรื่องนั้น และไม่นับว่า ไม่ใช่</p>
+      <h3 id="profile-h">{t("ข้อมูลสุขภาพที่ใช้ตรวจ", "Health details used for checking")}</h3>
+      <p class="meta">{t("ถ้าไม่ระบุ จะแจ้งว่าไม่ได้ตรวจเรื่องนั้น และไม่นับว่า ไม่ใช่", "If you leave something unspecified, we will say it was not checked. It is not treated as “No”.")}</p>
       <div class="field age-field">
-        <label for="pf-age">อายุ (ปี)</label>
+        <label for="pf-age">{t("อายุ (ปี)", "Age (years)")}</label>
         <div class="suffix">
           <input ref={ageRef} id="pf-age" type="text" inputMode="numeric" autoComplete="off" maxLength={3} value={age} aria-invalid={!!ageErr}
             aria-describedby={ageErr ? "pf-age-err" : undefined} onInput={(e) => { setAge(e.currentTarget.value); setAgeErr(""); }} />
-          <span aria-hidden="true">ปี</span>
+          <span aria-hidden="true">{t("ปี", "yrs")}</span>
         </div>
         {ageErr && <p class="err" role="alert" id="pf-age-err">{ageErr}</p>}
       </div>
-      <YesNo id="pf-preg" label="ตั้งครรภ์" value={pregnant} onChange={setPregnant} />
-      <YesNo id="pf-bf" label="ให้นมบุตร" value={breastfeeding} onChange={setBreastfeeding} />
+      <YesNo id="pf-preg" label={t("ตั้งครรภ์", "Pregnant")} value={pregnant} onChange={setPregnant} />
+      <YesNo id="pf-bf" label={t("ให้นมบุตร", "Breastfeeding")} value={breastfeeding} onChange={setBreastfeeding} />
       <fieldset class="cond">
-        <legend>โรคประจำตัว/สภาวะ</legend>
-        <label for="cond-q">ค้นหาโรค/สภาวะ</label>
+        <legend>{t("โรคประจำตัว/สภาวะ", "Long-term conditions")}</legend>
+        <label for="cond-q">{t("ค้นหาโรค/สภาวะ", "Search conditions")}</label>
         <input id="cond-q" type="search" autoComplete="off" value={q} onInput={(e) => setQ(e.currentTarget.value)}
           onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }} />
-        <p class="meta" aria-live="polite">{`เลือกแล้ว ${conds.length} จาก ${all.length}`}</p>
+        <p class="meta" aria-live="polite">{t(`เลือกแล้ว ${conds.length} จาก ${all.length}`, `${conds.length} of ${all.length} selected`)}</p>
         {conds.length > 0 && (
-          <ul class="chosen" aria-label="โรค/สภาวะที่เลือกไว้">
+          <ul class="chosen" aria-label={t("โรค/สภาวะที่เลือกไว้", "Selected conditions")}>
             {conds.map((c) => (
               <li key={c} class="chip-sel">
                 <span>{conditions[c]}</span>
-                <button type="button" aria-label={`เอาออก ${conditions[c]}`} onClick={() => toggle(c, false)}>×</button>
+                <button type="button" aria-label={`${t("เอาออก", "Remove")} ${conditions[c]}`} onClick={() => toggle(c, false)}>×</button>
               </li>
             ))}
           </ul>
         )}
         <details class="cond-all" open={needle !== ""}>
-          <summary>{`ดูและเลือกจากรายการทั้งหมด (${all.length})`}</summary>
+          <summary>{t(`ดูและเลือกจากรายการทั้งหมด (${all.length})`, `View and choose from the full list (${all.length})`)}</summary>
           <div class="chips">
             {all.map(([code, name]) => (
               <label key={code} class="chip-opt" hidden={needle !== "" && !name.toLowerCase().includes(needle)}>
@@ -94,13 +95,13 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
               </label>
             ))}
           </div>
-          {needle !== "" && all.every(([, n]) => !n.toLowerCase().includes(needle)) && <p class="meta">ไม่พบรายการที่ตรงกับคำค้น</p>}
+          {needle !== "" && all.every(([, n]) => !n.toLowerCase().includes(needle)) && <p class="meta">{t("ไม่พบรายการที่ตรงกับคำค้น", "Nothing matches your search")}</p>}
         </details>
-        {unknown.length > 0 && <p class="warn">{`ระบบไม่รู้จัก (ไม่ได้ตรวจ และจะถูกนำออกเมื่อบันทึก): ${unknown.join(", ")}`}</p>}
+        {unknown.length > 0 && <p class="warn">{`${t("ระบบไม่รู้จัก (ไม่ได้ตรวจ และจะถูกนำออกเมื่อบันทึก)", "Not recognised (not checked, and removed when you save)")}: ${unknown.join(", ")}`}</p>}
       </fieldset>
       {err && <p class="err" role="alert">{err}</p>}
       <div class="savebar">
-        <button type="submit" class="primary">บันทึกข้อมูลสุขภาพ</button>
+        <button type="submit" class="primary">{t("บันทึกข้อมูลสุขภาพ", "Save health details")}</button>
         <p role="status" class="meta">{saved}</p>
       </div>
     </form>
