@@ -60,13 +60,14 @@ test("ที่เก็บในเบราว์เซอร์ใช้แ�
   expect(code(src["./model/diary.ts"])).toMatch(/DIARY_KEY = "hg_diary_v1"/);
   expect(code(src["./model/reminder.ts"])).toMatch(/REMINDER_KEY = "hg_reminder_v1"/);
   expect(code(src["./chat/chatStore.ts"])).toMatch(/CHAT_KEY = "hg_chat_v1"/);
+  expect(code(src["./components/Welcome.tsx"])).toMatch(/WELCOME_KEY = "hg_welcome_v1"/); // ธงว่าดูหน้าต้อนรับแล้ว ไม่มีข้อมูลสุขภาพ
   // store.removeItem(id) คือเมธอดของ TrackerStore ไม่ใช่ Web Storage
   const keys = files.flatMap(([p, s]) => [...code(s).matchAll(/(\w+)\??\.(?:getItem|setItem|removeItem)\(\s*([^,)]+)/g)]
     .filter((m) => m[1] !== "store").map((m) => `${p}:${m[2].trim()}`));
   expect(keys.length).toBeGreaterThanOrEqual(8);
   for (const k of keys) {
     // storage.ts เขียนคีย์ทดสอบชั่วคราวแล้วลบทันที เพื่อดูว่าเบราว์เซอร์ให้บันทึกได้ไหม
-    expect(["STORAGE_KEY", "CHAT_KEY", "DIARY_KEY", "REMINDER_KEY"].includes(k.split(":")[1]) || k === "./model/storage.ts:k").toBe(true);
+    expect(["STORAGE_KEY", "CHAT_KEY", "DIARY_KEY", "REMINDER_KEY", "WELCOME_KEY"].includes(k.split(":")[1]) || k === "./model/storage.ts:k").toBe(true);
   }
   expect(code(src["./model/storage.ts"])).toMatch(/const k = "__hg_probe__";[\s\S]*removeItem\(k\)/);
 });
