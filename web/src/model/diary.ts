@@ -22,7 +22,7 @@ export const VITAL_LABEL: Record<VitalKey, { th: string; unit: string }> = {
   weight: { th: "น้ำหนัก", unit: "กก." },
 };
 export const MOODS = [
-  { v: 1, th: "แย่มาก" }, { v: 2, th: "ไม่ค่อยดี" }, { v: 3, th: "เฉย ๆ" }, { v: 4, th: "ดี" }, { v: 5, th: "ดีมาก" },
+  { v: 1, th: "แย่มาก", en: "Very bad" }, { v: 2, th: "ไม่ค่อยดี", en: "Not great" }, { v: 3, th: "เฉย ๆ", en: "Okay" }, { v: 4, th: "ดี", en: "Good" }, { v: 5, th: "ดีมาก", en: "Very good" },
 ] as const;
 
 export interface DiaryEntry {

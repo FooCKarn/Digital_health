@@ -1,15 +1,24 @@
-// ข้อความตายตัวที่ใช้หลายหน้า (กฎข้อ 5: ห้ามสื่อว่าไม่มีความเสี่ยง)
-export const NO_FLAG = "ไม่พบคำเตือนในฐานข้อมูลนี้";
-export const NO_FLAG_NOTE = "นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร";
-export const NOT_CHECKED: Record<string, string> = { pregnancy: "การตั้งครรภ์", breastfeeding: "การให้นมบุตร", age: "อายุ" };
-export const PHARMACIST = "แนะนำให้ปรึกษาเภสัชกรก่อนใช้ (มียากลุ่มที่ทีมกำหนดให้เภสัชกรทบทวน) · ดูใบสรุปเภสัชกรในหน้า ข้อมูลของฉัน";
+import { t, tMap } from "./i18n";
+
+// ข้อความตายตัวที่ใช้หลายหน้า (ห้ามสื่อว่าไม่มีความเสี่ยง)
+export const noFlag = () => t("ไม่พบคำเตือนในฐานข้อมูลนี้", "No warning found in this database");
+export const noFlagNote = () => t("นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร", "This does not mean the combination is suitable to use. Please ask a pharmacist.");
+export const NOT_CHECKED = tMap<string>(
+  { pregnancy: "การตั้งครรภ์", breastfeeding: "การให้นมบุตร", age: "อายุ" },
+  { pregnancy: "Pregnancy", breastfeeding: "Breastfeeding", age: "Age" },
+);
+export const pharmacist = () => t(
+  "แนะนำให้ปรึกษาเภสัชกรก่อนใช้ (มียากลุ่มที่ทีมกำหนดให้เภสัชกรทบทวน) · ดูใบสรุปเภสัชกรในหน้า ข้อมูลของฉัน",
+  "Please ask a pharmacist before use (some drug classes are marked for pharmacist review) · see the pharmacist summary in My data",
+);
 // ประโยคบอกว่าควรทำอะไรต่อ: ตายตัวตามระดับ ไม่ใช่ข้อมูลทางการแพทย์ใหม่ ไม่ผ่าน LLM
-export const NEXT_STEP: Record<string, string> = {
-  avoid: "อย่าเริ่มหรือหยุดใช้เองโดยไม่ถามผู้สั่งยา ปรึกษาแพทย์หรือเภสัชกรก่อน",
-  caution: "แจ้งเภสัชกรหรือแพทย์ก่อนใช้",
-};
-// ชื่อกฎแบบอ่านง่าย (ตามหัวข้อใน docs/rules-spec.md); รหัสกฎยังแสดงเป็นข้อความเล็กในส่วนที่มา
-export const RULE_PLAIN: Record<string, string> = {
-  R1: "ข้อห้ามตามเงื่อนไขของคุณ", R2: "ใช้ร่วมกับยา", R3: "หลายรายการเสี่ยงด้านเดียวกัน", R4: "ใช้นานเกินกำหนด",
-};
-export const TIER_PLAIN: Record<string, string> = { A: "หนังสือระบุไว้โดยตรง" };
+export const NEXT_STEP = tMap<string>(
+  { avoid: "อย่าเริ่มหรือหยุดใช้เองโดยไม่ถามผู้สั่งยา ปรึกษาแพทย์หรือเภสัชกรก่อน", caution: "แจ้งเภสัชกรหรือแพทย์ก่อนใช้" },
+  { avoid: "Do not start or stop anything on your own without asking whoever prescribed your medicine. Talk to a doctor or pharmacist first.", caution: "Tell your pharmacist or doctor before using." },
+);
+// ชื่อกฎแบบอ่านง่าย; รหัสกฎยังแสดงเป็นข้อความเล็กในส่วนที่มา
+export const RULE_PLAIN = tMap<string>(
+  { R1: "ข้อห้ามตามเงื่อนไขของคุณ", R2: "ใช้ร่วมกับยา", R3: "หลายรายการเสี่ยงด้านเดียวกัน", R4: "ใช้นานเกินกำหนด" },
+  { R1: "Contraindication for your conditions", R2: "Used together with a medicine", R3: "Several items with the same kind of risk", R4: "Used longer than the limit" },
+);
+export const TIER_PLAIN = tMap<string>({ A: "หนังสือระบุไว้โดยตรง" }, { A: "Stated directly in the book" });

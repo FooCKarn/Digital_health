@@ -9,7 +9,7 @@ const FIXED = "ตอนนี้ใช้ AI ไม่ได้ กรอกเ
 
 type Row = { key: string; kind: "herb" | "drug"; ref: string; label: string; day?: number };
 
-/** ข้อความอิสระ → ข้อเสนอจาก AI → ผู้ใช้ติ๊กยืนยันก่อนจึงเพิ่ม (CLAUDE.md ข้อ 4a) ไม่เพิ่มเองเด็ดขาด */
+/** ข้อความอิสระ → ข้อเสนอจาก AI → ผู้ใช้ติ๊กยืนยันก่อนจึงเพิ่ม ไม่เพิ่มเองเด็ดขาด */
 export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: TrackerStore; today: string; onDone: (labels: string[]) => void }) {
   const [text, setText] = useState("");
   const [msg, setMsg] = useState("");

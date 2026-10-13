@@ -13,7 +13,7 @@ function parseAge(s: string): number | null | undefined {
   return n <= 120 ? n : undefined;
 }
 
-// ไม่ระบุ/ใช่/ไม่ใช่ เป็น select 3 ค่า (ห้าม checkbox: ช่องที่ไม่ได้ติ๊กจะกลายเป็น "ไม่ใช่" ผิดสเปก R1)
+// ไม่ระบุ/ใช่/ไม่ใช่ เป็น select 3 ค่า (ห้าม checkbox: ช่องที่ไม่ได้ติ๊กจะกลายเป็น "ไม่ใช่" ผิดกฎ R1)
 function YesNo({ id, label, value, onChange }: { id: string; label: string; value: YN; onChange: (v: YN) => void }) {
   return (
     <div class="field">

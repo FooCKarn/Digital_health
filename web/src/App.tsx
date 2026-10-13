@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { ApiError, getMeta } from "./api";
+import { LangToggle } from "./components/LangToggle";
+import { getLang, t, useLang } from "./i18n";
 import { ChatFab } from "./chat/ChatFab";
 import { ChatPanel, type OpenRequest } from "./chat/ChatPanel";
 import { AskFlag, ChatStore, getSessionStorage } from "./chat/chatStore";
@@ -21,13 +23,15 @@ import { ReminderStore, hhmm } from "./model/reminder";
 import type { Meta } from "./types";
 
 const VIEWS = [
-  { id: "now", label: "ช่วงนี้" },
-  { id: "assistant", label: "ผู้ช่วย" },
-  { id: "diary", label: "บันทึก" },
-  { id: "mine", label: "ข้อมูลของฉัน" },
+  { id: "now", th: "ช่วงนี้", en: "This period" },
+  { id: "assistant", th: "ผู้ช่วย", en: "Assistant" },
+  { id: "diary", th: "บันทึก", en: "Diary" },
+  { id: "mine", th: "ข้อมูลของฉัน", en: "My data" },
 ] as const;
 
 export function App() {
+  const lang = useLang();
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   const store = useMemo(() => new TrackerStore(getLocalStorage(), () => todayISO()), []);
   const diary = useMemo(() => new DiaryStore(getLocalStorage(), () => todayISO()), []);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -49,33 +53,36 @@ export function App() {
     return () => { live = false; };
   }, [attempt]);
 
-  // header/footer ข้อความเดิมจาก public/index.html (สถานการณ์เดิม 0)
   return (
     <>
       <header>
         <div class="appbar">
         <img class="logo" src="/logo.svg" alt="" width="56" height="56" />
         <div>
-          <h1>ใบพลู</h1>
-          <p class="meta">ติดตามสมุนไพรและยา ตรวจคำเตือนให้</p>
+          <h1>{t("ใบพลู", "Baiplu")}</h1>
+          <p class="meta">{t("ติดตามสมุนไพรและยา ตรวจคำเตือนให้", "Track your herbs and medicines, and check for warnings")}</p>
         </div>
+        <LangToggle />
         </div>
-        <p class="proto-banner"><strong>ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง</strong></p>
+        <p class="proto-banner"><strong>{t("ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง", "Prototype. Use made-up data only. Do not enter real patient information.")}</strong></p>
       </header>
       <main>
         {meta ? <Home store={store} diary={diary} meta={meta} /> : error ? (
           <div class="err" role="alert">
-            <span>{`โหลดข้อมูลไม่สำเร็จ: ${error}`}</span>{" "}
-            <button type="button" onClick={() => setAttempt((n) => n + 1)}>ลองใหม่</button>
+            <span>{`${t("โหลดข้อมูลไม่สำเร็จ", "Could not load data")}: ${error}`}</span>{" "}
+            <button type="button" onClick={() => setAttempt((n) => n + 1)}>{t("ลองใหม่", "Try again")}</button>
           </div>
-        ) : <p>กำลังโหลด…</p>}
+        ) : <p>{t("กำลังโหลด…", "Loading…")}</p>}
       </main>
       <footer>
         <details class="opt-box noprint">
-          <summary>เกี่ยวกับเครื่องมือนี้</summary>
-          <p>ใบพลู เป็นต้นแบบช่วยดูว่าสมุนไพรไทยที่ใช้ร่วมกับยาแผนปัจจุบันมีคำเตือนอะไรบ้าง ตัดสินด้วยกฎที่เขียนเป็นโค้ด ไม่ได้ให้ AI ตัดสิน</p>
-          <p>แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ) ส่วนข้อห้ามของ “ตำรับยาบำรุงโลหิต” มาจากแนวทางการตั้งตำรับยาบำรุงโลหิตของสถาบันการแพทย์แผนไทย</p>
-          <p>ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบคำเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร</p>
+          <summary>{t("เกี่ยวกับเครื่องมือนี้", "About this tool")}</summary>
+          <p>{t("ใบพลู เป็นต้นแบบช่วยดูว่าสมุนไพรไทยที่ใช้ร่วมกับยาแผนปัจจุบันมีคำเตือนอะไรบ้าง ตัดสินด้วยกฎที่เขียนเป็นโค้ด ไม่ได้ให้ AI ตัดสิน",
+            "Baiplu is a prototype that shows which warnings apply when Thai herbs are used together with conventional medicines. Warnings come from rules written in code, not from an AI's judgment.")}</p>
+          <p>{t("แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ) ส่วนข้อห้ามของ “ตำรับยาบำรุงโลหิต” มาจากแนวทางการตั้งตำรับยาบำรุงโลหิตของสถาบันการแพทย์แผนไทย",
+            "Source: the guidebook on using herbal medicines for common minor ailments (TTM first). It covers only some of the 50 herbs in the book (see the actual count in your results). The contraindications for the blood-tonic formula (“ตำรับยาบำรุงโลหิต”) come from the Institute of Thai Traditional Medicine's guidelines for that formula.")}</p>
+          <p>{t("ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบคำเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร",
+            "Limits: the data is a draft and has not been reviewed by experts. This is not a diagnosis or a prescription. Finding no warning does not mean a combination is suitable to use. Please ask a pharmacist.")}</p>
         </details>
         <Policy />
         {meta && <p class="meta">{meta.disclaimer_th}</p>}
@@ -87,7 +94,7 @@ export function App() {
 /** สามมุมมองใช้ผลตรวจชุดเดียว (เรียก /api/analyze ที่เดียว) */
 function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; meta: Meta }) {
   // คำนวณทุกครั้งที่ render (Home render ใหม่เมื่อข้อมูล/แท็บเปลี่ยน) เปิดหน้าข้ามเที่ยงคืนแล้ววันที่ใช้จึงขยับตาม
-  // ponytail: ไม่มีตัวจับเวลาเที่ยงคืน ถ้าหน้าค้างไว้เฉย ๆ จะขยับเมื่อมีการโต้ตอบครั้งถัดไป
+  // ไม่มีตัวจับเวลาเที่ยงคืน ถ้าเปิดหน้าค้างไว้ วันที่จะขยับเมื่อมีการโต้ตอบครั้งถัดไป
   const today = todayISO();
   const a = useAnalysis(store, today, Object.keys(meta.conditions));
   const [tab, setTab] = useState(0);
@@ -100,11 +107,11 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   // เตือนให้บันทึกการใช้: ทำงานตอนเปิดหน้านี้ค้างไว้ (ไม่มีเซิร์ฟเวอร์) ข้อความไม่ใส่ชื่อยา
   useEffect(() => {
     const tick = () => {
-      const t = todayISO();
-      if (!reminder.shouldFire(hhmm(new Date()), t, store.active().some((i) => !diary.isTaken(i.id, t)))) return;
-      reminder.markFired(t);
+      const day = todayISO();
+      if (!reminder.shouldFire(hhmm(new Date()), day, store.active().some((i) => !diary.isTaken(i.id, day)))) return;
+      reminder.markFired(day);
       setReminderBanner(true);
-      try { if (typeof Notification !== "undefined" && Notification.permission === "granted") new Notification("ใบพลู", { body: "ถึงเวลาบันทึกการใช้วันนี้แล้ว" }); } catch { /* มีแบนเนอร์ในหน้าแทน */ }
+      try { if (typeof Notification !== "undefined" && Notification.permission === "granted") new Notification(t("ใบพลู", "Baiplu"), { body: t("ถึงเวลาบันทึกการใช้วันนี้แล้ว", "Time to log today's doses.") }); } catch { /* มีแบนเนอร์ในหน้าแทน */ }
     };
     tick();
     const id = setInterval(tick, 30000);
@@ -118,9 +125,9 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   const openChat = (prefill?: string) => setChatOpen((o) => ({ n: (o?.n ?? 0) + 1, prefill }));
   const closeChat = () => { setChatOpen(null); fab.current?.focus(); };
   const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? meta.formulas?.find((f) => f.id === id)?.name_th ?? id;
-  const askFlag = useMemo(() => ({ herbName, ask: (f: { herb_id: string }) => openChat(`อธิบายคำเตือนของ${herbName(f.herb_id)}`) }), [meta]);
+  const askFlag = useMemo(() => ({ herbName, ask: (f: { herb_id: string }) => openChat(getLang() === "en" ? `Explain the warning for ${herbName(f.herb_id)}` : `อธิบายคำเตือนของ${herbName(f.herb_id)}`) }), [meta]);
 
-  // แท็บแบบ roving tabindex: ลูกศรซ้าย/ขวา (วน), Home, End เหมือนหน้าเดิม
+  // แท็บแบบ roving tabindex: ลูกศรซ้าย/ขวา (วน), Home, End
   const onKey = (e: KeyboardEvent) => {
     const n = VIEWS.length;
     const next = e.key === "ArrowRight" ? (tab + 1) % n : e.key === "ArrowLeft" ? (tab + n - 1) % n
@@ -134,30 +141,30 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   const v = VIEWS[tab];
   return (
     <>
-      {/* สเปก §9: แจ้งทุกหน้า ไม่ใช่เฉพาะหน้า ข้อมูลของฉัน */}
+      {/* แจ้งทุกหน้า ไม่ใช่เฉพาะหน้า ข้อมูลของฉัน */}
       {!store.persistent && (
-        <p class="warn" role="status">ข้อมูลจะหายเมื่อปิดหน้านี้ (เบราว์เซอร์ไม่ให้บันทึก) ถ้าอยากเก็บ ให้ส่งออกไฟล์ในหน้า ข้อมูลของฉัน</p>
+        <p class="warn" role="status">{t("ข้อมูลจะหายเมื่อปิดหน้านี้ (เบราว์เซอร์ไม่ให้บันทึก) ถ้าอยากเก็บ ให้ส่งออกไฟล์ในหน้า ข้อมูลของฉัน", "Your data will be lost when you close this page (the browser is not allowing saving). To keep it, export a file from the My data tab.")}</p>
       )}
       {store.recovered && !hideRecovered && (
         <p class="warn row-actions" role="alert">
-          <span>ข้อมูลที่เก็บไว้เสียหาย จึงเริ่มต้นใหม่ให้</span>
-          <button type="button" aria-label="ปิดข้อความ ข้อมูลเสียหาย" onClick={() => setHideRecovered(true)}>ปิด</button>
+          <span>{t("ข้อมูลที่เก็บไว้เสียหาย จึงเริ่มต้นใหม่ให้", "The saved data was damaged, so we started fresh.")}</span>
+          <button type="button" aria-label={t("ปิดข้อความ ข้อมูลเสียหาย", "Close damaged-data message")} onClick={() => setHideRecovered(true)}>{t("ปิด", "Close")}</button>
         </p>
       )}
       {reminderBanner && (
         <p class="warn row-actions" role="status">
-          <span>ถึงเวลาบันทึกการใช้วันนี้แล้ว</span>
-          <button type="button" onClick={() => { setTab(VIEWS.findIndex((x) => x.id === "assistant")); setReminderBanner(false); }}>ไปบันทึก</button>
-          <button type="button" aria-label="ปิดข้อความเตือน" onClick={() => setReminderBanner(false)}>ปิด</button>
+          <span>{t("ถึงเวลาบันทึกการใช้วันนี้แล้ว", "Time to log today's doses.")}</span>
+          <button type="button" onClick={() => { setTab(VIEWS.findIndex((x) => x.id === "assistant")); setReminderBanner(false); }}>{t("ไปบันทึก", "Log now")}</button>
+          <button type="button" aria-label={t("ปิดข้อความเตือน", "Close reminder")} onClick={() => setReminderBanner(false)}>{t("ปิด", "Close")}</button>
         </p>
       )}
       <Welcome cloud={cloud} storage={getLocalStorage()} />
-      <div class="tabs noprint" role="tablist" aria-label="มุมมอง" onKeyDown={onKey}>
+      <div class="tabs noprint" role="tablist" aria-label={t("มุมมอง", "Views")} onKeyDown={onKey}>
         {VIEWS.map((x, i) => (
           <button key={x.id} ref={(el) => { tabs.current[i] = el; }} type="button" role="tab" id={`tab-${x.id}`}
             aria-selected={i === tab} aria-controls={i === tab ? `panel-${x.id}` : undefined} tabIndex={i === tab ? 0 : -1} onClick={() => setTab(i)}>
             <TabIcon id={x.id} />
-            <span>{x.label}</span>
+            <span>{t(x.th, x.en)}</span>
           </button>
         ))}
       </div>
