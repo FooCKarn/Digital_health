@@ -3,7 +3,7 @@
 :root { --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --r-card: 12px; --shadow-1: none; }
 body { font-size: 17px; }
 button, [role="button"], select, input:not([type="checkbox"]):not([type="radio"]) { min-height: 48px; }
-input[type="text"], input[type="search"], input[type="number"], input[type="date"], select, textarea {
+input[type="text"], input[type="password"], input[type="search"], input[type="number"], input[type="date"], select, textarea {
   border: 1.5px solid var(--c-muted); border-radius: 12px; padding: 6px 12px; background: var(--c-surface); color: var(--c-text);
 }
 button { border-radius: 10px; }
@@ -303,9 +303,13 @@ input[type="time"] { border: 1.5px solid var(--c-muted); border-radius: 12px; pa
 @media (max-width: 600px) { .asst-form { bottom: calc(64px + env(safe-area-inset-bottom)); } .assistant { min-height: calc(100vh - 260px); } }
 
 /* บัญชี/ซิงก์ */
-.account-card .tabs-mini { display: flex; gap: var(--sp-2); margin: var(--sp-2) 0; }
+.account-card .tabs-mini { display: flex; gap: var(--sp-2); margin: var(--sp-3) var(--sp-4); }
+.account-card .tabs-mini button { flex: 1; }
 .account-card .tabs-mini [aria-pressed="true"] { background: var(--c-primary); color: var(--c-on-primary); }
 .acct-form { display: grid; gap: var(--sp-2); max-width: 420px; }
+.acct-form > label:not(.check-line) { margin-top: var(--sp-2); }
+.acct-form > label:first-child { margin-top: 0; }
+.acct-form button.primary { margin-top: var(--sp-3); }
 .account-card .danger-zone { margin-top: var(--sp-3); }
 
 .asst-log .cmsg .web-sources { display: block; margin-top: 6px; font-size: .85rem; }
@@ -392,3 +396,20 @@ label.check input { width: 24px; height: 24px; flex: none; margin: 2px 0 0; }
 .welcome-actions { display: flex; flex-direction: column; gap: var(--sp-2); }
 .welcome-actions button { width: 100%; }
 .welcome .row-actions { justify-content: flex-end; margin-top: var(--sp-3); }
+
+/* ===== รอบปรับ UI เล็ก ๆ: ปุ่มไม่ล้นจอ ลูกศรบอกว่าพับ/ขยายได้ หน้าต้อนรับเลื่อนได้ครบ ===== */
+.row-actions { flex-wrap: wrap; }
+.warn.row-actions { align-items: center; }
+.warn.row-actions > span { flex: 1 1 200px; }
+
+/* summary ใช้ display:flex ทำให้ลูกศรของเบราว์เซอร์หาย: ใส่ลูกศรเองให้รู้ว่ากดขยายได้ */
+details > summary { list-style: none; gap: var(--sp-3); }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: "▾"; margin-left: auto; flex: none; color: var(--c-muted); transition: transform .15s; }
+details[open] > summary::after { transform: rotate(180deg); }
+.account-opt > summary { padding-top: var(--sp-2); padding-bottom: var(--sp-2); }
+
+/* หน้าต้อนรับ: เนื้อหายาว (เช่นเปิดฟอร์มสมัคร) ต้องเลื่อนถึงบนสุดได้ ไม่ถูกตัดขอบบน */
+.welcome-backdrop { align-items: flex-start; }
+.welcome { margin: auto; }
+.welcome-actions .meta { margin: 0 0 var(--sp-3); text-align: center; }
