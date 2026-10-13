@@ -65,7 +65,8 @@ const TOOLS = ["ask", "show_brief", "show_check", "mark_taken", "mark_not_taken"
 export const routeAi = async (text: string, items: { id: string; label: string }[]): Promise<RouteOut> =>
   (await post<{ route: RouteOut }>("/api/assistant", { text, items }, (d) =>
     TOOLS.includes(d.route?.tool) && Array.isArray(d.route.item_ids) && d.route.item_ids.every((x: unknown) => typeof x === "string")
-    && typeof d.route.time === "string" && typeof d.route.page === "string" && Number.isInteger(d.route.mood))).route;
+    && typeof d.route.time === "string" && typeof d.route.page === "string" && Number.isInteger(d.route.mood)
+    && (d.route.days === undefined || (Number.isInteger(d.route.days) && d.route.days >= 0 && d.route.days <= 365)))).route;
 
 export const sendFeedback = async (payload: FeedbackPayload): Promise<void> => {
   await post("/api/feedback", payload, (d) => d.ok === true);

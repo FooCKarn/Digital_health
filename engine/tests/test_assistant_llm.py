@@ -55,7 +55,7 @@ def test_brief_rejects_warning_talk_when_there_are_none_and_llm_failure_uses_tem
 
 
 ITEMS = [{"id": "i1", "label": "ขิง"}, {"id": "i2", "label": "warfarin"}]
-ASK = {"tool": "ask", "item_ids": [], "time": "", "page": "", "mood": 0}
+ASK = {"tool": "ask", "item_ids": [], "time": "", "page": "", "mood": 0, "days": 0}
 R = lambda text, obj: route(text, ITEMS, fake(obj))  # noqa: E731
 
 

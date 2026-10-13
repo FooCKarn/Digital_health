@@ -6,7 +6,7 @@ import type { Analysis } from "../hooks/useAnalysis";
 import { useBusy } from "../hooks/useBusy";
 import { AssistantLog, type AMsg } from "../model/assistantLog";
 import { buildBrief, toFacts, type Brief } from "../model/brief";
-import { startForDay, thaiDate } from "../model/dates";
+import { addDays, startForDay, thaiDate } from "../model/dates";
 import type { DiaryStore } from "../model/diary";
 import { MOODS } from "../model/diary";
 import { buildPayload, groupFlags, isKnownSeverity, notCheckedLabels } from "../model/panel";
@@ -62,7 +62,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
       switch (route.tool) {
         case "show_brief": log.add({ k: "brief", b: brief() }); return;
         case "show_check": return showCheck();
-        case "mark_taken": case "mark_not_taken": return mark(route.item_ids, route.tool === "mark_taken");
+        case "mark_taken": case "mark_not_taken": return mark(route.item_ids, route.tool === "mark_taken", route.days ?? 0);
         case "add_items": return addItems(q);
         case "set_reminder": return setReminder(route.time);
         case "go_to": {
@@ -98,16 +98,34 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
     });
   };
 
-  const mark = (ids: string[], want: boolean) => {
+  const mark = (ids: string[], want: boolean, days = 0) => {
     if (items.length === 0) return say("ยังไม่มีรายการที่ใช้อยู่ บอกชื่อสมุนไพรหรือยาที่ใช้ได้เลย เช่น “เพิ่มขิงกับยา warfarin”");
     const hit = ids.map((id) => items.find((i) => i.id === id)).filter((x): x is NonNullable<typeof x> => !!x);
     if (hit.length === 0) return say("ยังไม่เข้าใจว่าจะบันทึกรายการไหน ลองพิมพ์ชื่อรายการ เช่น “กินขิงแล้ว” หรือ “กินครบแล้ว”");
+    const names = hit.map((i) => i.label).join(", ");
+    if (want && days >= 2) return markRange(hit, names, days);
     const changed = hit.filter((i) => diary.isTaken(i.id, today) !== want);
     for (const i of changed) diary.toggleTaken(i.id, today);
-    const names = hit.map((i) => i.label).join(", ");
     log.add({
       k: "done", t: changed.length === 0 ? `${names} ${want ? "บันทึกว่าใช้" : "ยังไม่ได้ใช้"}อยู่แล้ววันนี้` : `บันทึกแล้ว: ${want ? "ใช้" : "ไม่ได้ใช้"} ${names} วันนี้`,
       undo: changed.length === 0 ? null : () => { for (const i of changed) diary.toggleTaken(i.id, today); say("เลิกทำแล้ว"); },
+    });
+  };
+
+  /** "กินขิงมาสัปดาห์นึงแล้ว": ลงบันทึกว่าใช้ทุกวันในช่วง days วันที่ผ่านมา (รวมวันนี้) ไม่แตะวันที่ติ๊กไว้แล้ว เลิกทำได้ */
+  const markRange = (hit: typeof items, names: string, days: number) => {
+    const first = addDays(today, -(days - 1));
+    if (!first) return say("วันที่ไม่ถูกต้อง", { tone: "err" });
+    const added: { id: string; dates: string[] }[] = hit.map((i) => {
+      const dates = Array.from({ length: days }, (_, k) => addDays(today, -k)).filter((d): d is string => !!d && !diary.isTaken(i.id, d));
+      return { id: i.id, dates };
+    });
+    for (const i of hit) diary.markRange(i.id, first, today);
+    const n = added.reduce((s, x) => s + x.dates.length, 0);
+    log.add({
+      k: "done",
+      t: n === 0 ? `${names} บันทึกว่าใช้ครบ ${days} วันที่ผ่านมาอยู่แล้ว` : `บันทึกแล้ว: ใช้ ${names} ย้อนหลัง ${days} วัน (${thaiDate(first)} ถึงวันนี้) ดูได้ที่ปฏิทินหน้าบันทึก`,
+      undo: n === 0 ? null : () => { for (const x of added) for (const d of x.dates) if (diary.isTaken(x.id, d)) diary.toggleTaken(x.id, d); say("เลิกทำแล้ว"); },
     });
   };
 

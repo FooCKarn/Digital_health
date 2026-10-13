@@ -125,6 +125,32 @@ def test_route_rules_match_clear_commands(text, tool, ids):
     assert r and r["tool"] == tool and r["item_ids"] == ids
 
 
+@pytest.mark.parametrize("text,days", [
+    ("เพิ่มในปฏิทินให้หน่อยว่า กินขิงมาสัปดาห์นึงแล้ว", 7),
+    ("กินขิงมาอาทิตย์นึง", 7),
+    ("กินขิงมา 3 วันแล้ว", 3),
+    ("กินขิงมาสองสัปดาห์แล้ว", 14),
+    ("กินขิงมาครึ่งเดือนแล้ว", 15),
+    ("กินขิงแล้ว", 0),
+    ("กินขิงมา 999 วันแล้ว", 0),
+])
+def test_route_rules_backfill_days(text, days):
+    r = route_rules(text, ITEMS)
+    assert r and r["tool"] == "mark_taken" and r["item_ids"] == ["a"] and r["days"] == days
+
+
+def test_route_rules_backfill_unknown_item_offers_add_and_not_when_negated():
+    assert route_rules("กินกระเทียมมา 5 วันแล้ว", ITEMS)["tool"] == "add_items"
+    r = route_rules("ไม่ได้กินขิงมา 3 วัน", ITEMS)
+    assert r["tool"] == "mark_not_taken" and r["days"] == 0
+
+
+def test_route_llm_days_come_from_code_not_llm():
+    from llm import route
+    out = route("กินขิงมา 4 วัน", ITEMS[:1], complete=lambda s, u: '{"tool":"mark_taken","item_ids":["a"],"days":99}')
+    assert out["tool"] == "mark_taken" and out["days"] == 4
+
+
 @pytest.mark.parametrize("text", ["ทำไมถึงขึ้นคำเตือน", "ขิงมีข้อควรระวังอะไร", "กินกระเทียมแล้ว", "ตั้งเตือน 20:00", "ทำไมผลตรวจเป็นแบบนี้"])
 def test_route_rules_leave_other_texts_to_llm(text):
     assert route_rules(text, ITEMS) is None
