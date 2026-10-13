@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/preact";
+import { addDays } from "../model/dates";
 import { Assistant } from "./Assistant";
 import { AssistantLog } from "../model/assistantLog";
 import { DiaryStore } from "../model/diary";
@@ -69,6 +70,20 @@ test("บันทึกว่าใช้: ทำทันที มีเล�
   say("กินขิงแล้ว");
   expect(await screen.findByText(/ยังไม่เข้าใจว่าจะบันทึกรายการไหน/)).toBeInTheDocument();
   expect(diary.isTaken(id, TODAY)).toBe(false);
+});
+
+test("บันทึกย้อนหลัง: กินขิงมา 7 วัน ลงทุกวันในช่วง ไม่แตะวันที่ติ๊กไว้ มีเลิกทำคืนเฉพาะที่เพิ่ม", async () => {
+  const { store, diary } = setup();
+  const id = store.active()[0].id;
+  diary.toggleTaken(id, TODAY);
+  api({ "/api/assistant": R("mark_taken", { item_ids: [id], days: 7 }) });
+  say("กินขิงมาสัปดาห์นึงแล้ว");
+  expect(await screen.findByText(/ใช้ ขิง ย้อนหลัง 7 วัน/)).toBeInTheDocument();
+  for (let k = 0; k < 7; k++) expect(diary.isTaken(id, addDays(TODAY, -k)!)).toBe(true);
+  expect(diary.isTaken(id, addDays(TODAY, -7)!)).toBe(false);
+  fireEvent.click(screen.getByRole("button", { name: "เลิกทำ" }));
+  expect(diary.isTaken(id, TODAY)).toBe(true);
+  expect(diary.isTaken(id, addDays(TODAY, -1)!)).toBe(false);
 });
 
 test("ถามความรู้: AI เลือก ask แล้วตอบด้วยตัวตอบเดิมที่มีป้ายที่มา; เลือกเครื่องมือไม่ได้ก็ถามได้", async () => {

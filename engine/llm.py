@@ -541,24 +541,49 @@ ROUTE_SYSTEM = (
 
 _EVERYTHING = re.compile(r"ทั้งหมด|ครบ|ทุกอย่าง|ทุกตัว|ทุกรายการ")
 _TAKE = re.compile(r"(กิน|ทาน|ใช้|ดื่ม|รับประทาน)")
+_NUM_WORDS = {"หนึ่ง": 1, "นึง": 1, "เดียว": 1, "สอง": 2, "สาม": 3, "สี่": 4, "ห้า": 5, "หก": 6, "เจ็ด": 7, "แปด": 8, "เก้า": 9, "สิบ": 10}
+_UNIT_DAYS = {"วัน": 1, "สัปดาห์": 7, "อาทิตย์": 7, "เดือน": 30}
+MAX_BACKFILL_DAYS = 365  # เท่ากับเพดานวันเริ่มใช้ของหน้าเว็บ
+
+
+def parse_duration_days(text: str) -> int:
+    """ช่วงเวลาที่บอกว่า "ใช้มา..." เป็นจำนวนวัน (เช่น มาสัปดาห์นึง=7, มา 3 วัน=3, มา 2 สัปดาห์=14); ไม่พบ/เกินช่วง = 0
+    เดือน = 30 วัน (ค่าประมาณ) ต้องมีคำว่า "มา" นำหน้าเพื่อไม่ชนกับ "วันนี้"/"ทุกวัน”"""
+    t = re.sub(r"\s+", "", text)
+    m = re.search(r"มา(?:ได้|เป็นเวลา)?(ครึ่ง|\d{1,3}|" + "|".join(_NUM_WORDS) + r")?(วัน|สัปดาห์|อาทิตย์|เดือน)(?:นึง|หนึ่ง)?", t)
+    if not m:
+        return 0
+    unit = _UNIT_DAYS[m.group(2)]
+    q = m.group(1)
+    if q == "ครึ่ง":
+        n = 0.5
+    elif q is None:
+        n = 1 if m.group(0).endswith(("นึง", "หนึ่ง")) else 0
+    else:
+        n = int(q) if q.isdigit() else _NUM_WORDS[q]
+    days = int(n * unit)
+    return days if 1 <= days <= MAX_BACKFILL_DAYS else 0
 
 
 def route_rules(text: str, items: list) -> dict | None:
     """กฎตายตัวสำหรับคำสั่งที่ชัดเจน (ไม่ต้องเรียก LLM จึงใช้ได้แม้ LLM ล่ม): สรุปวันนี้ / ตรวจให้ / บันทึกว่าใช้แล้ว-ไม่ได้ใช้
     ไม่เข้ากฎ = None (ให้ LLM เลือก) ผลมีรูปเดียวกับ route() และเป็นข้อมูลที่ตรวจแล้ว"""
     t = re.sub(r"\s+", "", text.lower())
-    base = {"tool": "ask", "item_ids": [], "time": "", "page": "", "mood": 0}
+    base = {"tool": "ask", "item_ids": [], "time": "", "page": "", "mood": 0, "days": 0}
     if re.search(r"สรุป(ของ)?(วันนี้|ประจำวัน)", t):
         return {**base, "tool": "show_brief"}
     if re.search(r"ตรวจ(ให้|สอบให้|ผล|ดู)|ดูผลตรวจ|เช็ค(ให้|ผล)", t) and not re.search(r"ทำไม|อธิบาย|เพราะ", t):
         return {**base, "tool": "show_check"}
     neg = re.search(r"ไม่ได้(กิน|ทาน|ใช้|ดื่ม|รับประทาน)|ข้าม|ยังไม่(ได้)?(กิน|ทาน|ใช้)|ลืม(กิน|ทาน|ใช้)", t)
-    pos = _TAKE.search(t) and re.search(r"แล้ว|ครบ", t)
+    pos = _TAKE.search(t) and (re.search(r"แล้ว|ครบ", t) or parse_duration_days(text))
     if neg or pos:
         label_of = {i["id"]: i["label"].strip().lower() for i in items}
         ids = list(label_of) if _EVERYTHING.search(t) else [i for i, lab in label_of.items() if lab and re.sub(r"\s+", "", lab) in t]
         if ids or _EVERYTHING.search(t):
-            return {**base, "tool": "mark_not_taken" if neg else "mark_taken", "item_ids": ids}
+            days = 0 if neg else parse_duration_days(text)  # "กินขิงมาสัปดาห์นึงแล้ว" = ลงปฏิทินย้อนหลังทุกวันในช่วง (หน้าเว็บบันทึก ผู้ใช้เลิกทำได้)
+            return {**base, "tool": "mark_not_taken" if neg else "mark_taken", "item_ids": ids, "days": days}
+        if not neg and parse_duration_days(text):
+            return {**base, "tool": "add_items"}  # บอกว่าใช้มานานแต่ยังไม่มีในรายการ = เสนอเพิ่มรายการ (ผู้ใช้ยืนยัน; ระบบแยกระยะเวลาให้เป็นวันเริ่ม)
     return None
 
 
@@ -566,7 +591,7 @@ def route(text: str, items: list, complete=None) -> dict:
     """items = [{id,label}] ของรายการที่ใช้อยู่; คืน {"tool", "item_ids", "time", "page", "mood"} หลังตรวจแล้ว
     ผิดรูปแบบ/ไม่ผ่านตัวตรวจ = {"tool":"ask"} (ส่งข้อความเดิมไปตัวตอบที่มีตัวตรวจ ไม่ทำอะไรกับข้อมูล)"""
     complete = complete or default_complete
-    fallback = {"tool": "ask", "item_ids": [], "time": "", "page": "", "mood": 0}
+    fallback = {"tool": "ask", "item_ids": [], "time": "", "page": "", "mood": 0, "days": 0}
     try:
         raw = _json_from(complete(ROUTE_SYSTEM, f"รายการที่ใช้อยู่: {json.dumps(items, ensure_ascii=False)}\n<user_text>{text}</user_text>"))
     except ValueError:  # LLM ตอบไม่เป็น JSON = ถือเป็นคำถามธรรมดา
@@ -583,7 +608,8 @@ def route(text: str, items: list, complete=None) -> dict:
         for i in raw.get("item_ids", []) if isinstance(raw.get("item_ids"), list) else []:
             if isinstance(i, str) and i in label_of and i not in ids and (everything or label_of[i].strip().lower() in low):
                 ids.append(i)
-        return {**out, "item_ids": ids} if ids else fallback
+        # days = กินมากี่วันแล้ว (เฉพาะ mark_taken): ไม่ใช้ค่าจาก LLM ให้คำนวณจากข้อความด้วยโค้ดตายตัวเท่านั้น
+        return {**out, "item_ids": ids, "days": parse_duration_days(text) if tool == "mark_taken" else 0} if ids else fallback
     if tool == "set_reminder":
         t = raw.get("time")
         if t == "off" or (isinstance(t, str) and re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", t)):
