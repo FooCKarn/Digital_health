@@ -381,3 +381,11 @@ label.check input { width: 24px; height: 24px; flex: none; margin: 2px 0 0; }
 
 /* โลโก้เป็น SVG ที่มีกรอบมนในตัว: ไม่ต้องมีพื้นหลัง/ขอบเพิ่ม (กันเส้นขาดจากการย่อภาพ) */
 .logo { background: none; padding: 0; border-radius: 0; object-fit: contain; }
+
+/* หน้าต้อนรับ / วิธีใช้ครั้งแรก */
+.welcome-backdrop { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: var(--sp-4); background: rgba(0, 0, 0, 0.45); overflow-y: auto; }
+.welcome { max-width: 420px; width: 100%; margin: 0; background: var(--c-surface); }
+.welcome h2 { margin: 0 0 var(--sp-3); font-size: 1.25rem; }
+.welcome-actions { display: flex; flex-direction: column; gap: var(--sp-2); }
+.welcome-actions button { width: 100%; }
+.welcome .row-actions { justify-content: flex-end; margin-top: var(--sp-3); }

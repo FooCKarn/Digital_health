@@ -6,6 +6,7 @@ import { AskFlag, ChatStore, getSessionStorage } from "./chat/chatStore";
 import { Assistant, type GoTo } from "./components/Assistant";
 import { Diary } from "./components/Diary";
 import { History } from "./components/History";
+import { Welcome } from "./components/Welcome";
 import { Policy } from "./components/Policy";
 import { MyData } from "./components/MyData";
 import { ThisPeriodView } from "./components/ThisPeriod";
@@ -150,6 +151,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
           <button type="button" aria-label="ปิดข้อความเตือน" onClick={() => setReminderBanner(false)}>ปิด</button>
         </p>
       )}
+      <Welcome cloud={cloud} storage={getLocalStorage()} />
       <div class="tabs noprint" role="tablist" aria-label="มุมมอง" onKeyDown={onKey}>
         {VIEWS.map((x, i) => (
           <button key={x.id} ref={(el) => { tabs.current[i] = el; }} type="button" role="tab" id={`tab-${x.id}`}

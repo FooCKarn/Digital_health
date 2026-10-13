@@ -1,6 +1,7 @@
 import { CHAT_KEY } from "../chat/chatStore";
 import { DIARY_KEY } from "../model/diary";
 import { REMINDER_KEY } from "../model/reminder";
+import { WELCOME_KEY } from "./Welcome";
 import { STORAGE_KEY } from "../model/tracker";
 
 export const POLICY_VERSION = "12 ตุลาคม 2569 (ร่าง)";
@@ -63,6 +64,11 @@ export function Policy() {
               <th scope="row">ข้อความที่พิมพ์ในช่อง AI แยกรายการ และปุ่ม AI อธิบายผล</th>
               <td data-label="เก็บที่ไหน / นานแค่ไหน">ไม่เก็บถาวร</td>
               <td data-label="ส่งออกจากเครื่องคุณหรือไม่">ช่องแยกรายการส่งข้อความที่คุณพิมพ์ไปที่ /api/parse แล้วส่งต่อให้ผู้ให้บริการ AI ภายนอก (ค่าเริ่มต้นของโค้ดคือ Google Gemini) ถ้าเซิร์ฟเวอร์ตั้งค่าไว้ ส่วนปุ่มอธิบายผลส่งข้อมูลชุดเดียวกับตอนตรวจไปที่ /api/explain เซิร์ฟเวอร์คำนวณคำเตือนเองก่อน แล้วส่งข้อความคำเตือนกับรายการที่เกี่ยวข้องให้ AI เรียบเรียง ถ้า AI ใช้ไม่ได้หรือผลไม่ผ่านตัวตรวจ จะใช้ข้อความสำเร็จรูปแทน</td>
+            </tr>
+            <tr>
+              <th scope="row">ธงว่าดูหน้าต้อนรับและวิธีใช้แล้ว</th>
+              <td data-label="เก็บที่ไหน / นานแค่ไหน">{`ที่เก็บข้อมูลของเบราว์เซอร์นี้ ชื่อ ${WELCOME_KEY} ค่า 1 อย่างเดียว อยู่จนกว่าคุณจะลบข้อมูลเบราว์เซอร์`}</td>
+              <td data-label="ส่งออกจากเครื่องคุณหรือไม่"><strong>ไม่ส่งไปที่ใดเลย</strong></td>
             </tr>
             <tr>
               <th scope="row">เวลาที่ตั้งเตือนให้บันทึกการใช้</th>
