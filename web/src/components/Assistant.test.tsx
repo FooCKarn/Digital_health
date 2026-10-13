@@ -83,6 +83,20 @@ test("ถามความรู้: AI เลือก ask แล้วตอ�
   expect(await screen.findByText("คำตอบสำรอง")).toBeInTheDocument();
 });
 
+test("ค้นภายนอก: แสดงป้ายที่มา ลิงก์ https พร้อม noopener และตัดลิงก์ที่ไม่ใช่ https", async () => {
+  setup();
+  const H = "https:" + "//";
+  const web_sources = [{ title: "แหล่ง A", url: `${H}example.org/a` }, { title: "ไม่ปลอดภัย", url: "javascript:alert(1)" }, { title: "http", url: "http:" + "//x.example" }];
+  api({ "/api/assistant": R("ask"), "/api/ask": { answer: { text_th: "ข้อมูลทั่วไปจากภายนอก", source: "web", cites: [], follow_ups: [], web_sources } } });
+  say("ฟ้าทะลายโจรคืออะไร");
+  expect(await screen.findByText(/ข้อมูลทั่วไปจากภายนอก/)).toBeInTheDocument();
+  expect(screen.getByText(/ค้นจากเว็บภายนอก/)).toBeInTheDocument();
+  const link = screen.getByRole("link", { name: "แหล่ง A" });
+  expect(link).toHaveAttribute("href", `${H}example.org/a`);
+  expect(link.getAttribute("rel")).toContain("noopener");
+  expect(screen.getAllByRole("link")).toHaveLength(1);
+});
+
 test("ตรวจให้หน่อย: ไม่มีรายการ/ผลยังไม่พร้อม/มีผล แสดงจากผลที่เซิร์ฟเวอร์ตรวจเท่านั้น", async () => {
   api({ "/api/assistant": R("show_check") });
   setup([]);

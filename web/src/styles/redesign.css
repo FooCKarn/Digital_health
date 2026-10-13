@@ -308,6 +308,9 @@ input[type="time"] { border: 1.5px solid var(--c-muted); border-radius: 12px; pa
 .acct-form { display: grid; gap: var(--sp-2); max-width: 420px; }
 .account-card .danger-zone { margin-top: var(--sp-3); }
 
+.asst-log .cmsg .web-sources { display: block; margin-top: 6px; font-size: .85rem; }
+.asst-log .cmsg .web-sources a { display: inline-block; margin-right: 8px; overflow-wrap: anywhere; }
+
 /* ===== รอบปรับใช้งานง่าย: ระยะปุ่ม ขนาดตัวอักษร ลำดับความสำคัญ ===== */
 body { font-size: 18px; line-height: 1.65; }
 .meta { font-size: .95rem; }

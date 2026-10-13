@@ -27,6 +27,7 @@ npx wrangler d1 migrations apply herbguard --remote
 npx wrangler d1 execute herbguard --remote --file build/seed.sql
 (cd ../web && npm ci && npm run build)           # เว็บที่ Worker เสิร์ฟ (assets.directory = ../web/dist)
 npx wrangler secret put GEMINI_API_KEY           # หรือ ANTHROPIC_API_KEY (ไม่ตั้ง = AI ใช้ไม่ได้ ระบบตกไปใช้ข้อความสำรอง)
+# ค้นข้อมูลภายนอกของแชตใช้ GEMINI_API_KEY ตัวเดิม ไม่ต้องตั้งความลับเพิ่ม (ตัวเลือก: GEMINI_SEARCH_MODEL=รุ่นคั่นจุลภาค, HERBGUARD_WEB_SEARCH=0 เพื่อปิด); ต้องใช้ key ที่เปิดใช้ Google Search grounding ได้
 npx wrangler deploy
 ```
 

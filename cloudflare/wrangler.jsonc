@@ -21,5 +21,5 @@
   },
   "observability": { "enabled": true }
   // ความลับ (ไม่ใส่ในไฟล์นี้): npx wrangler secret put GEMINI_API_KEY   (หรือ ANTHROPIC_API_KEY)
-  // ตัวเลือก: vars เช่น GEMINI_MODEL, HERBGUARD_CHAT_LLM
+  // ตัวเลือก: vars เช่น GEMINI_MODEL, GEMINI_SEARCH_MODEL, HERBGUARD_CHAT_LLM=0 (ปิด AI เรียบเรียง), HERBGUARD_WEB_SEARCH=0 (ปิดค้นภายนอก)
 }

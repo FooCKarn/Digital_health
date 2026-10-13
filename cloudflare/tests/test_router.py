@@ -137,7 +137,7 @@ def test_llm_endpoints_fall_back_without_key_and_use_runner_when_given(db, monke
     ctx = mk(db)
     b = call(ctx, "POST", "/api/brief", {"item_count": 2, "taken_count": 1, "untaken": ["ขิง"], "warnings": None, "no_entry_today": True})
     assert b.status == 200 and b.body["brief"]["source"] == "template"
-    assert call(ctx, "POST", "/api/assistant", {"text": "กินขิงแล้ว", "items": [{"id": "a", "label": "ขิง"}]}).status == 503
+    assert call(ctx, "POST", "/api/assistant", {"text": "เพิ่มขิงให้หน่อย", "items": [{"id": "a", "label": "ขิง"}]}).status == 503
     seen = []
 
     async def runner(fn):

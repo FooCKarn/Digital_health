@@ -221,10 +221,11 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
     msgs = config["chat_messages_th"]["value"]
     follow = config["chat_followups_th"]["value"][:3]
 
-    def out(source, text, cites=(), why=None):
-        return {"source": source, "text_th": text, "cites": list(cites), "follow_ups": follow, "rejected_reason": why}
-
     intent = classify(question, config)
+
+    def out(source, text, cites=(), why=None):
+        return {"source": source, "text_th": text, "cites": list(cites), "follow_ups": follow, "rejected_reason": why, "intent": intent}
+
     if intent == "emergency":
         return out("emergency", msgs["emergency"])
     if intent == "dose":
@@ -266,7 +267,7 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
 
     chunks = _lookup(question, resolve_scope(question, index, checked_herbs, context_herbs), index, config)
     if not chunks:
-        return out("refusal", msgs["no_info"])
+        return {**out("refusal", msgs["no_info"]), "intent": "no_info"}  # service.ask ค้นภายนอกต่อได้
     base_text, why = _extractive(chunks), None
     if use_llm:
         allowed = " ".join(f"{c['herb_name_th']} {c['text_th']} {c['evidence_quote'] or ''} {c['drug_class'] or ''}" for c in chunks)

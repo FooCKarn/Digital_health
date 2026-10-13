@@ -161,6 +161,14 @@ def explain(payload) -> dict:
     return {"explanation": llm.explain(inp, result, ALL, DRUGS, CONFIG)}
 
 
+WEB_INTENTS = ("no_info", "dose", "diagnosis")
+
+
+def web_search_enabled() -> bool:
+    """ค้นภายนอกใช้ GEMINI_API_KEY เดิม ปิดได้ด้วย HERBGUARD_WEB_SEARCH=0"""
+    return os.environ.get("HERBGUARD_WEB_SEARCH") != "0" and bool(os.environ.get("GEMINI_API_KEY"))
+
+
 def ask(payload) -> dict:
     """แชต: ค้นจากฐานข้อมูลก่อนเสมอ (ตอบแบบสกัดข้อความ) ให้ LLM เรียบเรียงเฉพาะเมื่อตั้ง HERBGUARD_CHAT_LLM=1 (เลือกเปิด ค่าเริ่มต้นปิด
     เพราะตัวตรวจการกลับความหมายยังเป็น heuristic ระดับคำ)
@@ -176,7 +184,14 @@ def ask(payload) -> dict:
     inp = validate({k: payload[k] for k in ("herbs", "drugs", "profile") if k in payload}, min_herbs=0)
     result = check(inp, ALL, DRUGS, CONFIG, TAGS) if inp["herbs"] else None
     answer = rag.answer(q.strip(), result, ctx, [h["id"] for h in inp["herbs"]], RAG, CONFIG,
-                        use_llm=os.environ.get("HERBGUARD_CHAT_LLM") == "1")
+                        use_llm=os.environ.get("HERBGUARD_CHAT_LLM") != "0")
+    # ฐานข้อมูลตอบไม่ได้/ปฏิเสธเรื่องขนาดยา-วินิจฉัย -> ค้นข้อมูลทั่วไปจากภายนอกพร้อมแหล่งอ้างอิง (ส่งเฉพาะคำถาม) ไม่ผ่าน = คงข้อความเดิม
+    if answer["source"] == "refusal" and answer["intent"] in WEB_INTENTS and web_search_enabled():
+        web = llm.web_answer(q.strip(), CONFIG, answer["intent"])
+        if web.get("source") == "web":
+            answer = {**answer, **web}
+        else:
+            answer = {**answer, "rejected_reason": web["rejected_reason"], **({"text_th": web["note_th"]} if "note_th" in web else {})}
     return {"answer": answer}
 
 
@@ -222,6 +237,9 @@ def assistant(payload) -> dict:
         if not (isinstance(i, dict) and isinstance(i.get("id"), str) and 1 <= len(i["id"]) <= 64 and isinstance(i.get("label"), str) and 1 <= len(i["label"]) <= 100):
             raise ValueError("items ไม่ถูกต้อง")
         clean.append({"id": i["id"], "label": i["label"]})
+    rule = llm.route_rules(text.strip(), clean)   # คำสั่งชัดเจนไม่ต้องรอ LLM (ใช้ได้แม้ LLM ล่ม)
+    if rule:
+        return {"route": rule}
     try:
         return {"route": llm.route(text.strip(), clean)}
     except llm.LLMUnavailable as e:

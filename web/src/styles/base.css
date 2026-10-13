@@ -140,3 +140,6 @@ label.check input { width: 22px; height: 22px; }
   .tabs, .noprint, button, details.opt-box { display: none !important; }
   #app > footer { padding-bottom: 0; }
 }
+
+#chatPanel .cmsg .web-sources { display: block; margin-top: 6px; font-size: .85rem; }
+#chatPanel .cmsg .web-sources a { display: inline-block; margin-right: 8px; overflow-wrap: anywhere; }
