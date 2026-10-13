@@ -97,7 +97,7 @@ def test_only_formulas_module_and_service_read_the_formula_file_and_nothing_read
             if "tests" in p.parts:
                 continue
             t = p.read_text(encoding="utf-8")
-            for name in ("herb_priority", "herbal_substitution_groups", "context_stats", "ttm_code24"):
+            for name in ("herb_priority", "herbal_substitution_groups", "context_stats", "ttm_code24", "primary_care_guidelines"):
                 if name == "ttm_code24" and p.name == "code24.py":
                     continue  # เอ่ยชื่อไฟล์ใน docstring เท่านั้น
                 assert name not in t, (name, p)  # ไฟล์สถิติ/ลำดับความสำคัญ/รหัสยา engine ห้ามอ่าน (code24.py รับ doc จากผู้เรียก ไม่โหลดเอง)
@@ -148,3 +148,36 @@ def test_reference_files_never_say_safe_word():
         t = (ROOT / p).read_text(encoding="utf-8").replace(org, "")
         # กฎข้อ 5: ไฟล์ข้อมูลใหม่ไม่ใช้คำนี้เลย
         assert "ปลอดภัย" not in t, p
+
+
+PCG = L("data/primary_care_guidelines.json")
+
+
+def test_primary_care_rows_have_page_unverified_and_engine_does_not_read_them():
+    assert PCG["engine_use"] is False and len(PCG["products"]) >= 80
+    ids = [r["id"] for r in PCG["products"]]
+    assert len(ids) == len(set(ids))
+    for r in PCG["products"]:
+        assert isinstance(r["source_page"], int) and r["source_page"] <= r["source_page_end"] < 110, r["id"]  # ภาคผนวกกัญชา (หน้า 110+) ไม่นำเข้า
+        assert r["verified"] is False and r["verified_by"] is None and r["evidence_tier"] == "A", r["id"]
+        assert r["herb_id"] is None or r["herb_id"] in HERBS, r["id"]
+        if r["herb_id"]:  # จับคู่เฉพาะชื่อตรงกันทุกตัว
+            assert r["name_th"].split(" (")[0] == "ยา" + HERBS[r["herb_id"]], r["id"]
+        for k in ("contraindications_th", "cautions_th", "adverse_effects_th"):
+            assert r[k] is None or all(isinstance(x, str) and x for x in r[k]), (r["id"], k)
+
+
+def test_primary_care_known_rows_match_source_text():
+    by = {(r["name_th"], r["source_page"]): r for r in PCG["products"]}
+    r = by[("ยาปราบชมพูทวีป", 9)]
+    assert "ห้ามใช้ในหญิงตั้งครรภ์ ผู้ที่มีไข้ และเด็ก" in r["contraindications_th"]
+    assert any("phenytoin" in x and "rifampicin" in x for x in r["cautions_th"])
+    r = by[("ยาหอมเทพจิตร", 35)]
+    assert any("ยาในกลุ่มสารกันเลือด" in x for x in r["cautions_th"])
+    # "-" ในต้นฉบับ = รายการว่าง (ไม่ใช่ null และไม่ใช่การรับรองว่าไม่มีข้อห้าม)
+    assert by[("ยาตรีผลา", 15)]["contraindications_th"] == []
+
+
+def test_primary_care_file_has_no_safe_word_except_clinical_source_phrase():
+    t = (ROOT / "data/primary_care_guidelines.json").read_text(encoding="utf-8").replace("ประสิทธิผลและความปลอดภัย", "")  # วลีคัดจากต้นฉบับ ("ยังไม่มีข้อมูลด้านประสิทธิผลและความปลอดภัย" ในเด็ก) ไม่ใช่ข้อสรุปของระบบ
+    assert "ปลอดภัย" not in t
