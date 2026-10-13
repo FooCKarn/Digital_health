@@ -22,7 +22,7 @@ def test_round_trip_in_memory_is_lossless():
 
 
 def test_reference_docs_are_kept_too():
-    extra = {n: json.loads((ROOT / f"data/{n}.json").read_text(encoding="utf-8")) for n in ("context_stats", "herb_priority", "ttm_code24", "herbal_substitution_groups", "primary_care_guidelines")}
+    extra = {n: json.loads((ROOT / f"data/{n}.json").read_text(encoding="utf-8")) for n in ("context_stats", "herb_priority", "ttm_code24", "herbal_substitution_groups", "primary_care_guidelines", "textbook_safety_notes")}
     _, ref = ds.decode_datasets(ds.encode_datasets(service.load_files(), extra))
     assert ref == extra
 

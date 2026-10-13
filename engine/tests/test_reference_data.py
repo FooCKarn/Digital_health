@@ -97,7 +97,7 @@ def test_only_formulas_module_and_service_read_the_formula_file_and_nothing_read
             if "tests" in p.parts:
                 continue
             t = p.read_text(encoding="utf-8")
-            for name in ("herb_priority", "herbal_substitution_groups", "context_stats", "ttm_code24", "primary_care_guidelines"):
+            for name in ("herb_priority", "herbal_substitution_groups", "context_stats", "ttm_code24", "primary_care_guidelines", "textbook_safety_notes"):
                 if name == "ttm_code24" and p.name == "code24.py":
                     continue  # เอ่ยชื่อไฟล์ใน docstring เท่านั้น
                 assert name not in t, (name, p)  # ไฟล์สถิติ/ลำดับความสำคัญ/รหัสยา engine ห้ามอ่าน (code24.py รับ doc จากผู้เรียก ไม่โหลดเอง)
@@ -181,3 +181,30 @@ def test_primary_care_known_rows_match_source_text():
 def test_primary_care_file_has_no_safe_word_except_clinical_source_phrase():
     t = (ROOT / "data/primary_care_guidelines.json").read_text(encoding="utf-8").replace("ประสิทธิผลและความปลอดภัย", "")  # วลีคัดจากต้นฉบับ ("ยังไม่มีข้อมูลด้านประสิทธิผลและความปลอดภัย" ในเด็ก) ไม่ใช่ข้อสรุปของระบบ
     assert "ปลอดภัย" not in t
+
+
+TBS = L("data/textbook_safety_notes.json")
+
+
+def test_textbook_safety_notes_have_page_unverified_and_engine_does_not_read_them():
+    assert TBS["engine_use"] is False and len(TBS["notes"]) >= 20
+    ids = [r["id"] for r in TBS["notes"]]
+    assert len(ids) == len(set(ids))
+    for r in TBS["notes"]:
+        assert isinstance(r["source_page"], int) and 222 <= r["source_page"] <= 363, r["id"]
+        assert r["verified"] is False and r["verified_by"] is None and r["evidence_tier"] == "A", r["id"]
+        assert 0 < len(r["statement_th"]) <= 250 and r["text_quality_note"], r["id"]
+        assert r["herb_id"] is None or r["herb_id"] in HERBS, r["id"]
+
+
+def test_textbook_safety_notes_known_rows_match_source_text():
+    by = {(r["source_page"], r["statement_th"][:20]): r for r in TBS["notes"]}
+    texts = [r["statement_th"] for r in TBS["notes"] if r["source_page"] == 261]
+    assert any("สตรีมีครรภ์ห้ามใช้" in t for t in texts)  # มะขามแขก ฝัก (หน้า 261)
+    assert any("คนเป็นไข้ หรือสตรีมีครรภ์ ห้ามรับประทาน" in r["statement_th"] and r["source_page"] == 349 for r in TBS["notes"])
+    assert any("ละหุ่ง" in (r["heading_th"] or "") and "อาจตายได้" in r["statement_th"] for r in TBS["notes"])
+    assert by  # ไม่ว่าง
+
+
+def test_textbook_safety_file_has_no_safe_word():
+    assert "ปลอดภัย" not in (ROOT / "data/textbook_safety_notes.json").read_text(encoding="utf-8")
