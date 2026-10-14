@@ -4,6 +4,7 @@ import { downloadJSON } from "../download";
 import { useBusy } from "../hooks/useBusy";
 import { newId } from "../model/tracker";
 import type { FeedbackPayload, Flag } from "../types";
+import { t } from "../i18n";
 
 // สุ่มใหม่ทุกครั้งที่โหลดหน้า ไม่ผูกกับตัวตน
 const SID = newId();
@@ -47,47 +48,47 @@ export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Fl
     setMsg("");
     try {
       await sendFeedback(collect());
-      setMsg("ขอบคุณ ส่งแล้ว");
+      setMsg(t("ขอบคุณ ส่งแล้ว", "Thank you, sent"));
     } catch (e) {
-      setMsg(`ส่งไม่สำเร็จ: ${e instanceof ApiError ? e.thaiMessage : new ApiError("network").thaiMessage} · ดาวน์โหลดไฟล์แล้วส่งให้ทีมแทนได้`);
+      setMsg(`${t("ส่งไม่สำเร็จ", "Could not send")}: ${e instanceof ApiError ? e.thaiMessage : new ApiError("network").thaiMessage} · ${t("ดาวน์โหลดไฟล์แล้วส่งให้ทีมแทนได้", "You can download the file and send it to the team instead")}`);
     }
   });
 
   return (
     <div class="feedback">
-      <h3>ช่วยเราปรับปรุง (ทดลองใช้)</h3>
-      <p class="meta">ใช้เคสสมมติเท่านั้น ข้อมูลที่ส่งไม่ผูกกับตัวตนของคุณ และไม่แนบรายการหรือข้อมูลสุขภาพของคุณ</p>
+      <h3>{t("ช่วยเราปรับปรุง (ทดลองใช้)", "Help us improve (trial)")}</h3>
+      <p class="meta">{t("ใช้เคสสมมติเท่านั้น ข้อมูลที่ส่งไม่ผูกกับตัวตนของคุณ และไม่แนบรายการหรือข้อมูลสุขภาพของคุณ", "Use made-up cases only. What you send is not linked to your identity and does not include your items or health data.")}</p>
       <div class="field">
-        <label for="fb-role">คุณคือ</label>
+        <label for="fb-role">{t("คุณคือ", "You are")}</label>
         <select id="fb-role" value={role} onChange={(e) => setRole(e.currentTarget.value as Role)}>
-          <option value="citizen">ประชาชน</option>
-          <option value="pharmacist">เภสัชกร</option>
-          <option value="other">อื่น ๆ</option>
+          <option value="citizen">{t("ประชาชน", "A member of the public")}</option>
+          <option value="pharmacist">{t("เภสัชกร", "A pharmacist")}</option>
+          <option value="other">{t("อื่น ๆ", "Other")}</option>
         </select>
       </div>
       <div class="field">
-        <label for="fb-case">ชื่อเคสสมมติ (ถ้ามี)</label>
+        <label for="fb-case">{t("ชื่อเคสสมมติ (ถ้ามี)", "Made-up case name (if any)")}</label>
         <input id="fb-case" type="text" maxLength={50} value={caseId} onInput={(e) => setCaseId(e.currentTarget.value)} />
       </div>
       {flags.map((f, i) => (
         <div class="field" key={f.flag_id}>
-          <label for={`fb-f${i}`}>{`ความเห็นต่อคำเตือนที่ ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`}</label>
+          <label for={`fb-f${i}`}>{t(`ความเห็นต่อคำเตือนที่ ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`, `Your view on warning ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`)}</label>
           <select id={`fb-f${i}`} value={answers[f.flag_id] ?? ""} onChange={(e) => { const v = e.currentTarget.value as Answer; setAnswer(f.flag_id, v); }}>
-            <option value="">ยังไม่ตอบ</option>
-            <option value="true">เห็นด้วย</option>
-            <option value="false">ไม่เห็นด้วย</option>
-            <option value="unsure">ไม่แน่ใจ</option>
+            <option value="">{t("ยังไม่ตอบ", "Not answered")}</option>
+            <option value="true">{t("เห็นด้วย", "Agree")}</option>
+            <option value="false">{t("ไม่เห็นด้วย", "Disagree")}</option>
+            <option value="unsure">{t("ไม่แน่ใจ", "Not sure")}</option>
           </select>
         </div>
       ))}
       <div class="field">
-        <label for="fb-comment">ความเห็น</label>
-        <textarea id="fb-comment" maxLength={500} rows={2} placeholder="ห้ามใส่ข้อมูลส่วนตัวหรือข้อมูลผู้ป่วยจริง" value={comment}
+        <label for="fb-comment">{t("ความเห็น", "Comments")}</label>
+        <textarea id="fb-comment" maxLength={500} rows={2} placeholder={t("ห้ามใส่ข้อมูลส่วนตัวหรือข้อมูลผู้ป่วยจริง", "Do not enter personal information or real patient data")} value={comment}
           onInput={(e) => setComment(e.currentTarget.value)} />
       </div>
       <p class="row-actions">
-        <button type="button" aria-disabled={busy} onClick={send}>ส่งความเห็น</button>
-        <button type="button" onClick={() => downloadJSON("feedback.json", JSON.stringify(collect(), null, 2))}>ดาวน์โหลดคำตอบเป็นไฟล์</button>
+        <button type="button" aria-disabled={busy} onClick={send}>{t("ส่งความเห็น", "Send feedback")}</button>
+        <button type="button" onClick={() => downloadJSON("feedback.json", JSON.stringify(collect(), null, 2))}>{t("ดาวน์โหลดคำตอบเป็นไฟล์", "Download your answers as a file")}</button>
       </p>
       <p class="meta" role="status">{msg}</p>
     </div>
