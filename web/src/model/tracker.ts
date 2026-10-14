@@ -1,9 +1,10 @@
+import { t } from "../i18n";
 import { isValidISODate, startForDay, validateStart } from "./dates";
 
 export type ItemKind = "herb" | "drug" | "formula";
 /** สมุนไพรและตำรับส่งไปตรวจในอาร์เรย์ herbs เดียวกัน (โควตา 50 ร่วมกัน) */
 export const isHerbish = (k: ItemKind) => k !== "drug";
-export const kindLabel = (k: ItemKind) => (k === "herb" ? "สมุนไพร" : k === "formula" ? "ตำรับ" : "ยา");
+export const kindLabel = (k: ItemKind) => (k === "herb" ? t("สมุนไพร", "Herb") : k === "formula" ? t("ตำรับ", "Formula") : t("ยา", "Medicine"));
 export interface TrackerItem { id: string; kind: ItemKind; ref: string; label: string; start_date: string; end_date: string | null }
 export interface Profile { age: number | null; pregnant: "yes" | "no" | null; breastfeeding: "yes" | "no" | null; conditions: string[] }
 export interface TrackerState { v: 1; items: TrackerItem[]; profile: Profile }
@@ -29,24 +30,24 @@ const yn = (x: unknown): x is "yes" | "no" | null => x === null || x === "yes" |
 
 /** ตรวจโปรไฟล์ คืนข้อความผิดพลาดหรือ null (known = รหัสโรคที่เซิร์ฟเวอร์รู้จัก ถ้ามี) */
 function profileError(p: unknown, known: string[] | null): string | null {
-  const BAD = "ข้อมูลโปรไฟล์ไม่ถูกต้อง";
+  const BAD = t("ข้อมูลโปรไฟล์ไม่ถูกต้อง", "The profile data is not valid");
   if (!isObj(p)) return BAD;
   const { age, pregnant, breastfeeding, conditions } = p;
   if (!(age === null || (typeof age === "number" && Number.isInteger(age) && age >= 0 && age <= 120))) return BAD;
   if (!yn(pregnant) || !yn(breastfeeding)) return BAD;
   if (!Array.isArray(conditions) || conditions.length > MAX_CONDITIONS || !conditions.every((c) => str(c, MAX_COND))) return BAD;
-  if (known && !conditions.every((c) => known.includes(c as string))) return "มีโรคประจำตัวที่ระบบไม่รู้จัก";
+  if (known && !conditions.every((c) => known.includes(c as string))) return t("มีโรคประจำตัวที่ระบบไม่รู้จัก", "The profile has a condition the system does not recognise");
   return null;
 }
 
 /** ตรวจทีละฟิลด์ แล้วสร้างอ็อบเจ็กต์ใหม่จากฟิลด์ที่อนุญาตเท่านั้น (กัน __proto__/ฟิลด์แปลก) */
 function parseState(raw: unknown, today: string, known: string[] | null, onLoad = false): TrackerState | string {
-  const BAD = "ไฟล์ไม่ถูกต้อง";
+  const BAD = t("ไฟล์ไม่ถูกต้อง", "The file is not valid");
   // ตอนโหลดจากเครื่อง: วันที่ล้ำไป 1 วัน (นาฬิกา/เขตเวลาเพี้ยน) ปัดเป็นวันนี้ แทนที่จะทิ้งข้อมูลทั้งหมด; นำเข้าไฟล์ยังปฏิเสธ
   const tomorrow = startForDay(0, today);
   const fix = (d: unknown) => (onLoad && d === tomorrow ? today : d);
-  if (!isObj(raw) || raw.v !== 1) return "ไฟล์ไม่ถูกต้องหรือเป็นเวอร์ชันที่ไม่รองรับ";
-  if (!Array.isArray(raw.items) || raw.items.length > MAX_ITEMS) return "จำนวนรายการไม่ถูกต้อง";
+  if (!isObj(raw) || raw.v !== 1) return t("ไฟล์ไม่ถูกต้องหรือเป็นเวอร์ชันที่ไม่รองรับ", "The file is not valid or is an unsupported version");
+  if (!Array.isArray(raw.items) || raw.items.length > MAX_ITEMS) return t("จำนวนรายการไม่ถูกต้อง", "The number of items is not valid");
   const ids = new Set<string>();
   const items: TrackerItem[] = [];
   let herbs = 0, drugs = 0;
@@ -55,14 +56,14 @@ function parseState(raw: unknown, today: string, known: string[] | null, onLoad 
     const { id, kind, ref, label } = it;
     const start_date = fix(it.start_date), end_date = fix(it.end_date);
     if (!str(id, 64) || ids.has(id) || (kind !== "herb" && kind !== "drug" && kind !== "formula") || !str(ref, refMax(kind)) || !str(label, MAX_TEXT)) return BAD;
-    if (!isValidISODate(start_date) || !(end_date === null || isValidISODate(end_date))) return "วันที่ในไฟล์ไม่ถูกต้อง";
+    if (!isValidISODate(start_date) || !(end_date === null || isValidISODate(end_date))) return t("วันที่ในไฟล์ไม่ถูกต้อง", "A date in the file is not valid");
     // ไม่ปฏิเสธวันเริ่มเก่า (สำรองข้อมูลอายุเกินปีต้องกู้ได้) แต่ปฏิเสธอนาคต
-    if (start_date > today || (end_date !== null && (end_date < start_date || end_date > today))) return "วันที่ในไฟล์ไม่ถูกต้อง";
+    if (start_date > today || (end_date !== null && (end_date < start_date || end_date > today))) return t("วันที่ในไฟล์ไม่ถูกต้อง", "A date in the file is not valid");
     if (end_date === null) { if (isHerbish(kind)) herbs++; else drugs++; }
     ids.add(id);
     items.push({ id, kind, ref, label, start_date, end_date });
   }
-  if (herbs > MAX_HERBS || drugs > MAX_DRUGS) return "จำนวนรายการที่ใช้อยู่เกินกำหนด";
+  if (herbs > MAX_HERBS || drugs > MAX_DRUGS) return t("จำนวนรายการที่ใช้อยู่เกินกำหนด", "Too many items in use");
   const perr = profileError(raw.profile, known);
   if (perr) return perr;
   const p = raw.profile as Profile;
@@ -118,24 +119,24 @@ export class TrackerStore {
 
   addItem(input: { kind: ItemKind; ref: string; label: string; start_date: string }): { ok: true; item: TrackerItem } | { ok: false; message: string } {
     const label = input.label.trim();
-    if (!label || label.length > MAX_TEXT) return { ok: false, message: "ชื่อต้องไม่ว่างและไม่เกิน 100 ตัวอักษร" };
-    if (!str(input.ref, refMax(input.kind))) return { ok: false, message: "รายการไม่ถูกต้อง" };
+    if (!label || label.length > MAX_TEXT) return { ok: false, message: t("ชื่อต้องไม่ว่างและไม่เกิน 100 ตัวอักษร", "The name cannot be empty or longer than 100 characters") };
+    if (!str(input.ref, refMax(input.kind))) return { ok: false, message: t("รายการไม่ถูกต้อง", "The item is not valid") };
     const dateErr = validateStart(input.start_date, this.today());
     if (dateErr) return { ok: false, message: dateErr };
     const act = this.active();
-    if (act.some((i) => i.kind === input.kind && i.ref === input.ref)) return { ok: false, message: "มีรายการนี้อยู่แล้ว" };
+    if (act.some((i) => i.kind === input.kind && i.ref === input.ref)) return { ok: false, message: t("มีรายการนี้อยู่แล้ว", "This item is already in your list") };
     const herbish = isHerbish(input.kind);
     if (act.filter((i) => isHerbish(i.kind) === herbish).length >= (herbish ? MAX_HERBS : MAX_DRUGS))
-      return { ok: false, message: herbish ? "ใช้สมุนไพรและตำรับพร้อมกันได้รวมไม่เกิน 50 รายการ" : "ใช้ยาพร้อมกันได้ไม่เกิน 30 รายการ" };
-    if (this._state.items.length >= MAX_ITEMS) return { ok: false, message: "จำนวนรายการเต็มแล้ว" };
+      return { ok: false, message: herbish ? t("ใช้สมุนไพรและตำรับพร้อมกันได้รวมไม่เกิน 50 รายการ", "You can use at most 50 herbs and formulas at the same time") : t("ใช้ยาพร้อมกันได้ไม่เกิน 30 รายการ", "You can use at most 30 medicines at the same time") };
+    if (this._state.items.length >= MAX_ITEMS) return { ok: false, message: t("จำนวนรายการเต็มแล้ว", "The list is full") };
     const item: TrackerItem = { id: newId(), kind: input.kind, ref: input.ref, label, start_date: input.start_date, end_date: null };
     this.commit({ ...this._state, items: [...this._state.items, item] });
     return { ok: true, item };
   }
 
   stopItem(id: string): void {
-    const t = this.today();
-    this.commit({ ...this._state, items: this._state.items.map((i) => (i.id === id ? { ...i, end_date: t } : i)) });
+    const day = this.today();
+    this.commit({ ...this._state, items: this._state.items.map((i) => (i.id === id ? { ...i, end_date: day } : i)) });
   }
 
   /** แก้วันเริ่มใช้ของรายการที่เพิ่มไปแล้ว (ใช้เมื่อกรอกวันเริ่มผิด) */
@@ -165,9 +166,9 @@ export class TrackerStore {
   exportJSON(): string { return JSON.stringify(this._state); }
 
   importJSON(text: string): { ok: true } | { ok: false; message: string } {
-    if (typeof text !== "string" || bytes(text) > MAX_IMPORT_BYTES) return { ok: false, message: "ไฟล์ใหญ่เกิน 256 KB" };
+    if (typeof text !== "string" || bytes(text) > MAX_IMPORT_BYTES) return { ok: false, message: t("ไฟล์ใหญ่เกิน 256 KB", "The file is larger than 256 KB") };
     let raw: unknown;
-    try { raw = JSON.parse(text); } catch { return { ok: false, message: "อ่านไฟล์ไม่ได้ ใช้ไฟล์ที่ส่งออกจากแอปนี้เท่านั้น" }; }
+    try { raw = JSON.parse(text); } catch { return { ok: false, message: t("อ่านไฟล์ไม่ได้ ใช้ไฟล์ที่ส่งออกจากแอปนี้เท่านั้น", "Couldn't read the file. Use only a file exported from this app") }; }
     const r = parseState(raw, this.today(), this.known);
     if (typeof r === "string") return { ok: false, message: r };
     this.commit(r);

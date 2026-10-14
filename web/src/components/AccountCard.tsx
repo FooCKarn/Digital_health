@@ -35,7 +35,7 @@ export function AccountCard({ cloud, defaultOpen = false }: { cloud: CloudSync; 
     const registerBlocked = mode === "register" && !consent;
     const body = (
       <>
-        <p class="meta">{t("ตอนนี้ข้อมูลอยู่ในเครื่องนี้เท่านั้น สมัครบัญชีถ้าอยากใช้ข้อมูลเดียวกันหลายเครื่อง ข้อมูลรายการที่ใช้ บันทึกสุขภาพ และเวลาเตือนจะถูกเก็บในคลาวด์ของเรา", "Right now your data is only on this device. Sign up if you want to use the same data on several devices. Your items, health diary and reminder time will then be stored in our cloud.")}</p>
+        <p class="meta">{t("ตอนนี้ข้อมูลอยู่ในเครื่องนี้เท่านั้น สมัครบัญชีถ้าอยากใช้ข้อมูลเดียวกันหลายเครื่อง ข้อมูลรายการที่ใช้ บันทึกสุขภาพ และเวลาเตือนจะถูกเก็บในคลาวด์ของเรา", "Your data is only on this device for now. Sign up to use the same data on several devices. Your items, health diary and reminder time will then be stored in our cloud.")}</p>
         <div class="tabs-mini" role="group" aria-label={t("เลือกการทำรายการ", "Choose an action")}>
           <button type="button" aria-pressed={mode === "login"} onClick={() => setMode("login")}>{t("มีบัญชีแล้ว", "I have an account")}</button>
           <button type="button" aria-pressed={mode === "register"} onClick={() => setMode("register")}>{t("สมัครบัญชี", "Sign up")}</button>

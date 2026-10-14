@@ -42,7 +42,7 @@ export function Welcome({ cloud, storage }: { cloud: CloudSync; storage: KeyValu
             <h2 id="welcome-h">{t("ยินดีต้อนรับสู่ใบพลู", "Welcome to Baiplu")}</h2>
             <div class="welcome-actions">
               <button type="button" class="primary" onClick={() => setGuest(true)}>{t("ใช้แบบ guest", "Use as guest")}</button>
-              <p class="meta">{t("ข้อมูลเก็บในเครื่องนี้เท่านั้น ไม่ต้องสมัคร", "Data stays on this device only. No sign-up needed.")}</p>
+              <p class="meta">{t("ข้อมูลเก็บในเครื่องนี้เท่านั้น ไม่ต้องสมัคร", "Your data stays on this device. No sign-up needed.")}</p>
               <button type="button" aria-expanded={login} onClick={() => setLogin((x) => !x)}>{t("เข้าสู่ระบบ / สมัคร", "Log in / Sign up")}</button>
             </div>
             {login && <AccountCard cloud={cloud} defaultOpen />}

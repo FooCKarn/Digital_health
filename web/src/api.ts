@@ -2,7 +2,7 @@ import { getLang } from "./i18n";
 import type { BriefFacts, BriefOut, RouteOut, AnalyzePayload, AnalyzeResult, AskAnswer, AskPayload, Explanation, FeedbackPayload, Meta, ParseProposal, Summary } from "./types";
 
 const FIXED = "ตรวจไม่สำเร็จ ลองใหม่อีกครั้ง";
-const FIXED_EN = "The check did not complete. Please try again.";
+const FIXED_EN = "The check didn't go through. Try again.";
 const THAI = /[฀-๿]/;
 
 export class ApiError extends Error {

@@ -1,5 +1,6 @@
 import { addDays, dayNumber, isValidISODate } from "./dates";
 import type { KeyValueStorage } from "./tracker";
+import { t } from "../i18n";
 
 /**
  * บันทึกสุขภาพส่วนตัว + เช็กอินการใช้ (อยู่ใน localStorage ของผู้ใช้เท่านั้น ไม่ส่งขึ้นเซิร์ฟเวอร์)
@@ -15,11 +16,11 @@ export const RANGES = {
   sys: [50, 260], dia: [30, 160], glucose: [20, 600], weight: [2, 300],
 } as const;
 export type VitalKey = keyof typeof RANGES;
-export const VITAL_LABEL: Record<VitalKey, { th: string; unit: string }> = {
-  sys: { th: "ความดันตัวบน", unit: "mmHg" },
-  dia: { th: "ความดันตัวล่าง", unit: "mmHg" },
-  glucose: { th: "น้ำตาลในเลือด", unit: "mg/dL" },
-  weight: { th: "น้ำหนัก", unit: "กก." },
+export const VITAL_LABEL: Record<VitalKey, { th: string; en: string; unit: string }> = {
+  sys: { th: "ความดันตัวบน", en: "Systolic pressure", unit: "mmHg" },
+  dia: { th: "ความดันตัวล่าง", en: "Diastolic pressure", unit: "mmHg" },
+  glucose: { th: "น้ำตาลในเลือด", en: "Blood glucose", unit: "mg/dL" },
+  weight: { th: "น้ำหนัก", en: "Weight", get unit() { return t("กก.", "kg"); } },
 };
 export const MOODS = [
   { v: 1, th: "แย่มาก", en: "Very bad" }, { v: 2, th: "ไม่ค่อยดี", en: "Not great" }, { v: 3, th: "เฉย ๆ", en: "Okay" }, { v: 4, th: "ดี", en: "Good" }, { v: 5, th: "ดีมาก", en: "Very good" },
@@ -46,25 +47,25 @@ function numOk(k: VitalKey, x: unknown): x is number | null {
 
 /** ตรวจหนึ่งรายการ คืนข้อความผิดพลาดหรือ null */
 export function entryError(e: unknown, today: string): string | null {
-  if (!isObj(e)) return "ข้อมูลไม่ถูกต้อง";
-  if (!isValidISODate(e.date)) return "วันที่ไม่ถูกต้อง";
-  if (dayNumber(e.date, today) < 1) return "วันที่เป็นอนาคตไม่ได้";
-  if (!(e.mood === null || (typeof e.mood === "number" && Number.isInteger(e.mood) && e.mood >= 1 && e.mood <= 5))) return "ระดับความรู้สึกไม่ถูกต้อง";
+  if (!isObj(e)) return t("ข้อมูลไม่ถูกต้อง", "The data is not valid");
+  if (!isValidISODate(e.date)) return t("วันที่ไม่ถูกต้อง", "Invalid date");
+  if (dayNumber(e.date, today) < 1) return t("วันที่เป็นอนาคตไม่ได้", "The date cannot be in the future");
+  if (!(e.mood === null || (typeof e.mood === "number" && Number.isInteger(e.mood) && e.mood >= 1 && e.mood <= 5))) return t("ระดับความรู้สึกไม่ถูกต้อง", "The mood level is not valid");
   if (!(e.symptom === null || (typeof e.symptom === "string" && e.symptom.trim().length > 0 && e.symptom.length <= MAX_NOTE)))
-    return `อาการต้องไม่เกิน ${MAX_NOTE} ตัวอักษร`;
+    return t(`อาการต้องไม่เกิน ${MAX_NOTE} ตัวอักษร`, `The symptom note must be at most ${MAX_NOTE} characters`);
   for (const k of Object.keys(RANGES) as VitalKey[]) {
-    if (!numOk(k, e[k])) return `${VITAL_LABEL[k].th}ต้องอยู่ระหว่าง ${RANGES[k][0]}-${RANGES[k][1]} ${VITAL_LABEL[k].unit}`;
+    if (!numOk(k, e[k])) return t(`${VITAL_LABEL[k].th}ต้องอยู่ระหว่าง ${RANGES[k][0]}-${RANGES[k][1]} ${VITAL_LABEL[k].unit}`, `${VITAL_LABEL[k].en} must be between ${RANGES[k][0]} and ${RANGES[k][1]} ${VITAL_LABEL[k].unit}`);
   }
-  if ((e.sys === null) !== (e.dia === null)) return "ความดันต้องกรอกทั้งตัวบนและตัวล่าง";
-  if (e.sys !== null && e.dia !== null && (e.sys as number) <= (e.dia as number)) return "ความดันตัวบนต้องมากกว่าตัวล่าง";
-  if (e.mood === null && e.symptom === null && e.sys === null && e.glucose === null && e.weight === null) return "ยังไม่ได้กรอกอะไร";
+  if ((e.sys === null) !== (e.dia === null)) return t("ความดันต้องกรอกทั้งตัวบนและตัวล่าง", "Enter both the systolic and diastolic pressure");
+  if (e.sys !== null && e.dia !== null && (e.sys as number) <= (e.dia as number)) return t("ความดันตัวบนต้องมากกว่าตัวล่าง", "Systolic pressure must be higher than diastolic");
+  if (e.mood === null && e.symptom === null && e.sys === null && e.glucose === null && e.weight === null) return t("ยังไม่ได้กรอกอะไร", "You haven't entered anything");
   return null;
 }
 
 function parse(raw: unknown, today: string): DiaryState | string {
-  const BAD = "ไฟล์บันทึกสุขภาพไม่ถูกต้อง";
+  const BAD = t("ไฟล์บันทึกสุขภาพไม่ถูกต้อง", "The health diary file is not valid");
   if (!isObj(raw) || raw.v !== 1 || !Array.isArray(raw.entries) || !isObj(raw.taken)) return BAD;
-  if (raw.entries.length > MAX_ENTRIES) return "จำนวนบันทึกเกินกำหนด";
+  if (raw.entries.length > MAX_ENTRIES) return t("จำนวนบันทึกเกินกำหนด", "Too many entries");
   const entries: DiaryEntry[] = [];
   const seen = new Set<string>();
   for (const e of raw.entries) {
@@ -138,7 +139,7 @@ export class DiaryStore {
     const err = entryError(clean, this.today());
     if (err) return { ok: false, message: err };
     const old = this._state.entries.find((e) => e.date === clean.date);
-    if (!old && this._state.entries.length >= MAX_ENTRIES) return { ok: false, message: "จำนวนบันทึกเต็มแล้ว ลบบันทึกเก่าก่อน" };
+    if (!old && this._state.entries.length >= MAX_ENTRIES) return { ok: false, message: t("จำนวนบันทึกเต็มแล้ว ลบบันทึกเก่าก่อน", "The diary is full. Delete older entries first") };
     const id = old?.id ?? `d${clean.date}`;
     const rest = this._state.entries.filter((e) => e.date !== clean.date);
     this.commit({ ...this._state, entries: [...rest, { ...clean, id }].sort((a, b) => a.date.localeCompare(b.date)) });
@@ -192,11 +193,11 @@ export class DiaryStore {
 
   /** จดขนาดที่ใช้ (ข้อความอิสระ); ว่าง = ลบ */
   setDose(itemId: string, text: string): { ok: true } | { ok: false; message: string } {
-    const t = text.trim();
-    if (!itemId || itemId.length > 64) return { ok: false, message: "รายการไม่ถูกต้อง" };
-    if (t.length > MAX_DOSE) return { ok: false, message: `จดได้ไม่เกิน ${MAX_DOSE} ตัวอักษร` };
+    const note = text.trim();
+    if (!itemId || itemId.length > 64) return { ok: false, message: t("รายการไม่ถูกต้อง", "The item is not valid") };
+    if (note.length > MAX_DOSE) return { ok: false, message: t(`จดได้ไม่เกิน ${MAX_DOSE} ตัวอักษร`, `Notes can be at most ${MAX_DOSE} characters`) };
     const dose = { ...this._state.dose };
-    if (t) dose[itemId] = t; else delete dose[itemId];
+    if (note) dose[itemId] = note; else delete dose[itemId];
     this.commit({ ...this._state, dose });
     return { ok: true };
   }
@@ -206,9 +207,9 @@ export class DiaryStore {
   exportJSON(): string { return JSON.stringify(this._state); }
 
   importJSON(text: string): { ok: true } | { ok: false; message: string } {
-    if (typeof text !== "string" || bytes(text) > MAX_DIARY_BYTES) return { ok: false, message: "ไฟล์ใหญ่เกิน 256 KB" };
+    if (typeof text !== "string" || bytes(text) > MAX_DIARY_BYTES) return { ok: false, message: t("ไฟล์ใหญ่เกิน 256 KB", "The file is larger than 256 KB") };
     let raw: unknown;
-    try { raw = JSON.parse(text); } catch { return { ok: false, message: "อ่านไฟล์ไม่ได้ ใช้ไฟล์ที่ส่งออกจากแอปนี้เท่านั้น" }; }
+    try { raw = JSON.parse(text); } catch { return { ok: false, message: t("อ่านไฟล์ไม่ได้ ใช้ไฟล์ที่ส่งออกจากแอปนี้เท่านั้น", "Couldn't read the file. Use only a file exported from this app") }; }
     const r = parse(raw, this.today());
     if (typeof r === "string") return { ok: false, message: r };
     this.commit(r);

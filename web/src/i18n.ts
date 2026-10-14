@@ -29,6 +29,11 @@ export function setLang(next: Lang) {
 /** ข้อความสองภาษา: t("ไทย", "English") คืนภาษาที่เลือกอยู่ ณ ตอน render */
 export const t = (th: string, en: string): string => (current === "en" ? en : th);
 
+/** ข้อความจากเซิร์ฟเวอร์: โหมดอังกฤษใช้ฟิลด์ *_en ถ้ามี ไม่มีก็แสดงภาษาไทยเดิม */
+export function pick<T extends string | null | undefined>(th: T, en?: string | null): T | string {
+  return current === "en" && en ? en : th;
+}
+
 /** ตารางข้อความสองภาษา: อ่านค่าตอนไหนก็ได้ภาษาตามที่เลือก ณ ตอนนั้น */
 export function tMap<K extends string>(th: Record<K, string>, en: Record<K, string>): Record<K, string> {
   const out = {} as Record<K, string>;

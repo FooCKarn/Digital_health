@@ -110,7 +110,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
           setMsg(r.ok ? { ok: true, text: t("นำเข้าแล้ว", "Imported") } : { ok: false, text: r.message });
           e.currentTarget.value = "";
         }} />
-        {store.persistent && !diary.persistent && <p class="warn" role="status">{t("เบราว์เซอร์ไม่ให้บันทึกข้อมูล ปิดหน้านี้แล้วจะหาย ส่งออกไฟล์ไว้ถ้าอยากเก็บ", "The browser is not allowing saving. Your data will be lost when you close this page. Export a file if you want to keep it.")}</p>}
+        {store.persistent && !diary.persistent && <p class="warn" role="status">{t("เบราว์เซอร์ไม่ให้บันทึกข้อมูล ปิดหน้านี้แล้วจะหาย ส่งออกไฟล์ไว้ถ้าอยากเก็บ", "The browser isn't letting your data save, so it will be gone when you close this page. Export a file if you want to keep it.")}</p>}
       </section>
     </section>
   );

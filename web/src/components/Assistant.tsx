@@ -12,20 +12,20 @@ import { MOODS } from "../model/diary";
 import { buildPayload, groupFlags, isKnownSeverity, notCheckedLabels } from "../model/panel";
 import { hhmm, type ReminderStore } from "../model/reminder";
 import type { TrackerStore } from "../model/tracker";
-import { NOT_CHECKED, noFlag, noFlagNote } from "../texts";
+import { NOT_CHECKED, entryName, noFlag, noFlagNote } from "../texts";
 import type { BriefOut, Meta, ParseProposal } from "../types";
 import { ScopeChip } from "./ScopeChip";
 import { SeverityBadge } from "./SeverityBadge";
-import { t } from "../i18n";
+import { pick, t } from "../i18n";
 
 export type GoTo = "now" | "diary" | "mine";
 const pageName = (to: GoTo) => ({ now: t("ช่วงนี้", "This period"), diary: t("บันทึก", "Diary"), mine: t("ข้อมูลของฉัน", "My data") })[to];
-const aiDown = () => t("ตอนนี้ใช้ AI ไม่ได้ ลองใหม่อีกครั้ง หรือใช้ปุ่มในหน้าอื่นแทนได้", "The AI is not available right now. Try again, or use the buttons on the other tabs.");
+const aiDown = () => t("ตอนนี้ใช้ AI ไม่ได้ ลองใหม่อีกครั้ง หรือใช้ปุ่มในหน้าอื่นแทนได้", "The AI isn't available right now. Try again, or use the buttons on the other tabs.");
 const chipsWithItems = () => [t("สรุปวันนี้", "Summarize today"), t("ตรวจให้หน่อย", "Check my items"), t("กินครบแล้ว", "I took everything"), t("ทำไมถึงขึ้นคำเตือน", "Why is there a warning")];
 const chipsEmpty = () => [t("เพิ่มขิงกับยา warfarin", "Add ginger and warfarin"), t("ขิงมีข้อควรระวังอะไร", "What should I watch out for with ginger")];
 
 const errText = (e: unknown): string =>
-  e instanceof ApiError && e.thaiMessage !== new ApiError("server").thaiMessage ? e.thaiMessage : t("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง", "Could not connect. Please try again.");
+  e instanceof ApiError && e.thaiMessage !== new ApiError("server").thaiMessage ? e.thaiMessage : t("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง", "Couldn't connect. Try again.");
 
 const emptyHint = () => t("ยังไม่มีรายการที่ใช้อยู่ บอกชื่อสมุนไพรหรือยาที่ใช้ได้เลย เช่น “เพิ่มขิงกับยา warfarin”", "No items in use yet. Tell me the herbs or medicines you use, for example “add ginger and warfarin”.");
 
@@ -76,7 +76,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
         default: return answer(q);
       }
     } catch (e) {
-      say(`${t("ทำไม่สำเร็จ", "That did not work")}: ${errText(e)}`, { tone: "err" });
+      say(`${t("ทำไม่สำเร็จ", "That didn't work")}: ${errText(e)}`, { tone: "err" });
     }
   };
 
@@ -94,8 +94,8 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
     const none = r.flags.length === 0 && r.aggregates.length === 0;
     const g = groupFlags(r);
     log.add({
-      k: "check", none, headline: none ? noFlag() : a.summary?.headline_th ?? t(`พบคำเตือน ${r.flags.length} รายการ`, `${r.flags.length} ${r.flags.length === 1 ? "warning" : "warnings"} found`),
-      items: [...r.aggregates.map((x) => ({ severity: x.severity, text: x.message_th })), ...[...g.avoid, ...g.caution, ...g.info, ...g.other].map((f) => ({ severity: f.severity, text: f.message_th }))],
+      k: "check", none, headline: none ? noFlag() : (a.summary ? pick(a.summary.headline_th, a.summary.headline_en) : undefined) ?? t(`พบคำเตือน ${r.flags.length} รายการ`, `${r.flags.length} ${r.flags.length === 1 ? "warning" : "warnings"} found`),
+      items: [...r.aggregates.map((x) => ({ severity: x.severity, text: pick(x.message_th, x.message_en) })), ...[...g.avoid, ...g.caution, ...g.info, ...g.other].map((f) => ({ severity: f.severity, text: f.message_th }))],
       scope: t(`สมุนไพร ${r.coverage.herbs_in_db} จาก ${meta.coverage.herbs_in_book} ชนิด · ${r.coverage.drug_classes_in_db} กลุ่มยา`, `${r.coverage.herbs_in_db} of ${meta.coverage.herbs_in_book} herbs · ${r.coverage.drug_classes_in_db} drug classes`),
     });
   };
@@ -103,7 +103,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
   const mark = (ids: string[], want: boolean, days = 0) => {
     if (items.length === 0) return say(emptyHint());
     const hit = ids.map((id) => items.find((i) => i.id === id)).filter((x): x is NonNullable<typeof x> => !!x);
-    if (hit.length === 0) return say(t("ยังไม่เข้าใจว่าจะบันทึกรายการไหน ลองพิมพ์ชื่อรายการ เช่น “กินขิงแล้ว” หรือ “กินครบแล้ว”", "I am not sure which item to log. Try typing its name, for example “I took ginger” or “I took everything”."));
+    if (hit.length === 0) return say(t("ยังไม่เข้าใจว่าจะบันทึกรายการไหน ลองพิมพ์ชื่อรายการ เช่น “กินขิงแล้ว” หรือ “กินครบแล้ว”", "I'm not sure which item to log. Try typing its name, like “I took ginger” or “I took everything”."));
     const names = hit.map((i) => i.label).join(", ");
     if (want && days >= 2) return markRange(hit, names, days);
     const changed = hit.filter((i) => diary.isTaken(i.id, today) !== want);
@@ -146,7 +146,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
       reminder.setTime(null);
       return log.add({ k: "done", t: t("ปิดเตือนแล้ว", "Reminder turned off"), undo: prev ? () => { reminder.setTime(prev); say(t(`เปิดเตือน ${prev} คืนแล้ว`, `Reminder at ${prev} restored`)); } : null });
     }
-    if (!reminder.setTime(time)) return say(t("เวลาไม่ถูกต้อง ลองพิมพ์ เช่น “เตือน 20:00”", "That time is not valid. Try something like “remind me at 20:00”."));
+    if (!reminder.setTime(time)) return say(t("เวลาไม่ถูกต้อง ลองพิมพ์ เช่น “เตือน 20:00”", "That time doesn't look right. Try something like “remind me at 20:00”."));
     if (hhmm(new Date()) >= time) reminder.markFired(today); // เวลาที่ตั้งผ่านไปแล้ววันนี้: เริ่มเตือนพรุ่งนี้
     try { if (typeof Notification !== "undefined" && Notification.permission === "default") void Notification.requestPermission(); } catch { /* ใช้แบนเนอร์ในหน้าแทน */ }
     log.add({
@@ -280,7 +280,7 @@ function ProposalCard({ p, state, meta, store, today, onDone }: { p: ParsePropos
   const okHerbs = p.herbs.filter((h) => meta.herbs.some((x) => x.id === h.id));
   const dropped = p.dropped + (p.herbs.length - okHerbs.length);
   const rows: Row[] = [
-    ...okHerbs.map((h): Row => ({ key: `h-${h.id}`, kind: "herb", ref: h.id, label: meta.herbs.find((x) => x.id === h.id)?.name_th ?? h.id, day: h.days_in_use })),
+    ...okHerbs.map((h): Row => ({ key: `h-${h.id}`, kind: "herb", ref: h.id, label: entryName(meta, h.id), day: h.days_in_use })),
     ...p.drugs.map((d): Row => { const k = meta.drugs.find((x) => x.toLowerCase() === d.toLowerCase()) ?? d; return { key: `d-${k}`, kind: "drug", ref: k, label: k }; }),
   ];
   const [off, setOff] = useState<Record<string, boolean>>({});
@@ -298,9 +298,9 @@ function ProposalCard({ p, state, meta, store, today, onDone }: { p: ParsePropos
   };
   return (
     <div class="cmsg a card-msg">
-      {rows.length === 0 ? <p>{t("AI ไม่พบสมุนไพรหรือยาในข้อความ ลองพิมพ์ชื่อให้ชัดขึ้น", "The AI did not find any herbs or medicines in your message. Try typing the names more clearly.")}</p> : (
+      {rows.length === 0 ? <p>{t("AI ไม่พบสมุนไพรหรือยาในข้อความ ลองพิมพ์ชื่อให้ชัดขึ้น", "The AI didn't find any herbs or medicines in your message. Try typing the names more clearly.")}</p> : (
         <>
-          <p>{state === "open" ? t("AI แยกได้ตามนี้ เทียบกับที่พิมพ์ แล้วเอาติ๊กออกจากอันที่ไม่ใช่ ก่อนกดเพิ่ม (ยังไม่มีอะไรถูกเพิ่ม)", "The AI picked out these items. Compare them with what you typed and untick any that are wrong before pressing Add (nothing has been added yet).") : t("ข้อเสนอนี้ใช้ไปแล้ว", "This suggestion has been used")}</p>
+          <p>{state === "open" ? t("AI แยกได้ตามนี้ เทียบกับที่พิมพ์ แล้วเอาติ๊กออกจากอันที่ไม่ใช่ ก่อนกดเพิ่ม (ยังไม่มีอะไรถูกเพิ่ม)", "The AI picked out these items. Check them against what you typed and untick any that are wrong before pressing Add. Nothing has been added yet.") : t("ข้อเสนอนี้ใช้ไปแล้ว", "This suggestion has been used")}</p>
           <ul class="proposal">
             {rows.map((r) => (
               <li key={r.key}>

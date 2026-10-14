@@ -2,6 +2,7 @@ import { cloudCall } from "../api";
 import type { DiaryStore } from "./diary";
 import type { ReminderStore } from "./reminder";
 import type { TrackerStore } from "./tracker";
+import { getLang, t } from "../i18n";
 
 /**
  * ซิงก์ข้อมูลกับคลาวด์ (ไม่บังคับ; ค่าเริ่มต้นข้อมูลอยู่ในเครื่องเท่านั้น)
@@ -35,7 +36,7 @@ export class CloudSync {
 
   private call(method: string, url: string, body?: unknown): Promise<Resp> { return this.caller(method, url, body); }
   private err(r: Resp, fallback: string): string {
-    return typeof r.data?.error === "string" && /[฀-๿]/.test(r.data.error) ? r.data.error : fallback;
+    return getLang() !== "en" && typeof r.data?.error === "string" && /[฀-๿]/.test(r.data.error) ? r.data.error : fallback;
   }
 
   /** เรียกตอนเปิดหน้า: ดูว่าเข้าสู่ระบบอยู่ไหม และเซิร์ฟเวอร์นี้มีระบบบัญชีไหม (Vercel รุ่นเดิมไม่มี = ซ่อนส่วนนี้) */
@@ -60,12 +61,12 @@ export class CloudSync {
   private async enter(url: string, body: object, handle: string): Promise<boolean> {
     try {
       const r = await this.call("POST", url, body);
-      if (r.status !== 200) { this.set("anonymous", this.err(r, "เข้าสู่ระบบไม่สำเร็จ ลองใหม่อีกครั้ง")); return false; }
+      if (r.status !== 200) { this.set("anonymous", this.err(r, t("เข้าสู่ระบบไม่สำเร็จ ลองใหม่อีกครั้ง", "Couldn't log in. Try again."))); return false; }
       this.handle = r.data?.user?.handle ?? handle.toLowerCase();
       await this.reconcile();
       return true;
     } catch {
-      this.set("anonymous", "เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง");
+      this.set("anonymous", t("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง", "Couldn't connect. Try again."));
       return false;
     }
   }
@@ -81,12 +82,12 @@ export class CloudSync {
   async deleteAccount(password: string): Promise<boolean> {
     try {
       const r = await this.call("DELETE", "/api/account", { password });
-      if (r.status !== 200) { this.set(this.status === "unknown" ? "anonymous" : this.status, this.err(r, "ลบบัญชีไม่สำเร็จ")); return false; }
+      if (r.status !== 200) { this.set(this.status === "unknown" ? "anonymous" : this.status, this.err(r, t("ลบบัญชีไม่สำเร็จ", "Couldn't delete the account"))); return false; }
       this.stop(); this.handle = null; this.conflict = null; this.version = 0; this.lastSynced = null;
-      this.set("anonymous", "ลบบัญชีและข้อมูลในคลาวด์แล้ว (ข้อมูลในเครื่องนี้ยังอยู่)");
+      this.set("anonymous", t("ลบบัญชีและข้อมูลในคลาวด์แล้ว (ข้อมูลในเครื่องนี้ยังอยู่)", "Account and cloud data deleted (the data on this device is still here)"));
       return true;
     } catch {
-      this.set(this.status, "เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง");
+      this.set(this.status, t("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง", "Couldn't connect. Try again."));
       return false;
     }
   }
@@ -115,7 +116,7 @@ export class CloudSync {
   private async reconcile(): Promise<void> {
     this.set("syncing");
     const r = await this.call("GET", "/api/state");
-    if (r.status !== 200) return this.set("error", this.err(r, "อ่านข้อมูลจากคลาวด์ไม่สำเร็จ"));
+    if (r.status !== 200) return this.set("error", this.err(r, t("อ่านข้อมูลจากคลาวด์ไม่สำเร็จ", "Couldn't read the data from the cloud")));
     const remote: RemoteState = r.data.state;
     this.version = remote.version;
     const local = this.localHasData();
@@ -126,7 +127,7 @@ export class CloudSync {
     if (!local) {
       const bad = this.apply(remote);
       this.watch();
-      return bad ? this.set("error", `ข้อมูลในคลาวด์ใช้ไม่ได้: ${bad}`) : this.ready();
+      return bad ? this.set("error", `${t("ข้อมูลในคลาวด์ใช้ไม่ได้", "The cloud data cannot be used")}: ${bad}`) : this.ready();
     }
     const l = this.localDocs();
     const same = JSON.stringify([l.tracker, l.diary]) === JSON.stringify([remote.tracker, remote.diary]);
@@ -144,7 +145,7 @@ export class CloudSync {
       const bad = this.apply(remote);
       this.version = remote.version;
       this.watch();
-      return bad ? this.set("error", `ข้อมูลในคลาวด์ใช้ไม่ได้: ${bad}`) : this.ready();
+      return bad ? this.set("error", `${t("ข้อมูลในคลาวด์ใช้ไม่ได้", "The cloud data cannot be used")}: ${bad}`) : this.ready();
     }
     this.version = remote.version; // ทับคลาวด์ด้วยข้อมูลในเครื่อง (ใช้เวอร์ชันล่าสุดที่เพิ่งอ่าน)
     this.set("syncing");
@@ -183,10 +184,10 @@ export class CloudSync {
         return this.ready();
       }
       if (r.status === 409 && r.data?.state) { this.conflict = r.data.state; return this.set("conflict", this.err(r, "")); }
-      if (r.status === 401) { this.stop(); this.handle = null; return this.set("anonymous", "หมดเวลาเข้าสู่ระบบ ต้องเข้าสู่ระบบใหม่"); }
-      this.set("error", this.err(r, "ซิงก์ไม่สำเร็จ ข้อมูลในเครื่องยังอยู่ครบ"));
+      if (r.status === 401) { this.stop(); this.handle = null; return this.set("anonymous", t("หมดเวลาเข้าสู่ระบบ ต้องเข้าสู่ระบบใหม่", "Your login expired. Log in again.")); }
+      this.set("error", this.err(r, t("ซิงก์ไม่สำเร็จ ข้อมูลในเครื่องยังอยู่ครบ", "Sync failed. The data on this device is intact.")));
     } catch {
-      this.set("error", "เชื่อมต่อไม่ได้ ข้อมูลในเครื่องยังอยู่ครบ จะลองใหม่เมื่อมีการแก้ไขครั้งถัดไป");
+      this.set("error", t("เชื่อมต่อไม่ได้ ข้อมูลในเครื่องยังอยู่ครบ จะลองใหม่เมื่อมีการแก้ไขครั้งถัดไป", "Could not connect. The data on this device is intact. It will retry on your next edit."));
     }
   }
 
@@ -200,10 +201,10 @@ export class CloudSync {
     };
     try {
       const r = await this.call("PUT", "/api/state", { base_version: this.version, ...empty });
-      if (r.status === 200) { this.version = r.data.state.version; return this.set("ready", "ลบข้อมูลในคลาวด์แล้ว (ข้อมูลในเครื่องนี้ยังอยู่)"); }
-      this.set("error", this.err(r, "ลบข้อมูลในคลาวด์ไม่สำเร็จ"));
+      if (r.status === 200) { this.version = r.data.state.version; return this.set("ready", t("ลบข้อมูลในคลาวด์แล้ว (ข้อมูลในเครื่องนี้ยังอยู่)", "Cloud data deleted (the data on this device is still here)")); }
+      this.set("error", this.err(r, t("ลบข้อมูลในคลาวด์ไม่สำเร็จ", "Couldn't delete the cloud data")));
     } catch {
-      this.set("error", "เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง");
+      this.set("error", t("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง", "Couldn't connect. Try again."));
     }
   }
 }

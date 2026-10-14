@@ -50,7 +50,7 @@ export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Fl
       await sendFeedback(collect());
       setMsg(t("ขอบคุณ ส่งแล้ว", "Thank you, sent"));
     } catch (e) {
-      setMsg(`${t("ส่งไม่สำเร็จ", "Could not send")}: ${e instanceof ApiError ? e.thaiMessage : new ApiError("network").thaiMessage} · ${t("ดาวน์โหลดไฟล์แล้วส่งให้ทีมแทนได้", "You can download the file and send it to the team instead")}`);
+      setMsg(`${t("ส่งไม่สำเร็จ", "Couldn't send")}: ${e instanceof ApiError ? e.thaiMessage : new ApiError("network").thaiMessage} · ${t("ดาวน์โหลดไฟล์แล้วส่งให้ทีมแทนได้", "You can download the file and send it to the team instead")}`);
     }
   });
 
@@ -72,7 +72,7 @@ export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Fl
       </div>
       {flags.map((f, i) => (
         <div class="field" key={f.flag_id}>
-          <label for={`fb-f${i}`}>{t(`ความเห็นต่อคำเตือนที่ ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`, `Your view on warning ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`)}</label>
+          <label for={`fb-f${i}`}>{t(`ความเห็นต่อคำเตือนที่ ${i + 1} (${herbName(f.herb_id)}): ${f.message_th.slice(0, 50)}…`, `Your view on warning ${i + 1} (${herbName(f.herb_id)}): ${(f.message_en ?? f.message_th).slice(0, 50)}…`)}</label>
           <select id={`fb-f${i}`} value={answers[f.flag_id] ?? ""} onChange={(e) => { const v = e.currentTarget.value as Answer; setAnswer(f.flag_id, v); }}>
             <option value="">{t("ยังไม่ตอบ", "Not answered")}</option>
             <option value="true">{t("เห็นด้วย", "Agree")}</option>

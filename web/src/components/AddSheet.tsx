@@ -4,7 +4,7 @@ import type { DiaryStore } from "../model/diary";
 import { addDays, dayNumber, validateStart } from "../model/dates";
 import type { Meta } from "../types";
 import { ParseBox } from "./ParseBox";
-import { t } from "../i18n";
+import { pick as srv, t } from "../i18n";
 
 type Pick = { kind: "herb" | "drug" | "formula"; ref: string; label: string };
 
@@ -20,8 +20,8 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
   useEffect(() => first.current?.focus(), []);
 
   const needle = q.trim().toLowerCase();
-  const herbs = meta.herbs.filter((h) => !needle || h.name_th.toLowerCase().includes(needle) || h.id.toLowerCase().includes(needle));
-  const formulas = (meta.formulas ?? []).filter((f) => !needle || f.name_th.toLowerCase().includes(needle) || f.id.toLowerCase().includes(needle));
+  const herbs = meta.herbs.filter((h) => !needle || h.name_th.toLowerCase().includes(needle) || (h.name_en ?? "").toLowerCase().includes(needle) || h.id.toLowerCase().includes(needle));
+  const formulas = (meta.formulas ?? []).filter((f) => !needle || f.name_th.toLowerCase().includes(needle) || (f.name_en ?? "").toLowerCase().includes(needle) || f.id.toLowerCase().includes(needle));
   const drugs = meta.drugs.filter((d) => !needle || d.toLowerCase().includes(needle));
   const typed = q.trim();
   const canType = typed.length > 0 && !meta.drugs.some((d) => d.toLowerCase() === typed.toLowerCase());
@@ -49,15 +49,15 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
         <input id="sheet-q" ref={first} type="search" value={q} onInput={(e) => setQ(e.currentTarget.value)} />
         <div role="group" aria-label={t("รายการที่เลือกได้", "Items you can choose")} class="pick-list">
           {herbs.length > 0 && <p class="pick-h">{t("สมุนไพร", "Herbs")}</p>}
-          {herbs.map((h) => <PickBtn key={`h-${h.id}`} on={pick?.kind === "herb" && pick.ref === h.id} text={`${h.name_th} (${t("สมุนไพร", "herb")})`} onPick={() => setPick({ kind: "herb", ref: h.id, label: h.name_th })} />)}
+          {herbs.map((h) => <PickBtn key={`h-${h.id}`} on={pick?.kind === "herb" && pick.ref === h.id} text={`${srv(h.name_th, h.name_en)} (${t("สมุนไพร", "herb")})`} onPick={() => setPick({ kind: "herb", ref: h.id, label: h.name_th })} />)}
           {formulas.length > 0 && <p class="pick-h">{t("ตำรับยาสมุนไพร", "Herbal formulas")}</p>}
-          {formulas.map((f) => <PickBtn key={`f-${f.id}`} on={pick?.kind === "formula" && pick.ref === f.id} text={`${f.name_th} (${t("ตำรับ", "formula")})`} onPick={() => setPick({ kind: "formula", ref: f.id, label: f.name_th })} />)}
+          {formulas.map((f) => <PickBtn key={`f-${f.id}`} on={pick?.kind === "formula" && pick.ref === f.id} text={`${srv(f.name_th, f.name_en)} (${t("ตำรับ", "formula")})`} onPick={() => setPick({ kind: "formula", ref: f.id, label: f.name_th })} />)}
           {drugs.length > 0 && <p class="pick-h">{t("ยา", "Medicines")}</p>}
           {drugs.map((d) => <PickBtn key={`d-${d}`} on={pick?.kind === "drug" && pick.ref === d} text={`${d} (${t("ยา", "medicine")})`} onPick={() => setPick({ kind: "drug", ref: d, label: d })} />)}
           {canType && <PickBtn on={pick?.kind === "drug" && pick.ref === typed} text={t(`ใช้ชื่อยา “${typed}” ที่พิมพ์เอง`, `Use the medicine name “${typed}” that I typed`)} onPick={() => setPick({ kind: "drug", ref: typed, label: typed })} />}
         </div>
         {pick && <p>{`${t("เลือกแล้ว", "Selected")}: ${pick.label}`}</p>}
-        {pick?.kind === "formula" && <p class="meta">{meta.formulas?.find((f) => f.id === pick.ref)?.note_th}</p>}
+        {pick?.kind === "formula" && <p class="meta">{(() => { const f = meta.formulas?.find((x) => x.id === pick.ref); return f && srv(f.note_th, f.note_en); })()}</p>}
         {itemErr && <p class="err" role="alert">{itemErr}</p>}
         <label for="sheet-date">{t("เริ่มใช้ครั้งแรกเมื่อไหร่", "When did you first start using it?")}</label>
         <div class="quick-dates" role="group" aria-label={t("เลือกวันเริ่มใช้แบบเร็ว", "Quick start-date choices")}>

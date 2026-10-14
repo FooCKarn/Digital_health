@@ -11,6 +11,7 @@ import llm
 import rag
 from check import check
 from formulas import formula_entries
+from translate import en
 from summary import pharmacist_summary
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -47,15 +48,23 @@ except FileNotFoundError:  # Cloudflare Worker ไม่มีโฟลเดอ
     pass
 
 
+def _en_field(key: str, th_text) -> dict:
+    """{key: คำแปลอังกฤษ} ถ้ามี ไม่มี = dict ว่าง (ไม่ใส่คีย์)"""
+    v = en(th_text)
+    return {key: v} if v else {}
+
+
 def meta() -> dict:
     return {
-        "herbs": [{"id": h["id"], "name_th": h["name_th"], "parts": h["parts"]} for h in HERBS["herbs"]],
-        "formulas": [{"id": f["id"], "name_th": f["name_th"], "note_th": f["scope_note_th"]} for f in FORMULAS],
+        "herbs": [{"id": h["id"], "name_th": h["name_th"], **_en_field("name_en", h["name_th"]), "parts": h["parts"]} for h in HERBS["herbs"]],
+        "formulas": [{"id": f["id"], "name_th": f["name_th"], **_en_field("name_en", f["name_th"]), "note_th": f["scope_note_th"], **_en_field("note_en", f["scope_note_th"])} for f in FORMULAS],
         "drugs": [e["names"][0] for e in DRUGS["entries"]],
         "conditions": CONDS,
+        **({"conditions_en": {k: en(v) for k, v in CONDS.items()}} if all(en(v) for v in CONDS.values()) else {}),
         "coverage": {"herbs_in_db": len(HERB_IDS), "herbs_in_book": 50,
                      "drug_classes_in_db": len({c for e in DRUGS["entries"] for c in e["class"]})},
         "disclaimer_th": CONFIG["disclaimer_th"],
+        **_en_field("disclaimer_en", CONFIG["disclaimer_th"]),
         "chat_followups_th": CONFIG["chat_followups_th"]["value"],
     }
 

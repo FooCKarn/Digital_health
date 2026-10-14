@@ -27,6 +27,7 @@
      "pdf_page": 88,
      "evidence_quote": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือด ไม่ควรรับประทาน",
      "verified": false,
+     "message_en": "Ginger (ขิง): People who are taking anticoagulant medicines should not take it.",
      "drug_class": "anticoagulant",
      "flag_id": "f1"
     }
@@ -44,6 +45,8 @@
      "flag_ids": [
       "f1"
      ],
+     "label_en": "Bleeding risk",
+     "message_en": "2 item(s) related to \"Bleeding risk\": Anticoagulants (blood thinners), Ginger (ขิง) (summarised by the system; see each warning for details)",
      "message_th": "พบ 2 รายการที่เกี่ยวกับ \"เสี่ยงเลือดออก\": ยาต้านการแข็งตัวของเลือด, ขิง (ระบบสรุปรวมให้ ดูรายละเอียดในคำเตือนแต่ละใบ)"
     }
    ],
@@ -58,13 +61,15 @@
      "pregnancy"
     ]
    },
-   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม",
+   "disclaimer_en": "This tool supports decision-making. It is not a diagnosis or a prescription. No warning does not mean a combination is suitable to use."
   },
   "summary": {
    "herbs": [
     {
      "id": "khing",
      "name_th": "ขิง",
+     "name_en": "Ginger (ขิง)",
      "part": null,
      "days_in_use": 1
     }
@@ -84,6 +89,7 @@
      "pdf_page": 88,
      "evidence_quote": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือด ไม่ควรรับประทาน",
      "verified": false,
+     "message_en": "Ginger (ขิง): People who are taking anticoagulant medicines should not take it.",
      "drug_class": "anticoagulant",
      "flag_id": "f1"
     }
@@ -101,6 +107,8 @@
      "flag_ids": [
       "f1"
      ],
+     "label_en": "Bleeding risk",
+     "message_en": "2 item(s) related to \"Bleeding risk\": Anticoagulants (blood thinners), Ginger (ขิง) (summarised by the system; see each warning for details)",
      "message_th": "พบ 2 รายการที่เกี่ยวกับ \"เสี่ยงเลือดออก\": ยาต้านการแข็งตัวของเลือด, ขิง (ระบบสรุปรวมให้ ดูรายละเอียดในคำเตือนแต่ละใบ)"
     }
    ],
@@ -125,9 +133,18 @@
     "อาการผิดปกติที่เกิดขึ้นหลังใช้",
     "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่"
    ],
+   "follow_up_questions_en": [
+    "Dose and how often you take it",
+    "How long you have taken it",
+    "Any unusual symptoms since you started",
+    "Whether follow-up checks are being done as your doctor or pharmacist advised"
+   ],
+   "headline_en": "1 warning(s) found in this database",
    "headline_th": "พบคำเตือน 1 รายการจากฐานข้อมูลนี้",
    "draft_notice_th": "ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (สถานะ: ร่าง)",
-   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+   "draft_notice_en": "Some items have not been reviewed by experts yet (status: draft)",
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม",
+   "disclaimer_en": "This tool supports decision-making. It is not a diagnosis or a prescription. No warning does not mean a combination is suitable to use."
   }
  }
 }

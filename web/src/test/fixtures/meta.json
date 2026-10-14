@@ -3,6 +3,7 @@
   {
    "id": "garlic",
    "name_th": "กระเทียม",
+   "name_en": "Garlic (กระเทียม)",
    "parts": [
     "หัว"
    ]
@@ -10,6 +11,7 @@
   {
    "id": "khing",
    "name_th": "ขิง",
+   "name_en": "Ginger (ขิง)",
    "parts": [
     "เหง้า"
    ]
@@ -17,6 +19,7 @@
   {
    "id": "khilek",
    "name_th": "ขี้เหล็ก",
+   "name_en": "Khi lek / cassod tree (ขี้เหล็ก)",
    "parts": [
     "ใบ",
     "เรือนช่อดอก"
@@ -25,6 +28,7 @@
   {
    "id": "makham",
    "name_th": "มะขาม",
+   "name_en": "Tamarind (มะขาม)",
    "parts": [
     "เนื้อในฝักแก่"
    ]
@@ -32,6 +36,7 @@
   {
    "id": "rangchuet",
    "name_th": "รางจืด",
+   "name_en": "Rang chuet / laurel clock vine (รางจืด)",
    "parts": [
     "ใบ (เพสลาด)"
    ]
@@ -39,6 +44,7 @@
   {
    "id": "chumhet_thet",
    "name_th": "ชุมเห็ดเทศ",
+   "name_en": "Ringworm bush / candle bush (ชุมเห็ดเทศ)",
    "parts": [
     "ดอก",
     "ใบ"
@@ -47,6 +53,7 @@
   {
    "id": "krachai",
    "name_th": "กระชาย",
+   "name_en": "Fingerroot (กระชาย)",
    "parts": [
     "ราก",
     "เหง้า"
@@ -55,6 +62,7 @@
   {
    "id": "kluai_namwa",
    "name_th": "กล้วยน้ำว้า",
+   "name_en": "Namwa banana (กล้วยน้ำว้า)",
    "parts": [
     "ผลแก่จัด (ที่ปอกเปลือกออกแล้ว)"
    ]
@@ -62,6 +70,7 @@
   {
    "id": "khamin_chan",
    "name_th": "ขมิ้นชัน",
+   "name_en": "Turmeric (ขมิ้นชัน)",
    "parts": [
     "เหง้า"
    ]
@@ -69,6 +78,7 @@
   {
    "id": "khun",
    "name_th": "คูน",
+   "name_en": "Golden shower tree / cassia fistula (คูน)",
    "parts": [
     "เนื้อในฝักแก่"
    ]
@@ -76,6 +86,7 @@
   {
    "id": "thao_wan_priang",
    "name_th": "เถาวัลย์เปรียง",
+   "name_en": "Thao wan priang / Derris scandens (เถาวัลย์เปรียง)",
    "parts": [
     "เถา"
    ]
@@ -83,6 +94,7 @@
   {
    "id": "thapthim",
    "name_th": "ทับทิม",
+   "name_en": "Pomegranate (ทับทิม)",
    "parts": [
     "เปลือกผล"
    ]
@@ -90,6 +102,7 @@
   {
    "id": "bua_bok",
    "name_th": "บัวบก",
+   "name_en": "Gotu kola / Centella (บัวบก)",
    "parts": [
     "ทั้งต้น"
    ]
@@ -97,6 +110,7 @@
   {
    "id": "phaya_yo",
    "name_th": "พญายอ",
+   "name_en": "Phaya yo / Clinacanthus nutans (พญายอ)",
    "parts": [
     "ใบ"
    ]
@@ -104,6 +118,7 @@
   {
    "id": "phlu_khao",
    "name_th": "พลูคาว",
+   "name_en": "Lizard tail / Houttuynia cordata (พลูคาว)",
    "parts": [
     "ใบ",
     "ทั้งต้น"
@@ -112,6 +127,7 @@
   {
    "id": "phlai",
    "name_th": "ไพล",
+   "name_en": "Plai (ไพล)",
    "parts": [
     "เหง้า"
    ]
@@ -119,6 +135,7 @@
   {
    "id": "fak_thong",
    "name_th": "ฟักทอง",
+   "name_en": "Pumpkin (ฟักทอง)",
    "parts": [
     "เมล็ดแก่"
    ]
@@ -126,6 +143,7 @@
   {
    "id": "fa_thalai_jone",
    "name_th": "ฟ้าทะลายโจร",
+   "name_en": "Andrographis / fa thalai chon (ฟ้าทะลายโจร)",
    "parts": [
     "ใบและทั้งต้น"
    ]
@@ -133,6 +151,7 @@
   {
    "id": "makham_pom",
    "name_th": "มะขามป้อม",
+   "name_en": "Amla / Indian gooseberry (มะขามป้อม)",
    "parts": [
     "ผลแก่สด"
    ]
@@ -140,6 +159,7 @@
   {
    "id": "mara_khi_nok",
    "name_th": "มะระขี้นก",
+   "name_en": "Bitter melon (มะระขี้นก)",
    "parts": [
     "ผลอ่อน"
    ]
@@ -147,6 +167,7 @@
   {
    "id": "maweang_khruea",
    "name_th": "มะแว้งเครือ",
+   "name_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ)",
    "parts": [
     "ผลแก่จัด"
    ]
@@ -156,7 +177,9 @@
   {
    "id": "blood_tonic_women",
    "name_th": "ตำรับยาบำรุงโลหิต",
-   "note_th": "ใช้เมื่อผลิตภัณฑ์ที่คุณใช้เป็นตำรับยาบำรุงโลหิตตามแนวทางของกรมฯ ซึ่งมีกลุ่มตัวยารสร้อนเป็นส่วนประกอบที่จำเป็น"
+   "name_en": "Blood tonic formula (ตำรับยาบำรุงโลหิต)",
+   "note_th": "ใช้เมื่อผลิตภัณฑ์ที่คุณใช้เป็นตำรับยาบำรุงโลหิตตามแนวทางของกรมฯ ซึ่งมีกลุ่มตัวยารสร้อนเป็นส่วนประกอบที่จำเป็น",
+   "note_en": "For use when the product you take is a blood tonic formula according to the department's guidelines, which has the hot-taste group of ingredients as an essential component."
   }
  ],
  "drugs": [
@@ -202,12 +225,47 @@
   "allergy_to_ingredient": "มีประวัติแพ้ตัวยาในตำรับที่เลือก",
   "pollen_allergy": "แพ้ละอองเกสรดอกไม้"
  },
+ "conditions_en": {
+  "allergy_to_herb": "History of allergy to the selected herb",
+  "eye_inflammation": "Swollen or inflamed eyes",
+  "liver_disease": "Liver disease",
+  "peptic_ulcer": "Peptic ulcer disease / gastrointestinal ulcer",
+  "suspected_dengue": "Suspected dengue fever",
+  "gi_obstruction": "Gastrointestinal obstruction",
+  "diarrhea_or_abdominal_symptoms": "Diarrhea, loose stools, abdominal pain, nausea, vomiting",
+  "bleeding_disorder": "Blood clotting disorder",
+  "gallstones": "Gallstones",
+  "surgery_planned": "Planning surgery or a dental procedure",
+  "diabetes": "Diabetes",
+  "long_term_medication": "Need to take medicines long-term",
+  "inflammatory_bowel_disease": "Inflammatory bowel disease",
+  "constipation": "Constipation",
+  "diarrhea": "Diarrhea",
+  "easy_diarrhea": "Gets diarrhea easily",
+  "biliary_obstruction": "Bile duct obstruction",
+  "asthma": "Asthma",
+  "hypertension": "High blood pressure",
+  "hypotension": "Low blood pressure",
+  "hyperlipidemia": "High blood lipids",
+  "allergy_to_apiaceae": "Allergy to plants in the celery family (such as coriander, cumin)",
+  "peanut_hazelnut_allergy": "Allergy to peanuts or hazelnuts",
+  "frail_body": "Weak body",
+  "uncontrolled_diabetes": "Diabetes with uncontrolled blood sugar",
+  "strep_group_a_sore_throat": "Sore throat from Group A Streptococcus",
+  "post_strep_nephritis": "History of kidney inflammation from Group A Streptococcus",
+  "rheumatic_heart_disease": "Rheumatic heart disease",
+  "severe_bacterial_throat_infection": "Severe bacterial sore throat (pus spots, high fever, chills)",
+  "fever": "Fever",
+  "allergy_to_ingredient": "History of allergy to an ingredient in the selected formula",
+  "pollen_allergy": "Flower pollen allergy"
+ },
  "coverage": {
   "herbs_in_db": 21,
   "herbs_in_book": 50,
   "drug_classes_in_db": 7
  },
  "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม",
+ "disclaimer_en": "This tool supports decision-making. It is not a diagnosis or a prescription. No warning does not mean a combination is suitable to use.",
  "chat_followups_th": [
   "ทำไมถึงขึ้นคำเตือน",
   "ควรถามเภสัชกรว่าอะไร"

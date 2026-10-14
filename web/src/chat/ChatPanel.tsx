@@ -7,22 +7,23 @@ import { buildPayload } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Meta } from "../types";
 import { toMsg, type ChatMsg, type ChatStore } from "./chatStore";
+import { t, tMap } from "../i18n";
 
 // ข้อความตายตัว
-const NOTICE = "ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้ก่อน ถ้าไม่มีจะค้นเว็บภายนอกพร้อมแหล่งอ้างอิง · ห้ามพิมพ์ข้อมูลส่วนตัว";
+const notice = () => t("ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้ก่อน ถ้าไม่มีจะค้นเว็บภายนอกพร้อมแหล่งอ้างอิง · ห้ามพิมพ์ข้อมูลส่วนตัว", "Not a diagnosis · data is a draft · answers come from this tool's database first, and if it has none, from an outside web search with sources · do not type personal information");
 // หน้าใหม่ตรวจซ้ำอัตโนมัติ (ไม่มีปุ่ม ตรวจ) จึงไม่ใช้ถ้อยคำเดิม "กดตรวจใหม่"
-const STALE_LINE = "ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล ถามอีกครั้งเมื่อผลใหม่ขึ้น จะได้คำตอบที่ตรงกับข้อมูลล่าสุด";
-const CHANGED = "ผลตรวจเปลี่ยนแล้ว คำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน";
-const SRC_LABEL: Record<string, string> = {
-  database: "ข้อความจากฐานข้อมูล", web: "ค้นจากเว็บภายนอก (ทีมยังไม่ได้ตรวจ)", llm: "AI เรียบเรียงจากข้อความที่ค้นได้", refusal: "ตอบไม่ได้ / ไม่มีข้อมูล", emergency: "ข้อควรทราบเร่งด่วน",
-};
-const FIXED = new ApiError("server").thaiMessage;
+const staleLine = () => t("ผลตรวจกำลังอัปเดตหลังคุณแก้ข้อมูล ถามอีกครั้งเมื่อผลใหม่ขึ้น จะได้คำตอบที่ตรงกับข้อมูลล่าสุด", "The result is updating after your edit. Ask again once the new result shows, so the answer matches your latest data.");
+const changed = () => t("ผลตรวจเปลี่ยนแล้ว คำตอบก่อนหน้าอาจไม่ตรงกับข้อมูลปัจจุบัน", "The result has changed. Earlier answers may not match your current data any more.");
+const SRC_LABEL: Record<string, string> = tMap<string>(
+  { database: "ข้อความจากฐานข้อมูล", web: "ค้นจากเว็บภายนอก (ทีมยังไม่ได้ตรวจ)", llm: "AI เรียบเรียงจากข้อความที่ค้นได้", refusal: "ตอบไม่ได้ / ไม่มีข้อมูล", emergency: "ข้อควรทราบเร่งด่วน" },
+  { database: "Text from the database", web: "From an outside web search (not checked by the team)", llm: "Reworded by the AI from the text it found", refusal: "Cannot answer / no information", emergency: "Urgent safety note" },
+);
 
 /** ข้อความไทยตายตัว ไม่แสดงรหัสภายใน: ใช้ข้อความเซิร์ฟเวอร์เฉพาะ 400/503 ที่เป็นภาษาไทย (ApiError กรองแล้ว) */
 function errText(e: unknown): string {
-  if (e instanceof ApiError && (e.kind === "bad_request" || e.kind === "unavailable") && e.thaiMessage !== FIXED) return e.thaiMessage;
-  if (e instanceof ApiError && e.kind === "bad_request") return "คำถามหรือข้อมูลไม่ถูกต้อง";
-  return "เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง";
+  if (e instanceof ApiError && (e.kind === "bad_request" || e.kind === "unavailable") && e.thaiMessage !== new ApiError("server").thaiMessage) return e.thaiMessage;
+  if (e instanceof ApiError && e.kind === "bad_request") return t("คำถามหรือข้อมูลไม่ถูกต้อง", "The question or data is not valid");
+  return t("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง", "Couldn't connect. Try again.");
 }
 
 export function Msg({ m }: { m: ChatMsg }) {
@@ -30,18 +31,18 @@ export function Msg({ m }: { m: ChatMsg }) {
   const em = m.src === "emergency";
   return (
     <div class={em ? "cmsg a emerg" : "cmsg a"} role={em ? "alert" : undefined}>
-      <span class="src">{SRC_LABEL[m.src] ?? "ผู้ช่วย AI"}</span>
+      <span class="src">{SRC_LABEL[m.src] ?? t("ผู้ช่วย AI", "AI assistant")}</span>
       {m.t}
-      {m.old && <span class="stl">{STALE_LINE}</span>}
+      {m.old && <span class="stl">{staleLine()}</span>}
       {m.web && m.web.length > 0 && (
         <span class="web-sources">
-          แหล่งอ้างอิง:{" "}
+          {t("แหล่งอ้างอิง:", "Sources:")}{" "}
           {m.web.map((w, i) => <a key={i} href={w.url} target="_blank" rel="noopener noreferrer nofollow">{w.title}</a>)}
         </span>
       )}
       {m.cites.filter((c) => c.evidence_quote).slice(0, 6).map((c, i) => (
-        <Evidence key={i} summary={`ดูหลักฐาน: ${c.herb_name_th}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={c.source_doc_th}>
-          <p class="meta">{`รหัสรายการ ${c.item_id} · ${c.verified ? "ตรวจแล้ว" : "ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ"}`}</p>
+        <Evidence key={i} summary={`${t("ดูหลักฐาน", "See the evidence")}: ${c.herb_name_th}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={c.source_doc_th}>
+          <p class="meta">{`${t("รหัสรายการ", "Item code")} ${c.item_id} · ${c.verified ? t("ตรวจแล้ว", "Checked") : t("ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ", "Draft: not yet reviewed by experts")}`}</p>
         </Evidence>
       ))}
     </div>
@@ -75,7 +76,7 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
   // undefined = ประวัติจากการเปิดหน้าครั้งก่อน (ผลตรวจที่คุยกันไม่อยู่แล้ว)
   const seen = useRef<string | null | undefined>(chat.msgs.length ? undefined : key);
   useEffect(() => {
-    if (seen.current !== key) chat.note(CHANGED);
+    if (seen.current !== key) chat.note(changed());
     seen.current = key;
   }, [key]);
 
@@ -113,7 +114,7 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
         if (Array.isArray(a.follow_ups)) setChips(a.follow_ups.filter((x) => typeof x === "string").slice(0, 3));
       } catch (e) {
         if (cg !== chat.gen) return;
-        chat.add({ r: "e", t: `ถามไม่สำเร็จ: ${errText(e)}` });
+        chat.add({ r: "e", t: `${t("ถามไม่สำเร็จ", "Couldn't ask")}: ${errText(e)}` });
       } finally {
         setWaitGen(null);
         input.current?.focus();
@@ -124,38 +125,38 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
   const clear = () => {
     chat.clear();
     setChips(meta.chat_followups_th.slice(0, 3));
-    setStatus("ล้างประวัติแชตแล้ว");
+    setStatus(t("ล้างประวัติแชตแล้ว", "Chat history cleared"));
     input.current?.focus();
   };
   const waiting = waitGen !== null && waitGen === chat.gen;
 
   return (
-    <section id="chatPanel" role="dialog" aria-label="ผู้ช่วย AI (ต้นแบบ)" hidden={!open}
+    <section id="chatPanel" role="dialog" aria-label={t("ผู้ช่วย AI (ต้นแบบ)", "AI assistant (prototype)")} hidden={!open}
       onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); onClose(); } }}>
       <header>
-        <h2>ผู้ช่วย AI (ต้นแบบ)</h2>
+        <h2>{t("ผู้ช่วย AI (ต้นแบบ)", "AI assistant (prototype)")}</h2>
         <span class="row-actions">
-          <button type="button" aria-label="ล้างประวัติแชต" onClick={clear}>ล้างประวัติ</button>
-          <button type="button" aria-label="ปิดผู้ช่วย AI" onClick={onClose}>ปิด</button>
+          <button type="button" aria-label={t("ล้างประวัติแชต", "Clear chat history")} onClick={clear}>{t("ล้างประวัติ", "Clear chat")}</button>
+          <button type="button" aria-label={t("ปิดผู้ช่วย AI", "Close AI assistant")} onClick={onClose}>{t("ปิด", "Close")}</button>
         </span>
       </header>
       <p class="chat-notice">
-        {NOTICE} <ScopeChip coverage={meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
+        {notice()} <ScopeChip coverage={meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
       </p>
-      <div ref={log} class="chat-log" role="log" aria-live="polite" aria-label="บทสนทนา" aria-busy={waiting}>
+      <div ref={log} class="chat-log" role="log" aria-live="polite" aria-label={t("บทสนทนา", "Conversation")} aria-busy={waiting}>
         {chat.msgs.map((m, i) => <Msg key={i} m={m} />)}
-        {waiting && <div class="cmsg a wait">กำลังค้นข้อมูล…</div>}
+        {waiting && <div class="cmsg a wait">{t("กำลังค้นข้อมูล…", "Looking it up…")}</div>}
       </div>
       {chips.length > 0 && (
-        <div class="chat-chips" role="group" aria-label="คำถามแนะนำ">
+        <div class="chat-chips" role="group" aria-label={t("คำถามแนะนำ", "Suggested questions")}>
           {chips.map((c) => <button key={c} type="button" onClick={() => send(c)}>{c}</button>)}
         </div>
       )}
       <form class="chat-form" noValidate onSubmit={(e) => { e.preventDefault(); send(text); }}>
-        <label for="chatInput" class="sr-only">พิมพ์คำถามถึงผู้ช่วย AI</label>
-        <input ref={input} type="text" id="chatInput" maxLength={300} placeholder="ถามต่อจากผลตรวจ…" autoComplete="off"
+        <label for="chatInput" class="sr-only">{t("พิมพ์คำถามถึงผู้ช่วย AI", "Type a question for the AI assistant")}</label>
+        <input ref={input} type="text" id="chatInput" maxLength={300} placeholder={t("ถามต่อจากผลตรวจ…", "Ask a follow-up about the result…")} autoComplete="off"
           value={text} onInput={(e) => setText(e.currentTarget.value)} />
-        <button type="submit" class="primary" aria-label="ส่งคำถาม" aria-disabled={b.busy}>ส่ง</button>
+        <button type="submit" class="primary" aria-label={t("ส่งคำถาม", "Send question")} aria-disabled={b.busy}>{t("ส่ง", "Send")}</button>
       </form>
       <p class="sr-only" role="status">{status}</p>
     </section>

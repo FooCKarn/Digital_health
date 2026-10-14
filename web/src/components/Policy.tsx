@@ -40,7 +40,7 @@ export function Policy() {
       <ul>
         <li>{t("ใช้เป็นข้อมูลประกอบตอนคุยกับเภสัชกรหรือแพทย์ ไม่ใช้แทนคำแนะนำของผู้ประกอบวิชาชีพ คุณเป็นคนตัดสินใจเองว่าจะใช้ยาหรือสมุนไพรอย่างไร", "Use it as supporting information when talking to a pharmacist or doctor, not in place of a professional's advice. You decide for yourself how to use medicines or herbs.")}</li>
         <li>{t("ทีมไม่รับประกันว่าข้อมูลครบ ถูกต้อง หรือทันสมัย ผลตรวจอาจผิดพลาดได้", "The team does not guarantee that the data is complete, correct or up to date. Results may be wrong.")}</li>
-        <li>{t("ตอนนี้ยังเป็นต้นแบบ ขอให้กรอกข้อมูลสมมติ ถ้าคุณเลือกกรอกข้อมูลจริงของตัวเอง ข้อมูลจะถูกจัดการตามข้อ 3 และคุณรับผิดชอบการตัดสินใจนั้นเอง อย่ากรอกข้อมูลของคนอื่นโดยไม่ได้รับอนุญาต", "This is still a prototype, so please enter made-up data. If you choose to enter your own real data, it is handled as described in section 3 and you are responsible for that decision. Do not enter other people's data without permission.")}</li>
+        <li>{t("ตอนนี้ยังเป็นต้นแบบ ขอให้กรอกข้อมูลสมมติ ถ้าคุณเลือกกรอกข้อมูลจริงของตัวเอง ข้อมูลจะถูกจัดการตามข้อ 3 และคุณรับผิดชอบการตัดสินใจนั้นเอง อย่ากรอกข้อมูลของคนอื่นโดยไม่ได้รับอนุญาต", "This is still a prototype, so enter made-up data only. If you choose to enter your own real data, it is handled as described in section 3 and you are responsible for that decision. Do not enter other people's data without permission.")}</li>
         <li>{t("ทีมอาจแก้หรือหยุดให้บริการต้นแบบนี้เมื่อไรก็ได้", "The team may change or stop this prototype at any time.")}</li>
       </ul>
 

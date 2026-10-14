@@ -11,6 +11,7 @@ import { Glossary } from "./Glossary";
 import { PharmacistSummary } from "./PharmacistSummary";
 import { ProfileForm } from "./ProfileForm";
 import { t } from "../i18n";
+import { conditionLabels, entryName } from "../texts";
 
 type Msg = { ok: boolean; text: string } | null;
 
@@ -30,7 +31,7 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
     else if (wasConfirming.current) delBtn.current?.focus();
     wasConfirming.current = confirming;
   }, [confirming]);
-  const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? meta.formulas?.find((f) => f.id === id)?.name_th ?? id;
+  const herbName = (id: string) => entryName(meta, id);
   const flags = a.current && a.result ? a.result.flags : [];
 
   const importFile = async (input: HTMLInputElement) => {
@@ -40,7 +41,7 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
     const fail = (m: string) => setMsg({ ok: false, text: t(`นำเข้าไม่สำเร็จ: ${m} (ข้อมูลเดิมไม่เปลี่ยน)`, `Import failed: ${m} (your existing data is unchanged)`) });
     if (f.size > MAX_IMPORT_BYTES) return fail(t("ไฟล์ใหญ่เกิน 256 KB", "The file is larger than 256 KB"));
     let text: string;
-    try { text = await f.text(); } catch { return fail(t("อ่านไฟล์ไม่ได้", "The file could not be read")); }
+    try { text = await f.text(); } catch { return fail(t("อ่านไฟล์ไม่ได้", "Couldn't read the file")); }
     const p = store.state.profile;
     const hasData = store.state.items.length > 0 || p.age !== null || p.pregnant !== null || p.breastfeeding !== null || p.conditions.length > 0;
     if (hasData && !confirm(t("นำเข้าแล้วข้อมูลเดิมจะถูกแทนที่ทั้งหมด ทำต่อไหม", "Importing will replace all of your existing data. Continue?"))) return;
@@ -71,7 +72,7 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
         <p class="meta">{t("กรอกเท่าที่จำเป็นต่อการตรวจ ห้ามใส่ชื่อจริง เลขประจำตัว หรือข้อมูลที่ระบุตัวตนได้", "Enter only what is needed for the check. Do not enter your real name, ID number or anything that identifies you.")}</p>
       </div>
       <div class="noprint">
-        <ProfileForm key={formKey} store={store} conditions={meta.conditions} />
+        <ProfileForm key={formKey} store={store} conditions={conditionLabels(meta)} />
       </div>
 
       <PharmacistSummary analysis={a} meta={meta} profile={store.state.profile} />

@@ -7,7 +7,7 @@ import type { TrackerStore } from "../model/tracker";
 import type { Explanation } from "../types";
 import { t, tMap } from "../i18n";
 
-const fixed = () => t("ตอนนี้ใช้ AI ไม่ได้ ข้อความคำเตือนด้านบนยังอ่านได้เหมือนเดิม", "The AI is not available right now. The warnings above can still be read as before.");
+const fixed = () => t("ตอนนี้ใช้ AI ไม่ได้ ข้อความคำเตือนด้านบนยังอ่านได้เหมือนเดิม", "The AI isn't available right now. The warnings above still work as before.");
 const LABEL = tMap<string>(
   { llm: "AI เรียบเรียงจากผลตรวจนี้ (ผ่านตัวตรวจข้อความแล้ว)", template: "ข้อความสำรองจากฐานข้อมูล (AI ไม่ได้ใช้หรือข้อความไม่ผ่านการตรวจ)" },
   { llm: "Reworded by the AI from this result (passed the text checker)", template: "Fallback text from the database (the AI was not used, or its text did not pass the checker)" },

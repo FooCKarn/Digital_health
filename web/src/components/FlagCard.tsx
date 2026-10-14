@@ -5,7 +5,7 @@ import { NEXT_STEP, RULE_PLAIN, TIER_PLAIN } from "../texts";
 import { isKnownSeverity } from "../model/panel";
 import type { Aggregate, Flag } from "../types";
 import { SeverityBadge } from "./SeverityBadge";
-import { t } from "../i18n";
+import { pick, t } from "../i18n";
 
 // severity ที่ไม่รู้จักแสดงตามที่ engine ส่งมา ไม่แปลงเป็นระดับอื่น
 function Sev({ severity, prefix = "" }: { severity: string; prefix?: string }) {
@@ -19,7 +19,7 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
   return (
     <li class="flag-card" data-sev={f.severity}>
       <Sev severity={f.severity} />
-      <p class="msg">{f.message_th}</p>
+      <p class="msg">{pick(f.message_th, f.message_en)}</p>
       {NEXT_STEP[f.severity] && <p class="next-step">{NEXT_STEP[f.severity]}</p>}
       <p class="ev"><span class={f.verified ? "chip" : "chip draft"}>{f.verified ? t("ตรวจแล้ว", "Checked") : t("ยังรอผู้เชี่ยวชาญตรวจ (ใช้สาธิต)", "Awaiting expert review (demo only)")}</span></p>
       <details class="src">
@@ -30,7 +30,7 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
           <span class="chip">{RULE_PLAIN[f.rule_id] ? `${RULE_PLAIN[f.rule_id]} (${t("กฎ", "rule")} ${f.rule_id})` : `${t("กฎ", "Rule")} ${f.rule_id}`}</span>
         </p>
       </details>
-      {f.evidence_quote && <Evidence quote={f.evidence_quote} page={f.source_page} pdfPage={f.pdf_page} doc={f.source_doc_th} />}
+      {f.evidence_quote && <Evidence quote={f.evidence_quote} page={f.source_page} pdfPage={f.pdf_page} doc={pick(f.source_doc_th, f.source_doc_en)} />}
       {ask && (
         <button type="button" class="askflag noprint" aria-label={`${t("ถามเรื่องคำเตือนนี้", "Ask about this warning")}: ${ask.herbName(f.herb_id)}`} onClick={() => ask.ask(f)}>{t("ถามเรื่องคำเตือนนี้", "Ask about this warning")}</button>
       )}
@@ -58,8 +58,8 @@ export function Evidence({ summary = t("ดูหลักฐาน", "See the e
 export function AggCard({ agg: a }: { agg: Aggregate }) {
   return (
     <li class="flag-card" data-sev={a.severity}>
-      <Sev severity={a.severity} prefix={`${t("ภาระความเสี่ยงรวม", "Combined risk load")} (${a.label_th}) · `} />
-      <p class="msg">{a.message_th}</p>
+      <Sev severity={a.severity} prefix={`${t("ภาระความเสี่ยงรวม", "Combined risk load")} (${pick(a.label_th, a.label_en)}) · `} />
+      <p class="msg">{pick(a.message_th, a.message_en)}</p>
     </li>
   );
 }

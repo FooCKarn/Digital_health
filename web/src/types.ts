@@ -9,6 +9,7 @@ export interface Flag {
   mechanism_tag: string | null;
   herb_id: string;
   message_th: string;
+  message_en?: string;
   source_page: number | string;
   pdf_page: number | null;
   evidence_quote: string | null;
@@ -18,16 +19,19 @@ export interface Flag {
   group?: string;
   /** เอกสารต้นทางของหน้าที่อ้าง (มีเฉพาะคำเตือนของตำรับ คำเตือนสมุนไพรอ้างเล่ม TTM first เป็นค่าเริ่มต้น) */
   source_doc_th?: string;
+  source_doc_en?: string;
 }
 
 export interface Aggregate {
   mechanism_tag: string;
   label_th: string;
+  label_en?: string;
   sources: string[];
   count: number;
   severity: Severity;
   flag_ids: string[];
   message_th: string;
+  message_en?: string;
 }
 
 export interface Coverage {
@@ -44,10 +48,11 @@ export interface AnalyzeResult {
   pharmacist_review_required: boolean;
   coverage: Coverage;
   disclaimer_th: string;
+  disclaimer_en?: string;
 }
 
 export interface Summary {
-  herbs: { id: string; name_th: string | null; part: string | null; days_in_use: number | null }[];
+  herbs: { id: string; name_th: string | null; name_en?: string; part: string | null; days_in_use: number | null }[];
   drugs_as_entered: string[];
   flags: Flag[];
   aggregates: Aggregate[];
@@ -56,19 +61,25 @@ export interface Summary {
   not_checked: string[];
   coverage: Coverage;
   follow_up_questions_th: string[];
+  follow_up_questions_en?: string[];
   headline_th: string;
+  headline_en?: string;
   draft_notice_th: string | null;
+  draft_notice_en?: string | null;
   disclaimer_th: string;
+  disclaimer_en?: string;
 }
 
 export interface Meta {
-  herbs: { id: string; name_th: string; parts: string[] }[];
+  herbs: { id: string; name_th: string; name_en?: string; parts: string[] }[];
   /** ตำรับ (ไม่นับเป็นสมุนไพรในขอบเขต) */
-  formulas: { id: string; name_th: string; note_th: string }[];
+  formulas: { id: string; name_th: string; name_en?: string; note_th: string; note_en?: string }[];
   drugs: string[];
   conditions: Record<string, string>; // รหัส -> ชื่อไทย (data/conditions.json)
+  conditions_en?: Record<string, string>;
   coverage: { herbs_in_db: number; herbs_in_book: number; drug_classes_in_db: number };
   disclaimer_th: string;
+  disclaimer_en?: string;
   chat_followups_th: string[];
 }
 

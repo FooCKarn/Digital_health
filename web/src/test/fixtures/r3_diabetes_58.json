@@ -34,6 +34,7 @@
      "pdf_page": 180,
      "evidence_quote": "ผลมะแว้งเครือมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด จึงควรระวังในการใช้ในผู้ป่วยโรคเบาหวาน",
      "verified": false,
+     "message_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ): The fruit lowers blood sugar. Use with caution in people with diabetes.",
      "condition": "diabetes",
      "flag_id": "f1"
     },
@@ -48,6 +49,7 @@
      "pdf_page": 180,
      "evidence_quote": "ควรระวังการใช้มะแว้งเครือร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
      "verified": false,
+     "message_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ): Use with caution together with blood-sugar-lowering medicines in people with diabetes.",
      "drug_class": "antidiabetic",
      "flag_id": "f2"
     },
@@ -62,6 +64,7 @@
      "pdf_page": 191,
      "evidence_quote": "ใบรางจืดมีฤทธิ์ลดระดับน้ำตาลในเลือด จึงควรระวังการใช้ในผู้ป่วยโรคเบาหวาน",
      "verified": false,
+     "message_en": "Rang chuet / laurel clock vine (รางจืด): The leaves lower blood sugar. Use with caution in people with diabetes.",
      "condition": "diabetes",
      "flag_id": "f3"
     },
@@ -76,6 +79,7 @@
      "pdf_page": 192,
      "evidence_quote": "ควรระวังการใช้ใบรางจืดร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
      "verified": false,
+     "message_en": "Rang chuet / laurel clock vine (รางจืด): Use with caution together with blood-sugar-lowering medicines in people with diabetes.",
      "drug_class": "antidiabetic",
      "flag_id": "f4"
     }
@@ -97,6 +101,8 @@
       "f3",
       "f4"
      ],
+     "label_en": "Low blood sugar risk / effect on diabetes medicines",
+     "message_en": "3 item(s) related to \"Low blood sugar risk / effect on diabetes medicines\": Blood-sugar-lowering medicines, Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ), Rang chuet / laurel clock vine (รางจืด) (summarised by the system; see each warning for details)",
      "message_th": "พบ 3 รายการที่เกี่ยวกับ \"เสี่ยงน้ำตาลในเลือดต่ำ/ผลต่อยาเบาหวาน\": ยาลดน้ำตาลในเลือด, มะแว้งเครือ, รางจืด (ระบบสรุปรวมให้ ดูรายละเอียดในคำเตือนแต่ละใบ)"
     }
    ],
@@ -108,19 +114,22 @@
     "unknown_inputs": [],
     "not_checked": []
    },
-   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม",
+   "disclaimer_en": "This tool supports decision-making. It is not a diagnosis or a prescription. No warning does not mean a combination is suitable to use."
   },
   "summary": {
    "herbs": [
     {
      "id": "rangchuet",
      "name_th": "รางจืด",
+     "name_en": "Rang chuet / laurel clock vine (รางจืด)",
      "part": null,
      "days_in_use": 1
     },
     {
      "id": "maweang_khruea",
      "name_th": "มะแว้งเครือ",
+     "name_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ)",
      "part": null,
      "days_in_use": 1
     }
@@ -140,6 +149,7 @@
      "pdf_page": 180,
      "evidence_quote": "ผลมะแว้งเครือมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด จึงควรระวังในการใช้ในผู้ป่วยโรคเบาหวาน",
      "verified": false,
+     "message_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ): The fruit lowers blood sugar. Use with caution in people with diabetes.",
      "condition": "diabetes",
      "flag_id": "f1"
     },
@@ -154,6 +164,7 @@
      "pdf_page": 180,
      "evidence_quote": "ควรระวังการใช้มะแว้งเครือร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
      "verified": false,
+     "message_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ): Use with caution together with blood-sugar-lowering medicines in people with diabetes.",
      "drug_class": "antidiabetic",
      "flag_id": "f2"
     },
@@ -168,6 +179,7 @@
      "pdf_page": 191,
      "evidence_quote": "ใบรางจืดมีฤทธิ์ลดระดับน้ำตาลในเลือด จึงควรระวังการใช้ในผู้ป่วยโรคเบาหวาน",
      "verified": false,
+     "message_en": "Rang chuet / laurel clock vine (รางจืด): The leaves lower blood sugar. Use with caution in people with diabetes.",
      "condition": "diabetes",
      "flag_id": "f3"
     },
@@ -182,6 +194,7 @@
      "pdf_page": 192,
      "evidence_quote": "ควรระวังการใช้ใบรางจืดร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
      "verified": false,
+     "message_en": "Rang chuet / laurel clock vine (รางจืด): Use with caution together with blood-sugar-lowering medicines in people with diabetes.",
      "drug_class": "antidiabetic",
      "flag_id": "f4"
     }
@@ -203,6 +216,8 @@
       "f3",
       "f4"
      ],
+     "label_en": "Low blood sugar risk / effect on diabetes medicines",
+     "message_en": "3 item(s) related to \"Low blood sugar risk / effect on diabetes medicines\": Blood-sugar-lowering medicines, Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ), Rang chuet / laurel clock vine (รางจืด) (summarised by the system; see each warning for details)",
      "message_th": "พบ 3 รายการที่เกี่ยวกับ \"เสี่ยงน้ำตาลในเลือดต่ำ/ผลต่อยาเบาหวาน\": ยาลดน้ำตาลในเลือด, มะแว้งเครือ, รางจืด (ระบบสรุปรวมให้ ดูรายละเอียดในคำเตือนแต่ละใบ)"
     }
    ],
@@ -221,9 +236,18 @@
     "อาการผิดปกติที่เกิดขึ้นหลังใช้",
     "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่"
    ],
+   "follow_up_questions_en": [
+    "Dose and how often you take it",
+    "How long you have taken it",
+    "Any unusual symptoms since you started",
+    "Whether follow-up checks are being done as your doctor or pharmacist advised"
+   ],
+   "headline_en": "4 warning(s) found in this database",
    "headline_th": "พบคำเตือน 4 รายการจากฐานข้อมูลนี้",
    "draft_notice_th": "ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (สถานะ: ร่าง)",
-   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+   "draft_notice_en": "Some items have not been reviewed by experts yet (status: draft)",
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม",
+   "disclaimer_en": "This tool supports decision-making. It is not a diagnosis or a prescription. No warning does not mean a combination is suitable to use."
   }
  }
 }

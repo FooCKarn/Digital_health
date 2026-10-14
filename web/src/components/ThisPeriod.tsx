@@ -14,7 +14,7 @@ import { Disclaimer } from "./Disclaimer";
 import { AggCard, FlagCard } from "./FlagCard";
 import { ScopeChip } from "./ScopeChip";
 import { GROUP_TITLE, SummaryStrip } from "./SummaryStrip";
-import { t } from "../i18n";
+import { pick, t } from "../i18n";
 
 const noHerbs = () => t("ยังไม่มีสมุนไพรให้ตรวจ", "No herbs to check yet");
 const stale = () => t("ผลก่อนแก้ไข (ยังไม่ได้ตรวจรายการล่าสุด)", "Results from before your edit (the latest items have not been checked yet)");
@@ -43,7 +43,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
   const badConds = unknownConditions(store.state.profile, known);
   const items = store.active();
   const takenToday = diary ? items.filter((i) => diary.isTaken(i.id, today)).length : 0;
-  const announce = a.status === "idle" ? noHerbs() : a.current && s ? (none ? noFlag() : s.headline_th) : "";
+  const announce = a.status === "idle" ? noHerbs() : a.current && s ? (none ? noFlag() : pick(s.headline_th, s.headline_en)) : "";
 
   return (
     <section class="this-period">
@@ -73,7 +73,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
       {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(t(`เพิ่ม ${l.join(", ")} แล้ว`, `Added ${l.join(", ")}`))} />}
       <div class="scope">
         <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
-        <Disclaimer text={meta.disclaimer_th} />
+        <Disclaimer text={pick(meta.disclaimer_th, meta.disclaimer_en)} />
       </div>
 
       {a.status === "idle" && <p class="status-line">{noHerbs()}</p>}
@@ -88,13 +88,13 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
       {r && s && groups && (
         <section class="result" aria-busy={a.status === "loading"}>
           {/* ผลที่ไม่ตรงกับข้อมูลปัจจุบันห้ามใช้หัวข้อ "ไม่พบคำเตือน" หรือหัวข้อผล */}
-          {a.current ? <h2>{none ? noFlag() : s.headline_th}</h2> : <h2 class="stale-line">{stale()}</h2>}
+          {a.current ? <h2>{none ? noFlag() : pick(s.headline_th, s.headline_en)}</h2> : <h2 class="stale-line">{stale()}</h2>}
           {!a.current && a.status === "loading" && <p class="status-line">{t("กำลังตรวจ…", "Checking…")}</p>}
           {a.current && none && <p class="nonote">{noFlagNote()}</p>}
           {groups.avoid.length > 0 && (
             <div class="banner-avoid">{t(`มี ${groups.avoid.length} รายการที่${GROUP_TITLE.avoid} อ่านรายละเอียดและถามเภสัชกรก่อนใช้`, `${groups.avoid.length} ${groups.avoid.length === 1 ? "item is" : "items are"} marked “${GROUP_TITLE.avoid}”. Read the details and ask a pharmacist before use.`)}</div>
           )}
-          {s.draft_notice_th && <p class="warn">{s.draft_notice_th}</p>}
+          {s.draft_notice_th && <p class="warn">{pick(s.draft_notice_th, s.draft_notice_en)}</p>}
           {r.pharmacist_review_required && <p class="warn">{pharmacist()}</p>}
           {!none && <SummaryStrip groups={groups} />}
           {(Object.keys(GROUP_TITLE) as (keyof PanelGroups)[]).map((k) => {
@@ -111,7 +111,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
             );
           })}
           {r.coverage.unknown_inputs.length > 0 && (
-            <p class="warn">{t(`ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล: ${r.coverage.unknown_inputs.join(", ")} · ไม่ได้เดาให้ ลองถามเภสัชกร`, `Not checked because not in the database: ${r.coverage.unknown_inputs.join(", ")} · We did not guess. Please ask a pharmacist.`)}</p>
+            <p class="warn">{t(`ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล: ${r.coverage.unknown_inputs.join(", ")} · ไม่ได้เดาให้ ลองถามเภสัชกร`, `Not checked, because it isn't in the database: ${r.coverage.unknown_inputs.join(", ")} · We didn't guess. Ask a pharmacist.`)}</p>
           )}
           {r.coverage.not_checked.length > 0 && (
             <p class="warn">{`${t("ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก)", "Conditions not checked (left blank)")}: ${notCheckedLabels(r, NOT_CHECKED).join(", ")}`}</p>

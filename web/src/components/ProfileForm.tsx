@@ -95,7 +95,7 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
               </label>
             ))}
           </div>
-          {needle !== "" && all.every(([, n]) => !n.toLowerCase().includes(needle)) && <p class="meta">{t("ไม่พบรายการที่ตรงกับคำค้น", "Nothing matches your search")}</p>}
+          {needle !== "" && all.every(([, n]) => !n.toLowerCase().includes(needle)) && <p class="meta">{t("ไม่พบรายการที่ตรงกับคำค้น", "No matches for your search")}</p>}
         </details>
         {unknown.length > 0 && <p class="warn">{`${t("ระบบไม่รู้จัก (ไม่ได้ตรวจ และจะถูกนำออกเมื่อบันทึก)", "Not recognised (not checked, and removed when you save)")}: ${unknown.join(", ")}`}</p>}
       </fieldset>
