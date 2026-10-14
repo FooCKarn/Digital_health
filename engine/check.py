@@ -4,6 +4,8 @@
 ทำแล้ว: R1, R2 ชั้น A, R3, R4 (ใบสรุปอยู่ที่ summary.py) ยังไม่ทำ: R2 ชั้น C (ยังไม่มี effect_groups.json), R5, R6
 """
 
+from translate import en
+
 # profile key -> รหัส condition ในข้อมูลสมุนไพร (ที่เหลือใช้รหัสจาก profile.conditions ตรง ๆ)
 PROFILE_FLAGS = {"pregnancy": "pregnant", "breastfeeding": "breastfeeding"}
 
@@ -22,7 +24,13 @@ def _classes_for(drug: str, drug_map: dict) -> list[str] | None:
 DEFAULT_SOURCE_LABEL = "เล่มแนวทางฯ"
 
 
+def _en_message(herb, item):
+    n, t = en(herb["name_th"]), en(item["text"])
+    return f"{n}: {t}" if n and t else None
+
+
 def _flag(rule_id, item, herb, evidence_tier="A", **extra):
+    msg_en = _en_message(herb, item)
     return {
         "rule_id": rule_id,
         "severity": item["level"],
@@ -36,6 +44,8 @@ def _flag(rule_id, item, herb, evidence_tier="A", **extra):
         "verified": item["verified"],
         # เอกสารต้นทางของหน้าที่อ้าง: มีเฉพาะคำเตือนของตำรับ (คำเตือนสมุนไพรอ้างเล่ม TTM first เป็นค่าเริ่มต้นของหน้าเว็บ ผลเดิมไม่เปลี่ยน)
         **({"source_doc_th": herb["source_doc_th"]} if herb.get("source_doc_th") else {}),
+        **({"source_doc_en": en(herb["source_doc_th"])} if herb.get("source_doc_th") and en(herb["source_doc_th"]) else {}),
+        **({"message_en": msg_en} if msg_en else {}),
         **extra,
     }
 
@@ -47,7 +57,7 @@ def _display_names(herbs: dict, config: dict) -> dict:
     return names
 
 
-def _aggregates(flags: list, config: dict, tags: dict, names: dict | None = None) -> list:
+def _aggregates(flags: list, config: dict, tags: dict, names: dict | None = None, names_en: dict | None = None) -> list:
     """R3: นับ 'แหล่งไม่ซ้ำ' (สมุนไพรแต่ละตัว + กลุ่มยาแต่ละกลุ่ม) ต่อ mechanism_tag จากคำเตือน R1/R2/R4 ที่ระดับนับได้
     ไม่มีคะแนนตัวเลข: ผลคือจำนวนแหล่ง + ข้อความว่าเป็นการสรุปรวมโดยระบบ"""
     counted = config["aggregate_counts_severities"]["value"]
@@ -65,13 +75,25 @@ def _aggregates(flags: list, config: dict, tags: dict, names: dict | None = None
     for tag, g in groups.items():
         if len(g["sources"]) >= config["aggregate_threshold"]["value"]:
             label = tags.get(tag, tag)
+            label_en = en(label)
+            srcs = sorted(g["sources"])
+            msg_en = (f'{len(srcs)} item(s) related to "{label_en}": {", ".join((names_en or {}).get(x) or x for x in srcs)} (summarised by the system; see each warning for details)'
+                      if label_en and all((names_en or {}).get(x) for x in srcs) else None)
             out.append({
                 "mechanism_tag": tag, "label_th": label, "sources": sorted(g["sources"]), "count": len(g["sources"]),
                 "severity": g["sev"], "flag_ids": g["flag_ids"],
+                **({"label_en": label_en, "message_en": msg_en} if msg_en else {}),
                 "message_th": f"พบ {len(g['sources'])} รายการที่เกี่ยวกับ \"{label}\": {', '.join(names.get(x, x) for x in sorted(g['sources']))} (ระบบสรุปรวมให้ ดูรายละเอียดในคำเตือนแต่ละใบ)",
             })
     out.sort(key=lambda a: (order.index(a["severity"]), -a["count"], a["mechanism_tag"]))
     return out
+
+
+def _display_names_en(herbs: dict, config: dict) -> dict:
+    """ชื่ออังกฤษคู่กับ _display_names (ไม่มีคำแปล = ไม่ใส่ แล้วข้อความสรุปรวมภาษาอังกฤษจะไม่ถูกสร้าง)"""
+    names = {h["id"]: en(h["name_th"]) for h in herbs["herbs"]}
+    names.update({k: en(v) for k, v in config.get("drug_class_labels_th", {}).get("value", {}).items()})
+    return {k: v for k, v in names.items() if v}
 
 
 def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | None = None) -> dict:
@@ -118,6 +140,8 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | Non
                 f = _flag("R1", a, h, condition="age")
                 if a["min_age_years"] is None:
                     f["message_th"] += f" (หนังสือไม่ได้ระบุอายุ ระบบจึงใช้เกณฑ์ต่ำกว่า {cutoff} ปี ซึ่งเป็นเกณฑ์ที่ทีมตั้งเอง)"
+                    if "message_en" in f:
+                        f["message_en"] += f" (The book does not state an age, so the system uses under {cutoff} years, a threshold the team set itself.)"
                 flags.append(f)
         for c in h["condition_cautions"]:
             if c["condition"] in profile.get("conditions", []):
@@ -144,12 +168,16 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | Non
                 f = _flag("R4", dl, h)
                 if dl["max_days"] is None:
                     f["message_th"] += f" (หนังสือระบุเป็นช่วง ระบบเตือนเมื่อใช้เกิน {limit} วัน ซึ่งเป็นเกณฑ์ที่ทีมตั้งเอง)"
+                    if "message_en" in f:
+                        f["message_en"] += f" (The book gives a range, so the system warns after {limit} days of use, a threshold the team set itself.)"
                 flags.append(f)
     for g, (days, limit, dl, h) in group_days.items():
         if days > limit:
             f = _flag("R4", dl, h, group=g)
             if dl["max_days"] is None:
                 f["message_th"] += f" (หนังสือระบุเป็นช่วง ระบบเตือนเมื่อใช้เกิน {limit} วัน ซึ่งเป็นเกณฑ์ที่ทีมตั้งเอง)"
+                if "message_en" in f:
+                    f["message_en"] += f" (The book gives a range, so the system warns after {limit} days of use, a threshold the team set itself.)"
             flags.append(f)
 
     order = config["severity_order"]
@@ -159,7 +187,7 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | Non
 
     return {
         "flags": flags,
-        "aggregates": _aggregates(flags, config, tags or {}, _display_names(herbs, config)),
+        "aggregates": _aggregates(flags, config, tags or {}, _display_names(herbs, config), _display_names_en(herbs, config)),
         "swaps": [],  # R6 ยังไม่ทำ
         "pharmacist_review_required": bool(drug_classes & set(config["pharmacist_review_classes"]["value"])),
         "coverage": {
@@ -169,4 +197,5 @@ def check(inp: dict, herbs: dict, drug_map: dict, config: dict, tags: dict | Non
             "not_checked": sorted(not_checked),
         },
         "disclaimer_th": config["disclaimer_th"],
+        **({"disclaimer_en": en(config["disclaimer_th"])} if en(config["disclaimer_th"]) else {}),
     }

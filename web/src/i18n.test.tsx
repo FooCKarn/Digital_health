@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/preact";
 import userEvent from "@testing-library/user-event";
 import { LangToggle } from "./components/LangToggle";
-import { getLang, setLang, t } from "./i18n";
+import { getLang, pick, setLang, t } from "./i18n";
 import { SEVERITY_TEXT } from "./components/SeverityBadge";
 import { thaiDate } from "./model/dates";
 
@@ -26,4 +26,12 @@ test("ปุ่มเดียวสลับ ไทย ⇄ อังกฤษ �
 test("จำภาษาที่เลือกไว้ใน hg_lang_v1", () => {
   setLang("en");
   expect(window.localStorage.getItem("hg_lang_v1")).toBe("en");
+});
+
+test("ข้อความจากเซิร์ฟเวอร์: โหมดอังกฤษใช้ *_en ถ้ามี ไม่มีก็ใช้ไทย", () => {
+  expect(pick("ไทย", "English")).toBe("ไทย");
+  setLang("en");
+  expect(pick("ไทย", "English")).toBe("English");
+  expect(pick("ไทย", undefined)).toBe("ไทย");
+  expect(pick(null, null)).toBeNull();
 });

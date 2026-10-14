@@ -5,12 +5,13 @@ import { useBusy } from "../hooks/useBusy";
 import { buildPayload } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Explanation } from "../types";
+import { t, tMap } from "../i18n";
 
-const FIXED = "ตอนนี้ใช้ AI ไม่ได้ ข้อความคำเตือนด้านบนยังอ่านได้เหมือนเดิม";
-const LABEL = {
-  llm: "AI เรียบเรียงจากผลตรวจนี้ (ผ่านตัวตรวจข้อความแล้ว)",
-  template: "ข้อความสำรองจากฐานข้อมูล (AI ไม่ได้ใช้หรือข้อความไม่ผ่านการตรวจ)",
-};
+const fixed = () => t("ตอนนี้ใช้ AI ไม่ได้ ข้อความคำเตือนด้านบนยังอ่านได้เหมือนเดิม", "The AI isn't available right now. The warnings above still work as before.");
+const LABEL = tMap<string>(
+  { llm: "AI เรียบเรียงจากผลตรวจนี้ (ผ่านตัวตรวจข้อความแล้ว)", template: "ข้อความสำรองจากฐานข้อมูล (AI ไม่ได้ใช้หรือข้อความไม่ผ่านการตรวจ)" },
+  { llm: "Reworded by the AI from this result (passed the text checker)", template: "Fallback text from the database (the AI was not used, or its text did not pass the checker)" },
+);
 
 /** ตัวเลือก: AI เรียบเรียงภาษาจากผลตรวจปัจจุบัน แสดงเฉพาะเมื่อผลที่เห็นตรงกับข้อมูลปัจจุบัน */
 export function ExplainBox({ store, today, known, analysis }: { store: TrackerStore; today: string; known: string[]; analysis: Analysis }) {
@@ -27,15 +28,15 @@ export function ExplainBox({ store, today, known, analysis }: { store: TrackerSt
       const { explanation } = await explain(payload);
       setGot({ key, ex: explanation });
     } catch {
-      setErr({ key, msg: FIXED });
+      setErr({ key, msg: fixed() });
     }
   });
   const ex = got?.key === key ? got.ex : null; // คำอธิบายของข้อมูลเก่าไม่แสดง
 
   return (
     <section class="explain-box">
-      <button type="button" aria-disabled={b.busy} onClick={go}>ให้ AI อธิบายผลเป็นภาษาง่าย ๆ (ไม่บังคับ)</button>
-      {b.busy && <span role="status">กำลังเรียบเรียง…</span>}
+      <button type="button" aria-disabled={b.busy} onClick={go}>{t("ให้ AI อธิบายผลเป็นภาษาง่าย ๆ (ไม่บังคับ)", "Have the AI explain the result in plain language (optional)")}</button>
+      {b.busy && <span role="status">{t("กำลังเรียบเรียง…", "Writing it up…")}</span>}
       {err?.key === key && <p class="err" role="alert">{err.msg}</p>}
       {ex && (
         <div class="explanation">

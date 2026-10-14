@@ -5,8 +5,9 @@ import { startForDay } from "../model/dates";
 import type { TrackerStore } from "../model/tracker";
 import type { Meta, ParseProposal } from "../types";
 import { t } from "../i18n";
+import { entryName } from "../texts";
 
-const fixed = () => t("ตอนนี้ใช้ AI ไม่ได้ กรอกเองได้เหมือนเดิม", "The AI is not available right now. You can still enter items yourself.");
+const fixed = () => t("ตอนนี้ใช้ AI ไม่ได้ กรอกเองได้เหมือนเดิม", "The AI isn't available right now. You can still enter items yourself.");
 
 type Row = { key: string; kind: "herb" | "drug"; ref: string; label: string; day?: number };
 
@@ -23,7 +24,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
   const okHerbs = prop ? prop.herbs.filter((h) => meta.herbs.some((x) => x.id === h.id)) : [];
   const dropped = prop ? prop.dropped + (prop.herbs.length - okHerbs.length) : 0;
   const rows: Row[] = prop ? [
-    ...okHerbs.map((h): Row => ({ key: `h-${h.id}`, kind: "herb", ref: h.id, label: meta.herbs.find((x) => x.id === h.id)?.name_th ?? h.id, day: h.days_in_use })),
+    ...okHerbs.map((h): Row => ({ key: `h-${h.id}`, kind: "herb", ref: h.id, label: entryName(meta, h.id), day: h.days_in_use })),
     ...prop.drugs.map((d): Row => { const k = meta.drugs.find((x) => x.toLowerCase() === d.toLowerCase()) ?? d; return { key: `d-${k}`, kind: "drug", ref: k, label: k }; }),
   ] : [];
   const chosen = rows.filter((r) => ticked[r.key]);
@@ -34,7 +35,7 @@ export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: Tr
     setMsg(t("กำลังแปลง…", "Working on it…"));
     try {
       setProp(await parseText(text.trim()));
-      setMsg(t("AI แยกได้ตามนี้ ลองเทียบกับที่พิมพ์ แล้วติ๊กอันที่ใช่ก่อนกดยืนยัน (ยังไม่มีอะไรถูกเพิ่ม)", "The AI picked out these items. Compare them with what you typed and tick the right ones before confirming (nothing has been added yet)."));
+      setMsg(t("AI แยกได้ตามนี้ ลองเทียบกับที่พิมพ์ แล้วติ๊กอันที่ใช่ก่อนกดยืนยัน (ยังไม่มีอะไรถูกเพิ่ม)", "The AI picked out these items. Check them against what you typed and tick the right ones before confirming. Nothing has been added yet."));
     } catch {
       setMsg(fixed());
     }

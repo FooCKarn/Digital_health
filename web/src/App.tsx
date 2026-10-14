@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { ApiError, getMeta } from "./api";
 import { LangToggle } from "./components/LangToggle";
-import { getLang, t, useLang } from "./i18n";
+import { getLang, pick, t, useLang } from "./i18n";
 import { ChatFab } from "./chat/ChatFab";
 import { ChatPanel, type OpenRequest } from "./chat/ChatPanel";
 import { AskFlag, ChatStore, getSessionStorage } from "./chat/chatStore";
@@ -21,6 +21,7 @@ import { DiaryStore } from "./model/diary";
 import { CloudSync } from "./model/cloud";
 import { ReminderStore, hhmm } from "./model/reminder";
 import type { Meta } from "./types";
+import { entryName } from "./texts";
 
 const VIEWS = [
   { id: "now", th: "ช่วงนี้", en: "This period" },
@@ -31,7 +32,10 @@ const VIEWS = [
 
 export function App() {
   const lang = useLang();
-  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = t("ใบพลู: ตรวจคำเตือนสมุนไพรไทยร่วมกับยา (ต้นแบบ)", "Baiplu: check warnings for Thai herbs used with medicines (prototype)");
+  }, [lang]);
   const store = useMemo(() => new TrackerStore(getLocalStorage(), () => todayISO()), []);
   const diary = useMemo(() => new DiaryStore(getLocalStorage(), () => todayISO()), []);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -69,7 +73,7 @@ export function App() {
       <main>
         {meta ? <Home store={store} diary={diary} meta={meta} /> : error ? (
           <div class="err" role="alert">
-            <span>{`${t("โหลดข้อมูลไม่สำเร็จ", "Could not load data")}: ${error}`}</span>{" "}
+            <span>{`${t("โหลดข้อมูลไม่สำเร็จ", "Couldn't load data")}: ${error}`}</span>{" "}
             <button type="button" onClick={() => setAttempt((n) => n + 1)}>{t("ลองใหม่", "Try again")}</button>
           </div>
         ) : <p>{t("กำลังโหลด…", "Loading…")}</p>}
@@ -82,10 +86,10 @@ export function App() {
           <p>{t("แหล่งข้อมูล: หนังสือแนวทางการใช้ยาสมุนไพรในการดูแลอาการเจ็บป่วยเบื้องต้น (TTM first) ครอบคลุมเพียงบางส่วนของ 50 ชนิดในเล่ม (ดูจำนวนจริงในผลตรวจ) ส่วนข้อห้ามของ “ตำรับยาบำรุงโลหิต” มาจากแนวทางการตั้งตำรับยาบำรุงโลหิตของสถาบันการแพทย์แผนไทย",
             "Source: the guidebook on using herbal medicines for common minor ailments (TTM first). It covers only some of the 50 herbs in the book (see the actual count in your results). The contraindications for the blood-tonic formula (“ตำรับยาบำรุงโลหิต”) come from the Institute of Thai Traditional Medicine's guidelines for that formula.")}</p>
           <p>{t("ข้อจำกัด: ข้อมูลยังเป็นร่าง ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ไม่ใช่การวินิจฉัยหรือสั่งยา การไม่พบคำเตือนไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร",
-            "Limits: the data is a draft and has not been reviewed by experts. This is not a diagnosis or a prescription. Finding no warning does not mean a combination is suitable to use. Please ask a pharmacist.")}</p>
+            "Limits: the data is a draft and experts haven't reviewed it. This is not a diagnosis or a prescription. No warning doesn't mean a combination is suitable to use. Ask a pharmacist.")}</p>
         </details>
         <Policy />
-        {meta && <p class="meta">{meta.disclaimer_th}</p>}
+        {meta && <p class="meta">{pick(meta.disclaimer_th, meta.disclaimer_en)}</p>}
       </footer>
     </>
   );
@@ -124,7 +128,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
   const fab = useRef<HTMLButtonElement>(null);
   const openChat = (prefill?: string) => setChatOpen((o) => ({ n: (o?.n ?? 0) + 1, prefill }));
   const closeChat = () => { setChatOpen(null); fab.current?.focus(); };
-  const herbName = (id: string) => meta.herbs.find((h) => h.id === id)?.name_th ?? meta.formulas?.find((f) => f.id === id)?.name_th ?? id;
+  const herbName = (id: string) => entryName(meta, id);
   const askFlag = useMemo(() => ({ herbName, ask: (f: { herb_id: string }) => openChat(getLang() === "en" ? `Explain the warning for ${herbName(f.herb_id)}` : `อธิบายคำเตือนของ${herbName(f.herb_id)}`) }), [meta]);
 
   // แท็บแบบ roving tabindex: ลูกศรซ้าย/ขวา (วน), Home, End
@@ -143,11 +147,11 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
     <>
       {/* แจ้งทุกหน้า ไม่ใช่เฉพาะหน้า ข้อมูลของฉัน */}
       {!store.persistent && (
-        <p class="warn" role="status">{t("ข้อมูลจะหายเมื่อปิดหน้านี้ (เบราว์เซอร์ไม่ให้บันทึก) ถ้าอยากเก็บ ให้ส่งออกไฟล์ในหน้า ข้อมูลของฉัน", "Your data will be lost when you close this page (the browser is not allowing saving). To keep it, export a file from the My data tab.")}</p>
+        <p class="warn" role="status">{t("ข้อมูลจะหายเมื่อปิดหน้านี้ (เบราว์เซอร์ไม่ให้บันทึก) ถ้าอยากเก็บ ให้ส่งออกไฟล์ในหน้า ข้อมูลของฉัน", "Your data will be gone when you close this page (the browser isn't letting it save). To keep it, export a file from the My data tab.")}</p>
       )}
       {store.recovered && !hideRecovered && (
         <p class="warn row-actions" role="alert">
-          <span>{t("ข้อมูลที่เก็บไว้เสียหาย จึงเริ่มต้นใหม่ให้", "The saved data was damaged, so we started fresh.")}</span>
+          <span>{t("ข้อมูลที่เก็บไว้เสียหาย จึงเริ่มต้นใหม่ให้", "The saved data was damaged, so we started over.")}</span>
           <button type="button" aria-label={t("ปิดข้อความ ข้อมูลเสียหาย", "Close damaged-data message")} onClick={() => setHideRecovered(true)}>{t("ปิด", "Close")}</button>
         </p>
       )}

@@ -27,6 +27,7 @@
      "pdf_page": 88,
      "evidence_quote": "ไม่แนะนำให้ใช้ขิงในการบรรเทาอาการคลื่นไส้อาเจียนในสตรีมีครรภ์",
      "verified": false,
+     "message_en": "Ginger (ขิง): Ginger is not recommended for relieving nausea and vomiting in pregnant women (this applies only to use for nausea and vomiting).",
      "condition": "pregnancy",
      "flag_id": "f1"
     }
@@ -40,13 +41,15 @@
     "unknown_inputs": [],
     "not_checked": []
    },
-   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม",
+   "disclaimer_en": "This tool supports decision-making. It is not a diagnosis or a prescription. No warning does not mean a combination is suitable to use."
   },
   "summary": {
    "herbs": [
     {
      "id": "khing",
      "name_th": "ขิง",
+     "name_en": "Ginger (ขิง)",
      "part": null,
      "days_in_use": 1
     }
@@ -64,6 +67,7 @@
      "pdf_page": 88,
      "evidence_quote": "ไม่แนะนำให้ใช้ขิงในการบรรเทาอาการคลื่นไส้อาเจียนในสตรีมีครรภ์",
      "verified": false,
+     "message_en": "Ginger (ขิง): Ginger is not recommended for relieving nausea and vomiting in pregnant women (this applies only to use for nausea and vomiting).",
      "condition": "pregnancy",
      "flag_id": "f1"
     }
@@ -84,9 +88,18 @@
     "อาการผิดปกติที่เกิดขึ้นหลังใช้",
     "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่"
    ],
+   "follow_up_questions_en": [
+    "Dose and how often you take it",
+    "How long you have taken it",
+    "Any unusual symptoms since you started",
+    "Whether follow-up checks are being done as your doctor or pharmacist advised"
+   ],
+   "headline_en": "1 warning(s) found in this database",
    "headline_th": "พบคำเตือน 1 รายการจากฐานข้อมูลนี้",
    "draft_notice_th": "ข้อมูลบางรายการยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ (สถานะ: ร่าง)",
-   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม"
+   "draft_notice_en": "Some items have not been reviewed by experts yet (status: draft)",
+   "disclaimer_th": "เครื่องมือนี้ช่วยสนับสนุนการตัดสินใจ ไม่ใช่การวินิจฉัยหรือสั่งยา ไม่พบคำเตือนไม่ได้หมายความว่าใช้ได้อย่างเหมาะสม",
+   "disclaimer_en": "This tool supports decision-making. It is not a diagnosis or a prescription. No warning does not mean a combination is suitable to use."
   }
  }
 }
