@@ -81,6 +81,7 @@ export interface Meta {
   disclaimer_th: string;
   disclaimer_en?: string;
   chat_followups_th: string[];
+  chat_followups_en?: string[];
 }
 
 export interface AnalyzePayload {
@@ -103,13 +104,18 @@ export interface Cite {
   evidence_quote: string | null;
   verified: boolean;
   source_doc_th?: string;
+  herb_name_en?: string;
+  source_doc_en?: string;
 }
 
 export interface AskAnswer {
   source: string; // เช่น database | refusal | emergency
   text_th: string;
+  /** มีเมื่อเซิร์ฟเวอร์แปลได้ครบ (ข้อความที่ AI เรียบเรียงยังเป็นไทยอย่างเดียว) */
+  text_en?: string;
   cites: Cite[];
   follow_ups: string[];
+  follow_ups_en?: string[];
   rejected_reason: string | null;
   /** แหล่งอ้างอิงจากการค้นภายนอก (เมื่อ source = web) */
   web_sources?: { title: string; url: string }[];
@@ -120,7 +126,7 @@ export interface BriefFacts {
   warnings: { total: number; avoid: number } | null; no_entry_today: boolean;
   not_checked_count?: number; longest_days?: number;
 }
-export interface BriefOut { source: "llm" | "template"; summary_th: string; rejected_reason: string | null }
+export interface BriefOut { source: "llm" | "template"; summary_th: string; summary_en?: string; rejected_reason: string | null }
 export type RouteTool = "ask" | "show_brief" | "show_check" | "mark_taken" | "mark_not_taken" | "add_items" | "set_reminder" | "go_to" | "log_mood";
 export interface RouteOut { tool: RouteTool; item_ids: string[]; time: string; page: string; mood: number; days?: number }
 
@@ -135,8 +141,10 @@ export interface Explanation {
   source: "llm" | "template";
   rejected_reason: string | null;
   summary_th: string;
-  items: { flag_id: string; text_th: string }[];
+  summary_en?: string;
+  items: { flag_id: string; text_th: string; text_en?: string }[];
   disclaimer_th: string;
+  disclaimer_en?: string;
 }
 
 export interface FeedbackPayload {

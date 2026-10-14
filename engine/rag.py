@@ -7,6 +7,7 @@ import re
 from collections import Counter
 
 import llm
+from translate import en
 
 KINDS = ("contraindications", "age_limits", "drug_cautions", "condition_cautions", "duration_limits", "notes")
 # ตัดช่องว่างและเครื่องหมายวรรคตอน แต่ไม่ตัดสระ/วรรณยุกต์ไทย (\w ใน Python ไม่ครอบคลุมเครื่องหมายผสม จึงไม่ใช้)
@@ -168,17 +169,36 @@ def classify(question: str, config: dict) -> str:
 # ---------- คำตอบ ----------
 def _cite(c: dict) -> dict:
     out = {k: c[k] for k in ("item_id", "herb_id", "herb_name_th", "source_page", "pdf_page", "evidence_quote", "verified")}
+    if en(c["herb_name_th"]):
+        out["herb_name_en"] = en(c["herb_name_th"])
     if c.get("source_doc_th"):  # เฉพาะตำรับ (สมุนไพรเดิมอ้างเล่ม TTM first เป็นค่าเริ่มต้นของหน้าเว็บ)
         out["source_doc_th"] = c["source_doc_th"]
+        if en(c["source_doc_th"]):
+            out["source_doc_en"] = en(c["source_doc_th"])
     return out
 
 
 def _flag_cite(f: dict, index: dict) -> dict:
     out = {"item_id": f"flag:{f['flag_id']}", "herb_id": f["herb_id"], "herb_name_th": index["herb_names"].get(f["herb_id"], f["herb_id"]),
            "source_page": f["source_page"], "pdf_page": f.get("pdf_page"), "evidence_quote": f.get("evidence_quote"), "verified": f["verified"]}
+    if en(out["herb_name_th"]):
+        out["herb_name_en"] = en(out["herb_name_th"])
     if f.get("source_doc_th"):
         out["source_doc_th"] = f["source_doc_th"]
+        if en(f["source_doc_th"]):
+            out["source_doc_en"] = en(f["source_doc_th"])
     return out
+
+
+def _en_join(parts, sep: str = "\n"):
+    """ต่อข้อความอังกฤษ: ส่วนไหนไม่มีคำแปล = None ทั้งก้อน (หน้าเว็บจะแสดงภาษาไทยเดิมแทน ไม่แสดงครึ่งไทยครึ่งอังกฤษ)"""
+    parts = list(parts)
+    return sep.join(parts) if parts and all(parts) else None
+
+
+def _lines_en(chunks: list):
+    return _en_join(f"• {en(c['herb_name_th'])}: {en(c['text_th'])} (Evidence tier {c['evidence_tier']}, page {c['source_page']})"
+                    if en(c["herb_name_th"]) and en(c["text_th"]) else None for c in chunks)
 
 
 def _lines(chunks: list) -> str:
@@ -220,24 +240,29 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
     result=None หมายถึงยังไม่มีผลตรวจ"""
     msgs = config["chat_messages_th"]["value"]
     follow = config["chat_followups_th"]["value"][:3]
+    follow_en = [en(x) for x in follow]
 
     intent = classify(question, config)
 
-    def out(source, text, cites=(), why=None):
-        return {"source": source, "text_th": text, "cites": list(cites), "follow_ups": follow, "rejected_reason": why, "intent": intent}
+    def out(source, text, cites=(), why=None, text_en=None):
+        # text_en / follow_ups_en: ใส่เมื่อมีคำแปลครบทุกส่วนเท่านั้น (ข้อความที่ LLM เรียบเรียงยังเป็นไทยอย่างเดียว)
+        return {"source": source, "text_th": text, **({"text_en": text_en} if text_en else {}), "cites": list(cites), "follow_ups": follow,
+                **({"follow_ups_en": follow_en} if follow_en and all(follow_en) else {}), "rejected_reason": why, "intent": intent}
 
     if intent == "emergency":
-        return out("emergency", msgs["emergency"])
+        return out("emergency", msgs["emergency"], text_en=en(msgs["emergency"]))
     if intent == "dose":
-        return out("refusal", msgs["dose"])
+        return out("refusal", msgs["dose"], text_en=en(msgs["dose"]))
     if intent == "diagnosis":
-        return out("refusal", msgs["diagnosis"])
+        return out("refusal", msgs["diagnosis"], text_en=en(msgs["diagnosis"]))
     if intent == "pharmacist_q":
         qs = config["pharmacist_questions_th"]["value"]
-        return out("database", "คำถามที่ควรถามเภสัชกร (ร่าง ผู้เชี่ยวชาญต้องตรวจ):\n" + "\n".join(f"• {q}" for q in qs))
+        head = "คำถามที่ควรถามเภสัชกร (ร่าง ผู้เชี่ยวชาญต้องตรวจ):"
+        return out("database", head + "\n" + "\n".join(f"• {q}" for q in qs),
+                   text_en=_en_join([en(head)] + [f"• {en(q)}" if en(q) else None for q in qs]))
     if intent in ("safety_yesno", "explain_flags"):
         if result is None:
-            return out("refusal", msgs["no_check"])
+            return out("refusal", msgs["no_check"], text_en=en(msgs["no_check"]))
         flags = result["flags"]
         named = named_herbs(norm(question), index)
         classes, codes, kinds = anchors(question, index)
@@ -253,21 +278,28 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
             flags = [f for f in flags if f["herb_id"] in named] or flags   # สมุนไพรที่ระบุไม่มีคำเตือน = แสดงคำเตือนทั้งหมด
         head = msgs["safety_prefix"] + "\n" if intent == "safety_yesno" else ""
         flag_text = head + "\n".join(f"• {f['message_th']} (ชั้นหลักฐาน {f['evidence_tier']}, หน้า {f['source_page']})" for f in flags)
+        head_en = en(msgs["safety_prefix"]) if intent == "safety_yesno" else ""
+        lines_en = _en_join(f"• {f['message_en']} (Evidence tier {f['evidence_tier']}, page {f['source_page']})" if f.get("message_en") else None for f in flags) if flags else ""
+        flag_text_en = None if head_en is None or lines_en is None else (head_en + "\n" if head_en else "") + lines_en
         flag_cites = [_flag_cite(f, index) for f in flags]
         if uncovered:   # ค้นแบบสกัดข้อความเสมอ ไม่ใช้ LLM ในทางนี้
             if not chunks and unchecked:   # ไม่มีหลักอื่นในคำถาม: แสดงรายการของสมุนไพรนั้นตามลำดับหัวข้อ (ข้อห้ามก่อน)
                 chunks = [c for c in index["chunks"] if c["herb_id"] in unchecked][:config["rag_top_k"]["value"]]
             pre = flag_text + "\n" if flags else ""
+            pre_en = None if flag_text_en is None else (flag_text_en + "\n" if flags else "")
             if not chunks:
-                return out("database", pre + msgs["asked_unchecked_none"], flag_cites)
-            return out("database", pre + msgs["asked_unchecked"] + "\n" + _lines(chunks), flag_cites + [_cite(c) for c in chunks])
+                tail = en(msgs["asked_unchecked_none"])
+                return out("database", pre + msgs["asked_unchecked_none"], flag_cites, text_en=pre_en + tail if pre_en is not None and tail else None)
+            body_en = _en_join([en(msgs["asked_unchecked"]), _lines_en(chunks)])
+            return out("database", pre + msgs["asked_unchecked"] + "\n" + _lines(chunks), flag_cites + [_cite(c) for c in chunks],
+                       text_en=pre_en + body_en if pre_en is not None and body_en else None)
         if not flags:
-            return out("database", msgs["safety_no_flag"])
-        return out("database", flag_text, flag_cites)
+            return out("database", msgs["safety_no_flag"], text_en=en(msgs["safety_no_flag"]))
+        return out("database", flag_text, flag_cites, text_en=flag_text_en)
 
     chunks = _lookup(question, resolve_scope(question, index, checked_herbs, context_herbs), index, config)
     if not chunks:
-        return {**out("refusal", msgs["no_info"]), "intent": "no_info"}  # service.ask ค้นภายนอกต่อได้
+        return {**out("refusal", msgs["no_info"], text_en=en(msgs["no_info"])), "intent": "no_info"}  # service.ask ค้นภายนอกต่อได้
     base_text, why = _extractive(chunks), None
     if use_llm:
         allowed = " ".join(f"{c['herb_name_th']} {c['text_th']} {c['evidence_quote'] or ''} {c['drug_class'] or ''}" for c in chunks)
@@ -276,4 +308,4 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
                                              config["llm_forbidden_phrases"]["value"], complete)
         if text is not None:
             return out("llm", text, [_cite(c) for c in chunks if c["item_id"] in ids])
-    return out("database", base_text, [_cite(c) for c in chunks], why)
+    return out("database", base_text, [_cite(c) for c in chunks], why, text_en=_en_join([en("จากฐานข้อมูลนี้:"), _lines_en(chunks)]))

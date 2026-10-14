@@ -7,7 +7,7 @@ import { buildPayload } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Meta } from "../types";
 import { toMsg, type ChatMsg, type ChatStore } from "./chatStore";
-import { t, tMap } from "../i18n";
+import { getLang, pick, t, tMap } from "../i18n";
 
 // ข้อความตายตัว
 const notice = () => t("ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้ก่อน ถ้าไม่มีจะค้นเว็บภายนอกพร้อมแหล่งอ้างอิง · ห้ามพิมพ์ข้อมูลส่วนตัว", "Not a diagnosis · data is a draft · answers come from this tool's database first, and if it has none, from an outside web search with sources · do not type personal information");
@@ -32,7 +32,8 @@ export function Msg({ m }: { m: ChatMsg }) {
   return (
     <div class={em ? "cmsg a emerg" : "cmsg a"} role={em ? "alert" : undefined}>
       <span class="src">{SRC_LABEL[m.src] ?? t("ผู้ช่วย AI", "AI assistant")}</span>
-      {m.t}
+      {pick(m.t, m.te)}
+      {getLang() === "en" && !m.te && <span class="stl">This answer is only available in Thai.</span>}
       {m.old && <span class="stl">{staleLine()}</span>}
       {m.web && m.web.length > 0 && (
         <span class="web-sources">
@@ -41,7 +42,7 @@ export function Msg({ m }: { m: ChatMsg }) {
         </span>
       )}
       {m.cites.filter((c) => c.evidence_quote).slice(0, 6).map((c, i) => (
-        <Evidence key={i} summary={`${t("ดูหลักฐาน", "See the evidence")}: ${c.herb_name_th}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={c.source_doc_th}>
+        <Evidence key={i} summary={`${t("ดูหลักฐาน", "See the evidence")}: ${pick(c.herb_name_th, c.herb_name_en)}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={pick(c.source_doc_th, c.source_doc_en)}>
           <p class="meta">{`${t("รหัสรายการ", "Item code")} ${c.item_id} · ${c.verified ? t("ตรวจแล้ว", "Checked") : t("ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ", "Draft: not yet reviewed by experts")}`}</p>
         </Evidence>
       ))}
@@ -61,7 +62,9 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
   const [, setVer] = useState(0);
   useEffect(() => chat.subscribe(() => setVer((v) => v + 1)), [chat]);
   const [text, setText] = useState("");
-  const [chips, setChips] = useState(() => meta.chat_followups_th.slice(0, 3));
+  // ชิปแสดงตามภาษาที่เลือก แต่ส่งคำถามไทยตามเดิม (ตัวจำแนกคำถามของเซิร์ฟเวอร์เข้าใจภาษาไทย)
+  const mkChips = (th: string[], en?: string[]) => th.slice(0, 3).map((q, i) => ({ q, en: en?.[i] }));
+  const [chips, setChips] = useState(() => mkChips(meta.chat_followups_th, meta.chat_followups_en));
   const [waitGen, setWaitGen] = useState<number | null>(null);
   const [status, setStatus] = useState("");
   const b = useBusy();
@@ -91,12 +94,12 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
     if (l) l.scrollTop = l.scrollHeight;
   }, [chat.msgs.length]);
 
-  const send = (raw: string) => {
+  const send = (raw: string, shown?: string) => {
     const q = raw.trim();
     if (!q) return;
     void b.run(async () => {
       setText("");
-      chat.add({ r: "u", t: q });
+      chat.add({ r: "u", t: shown ?? q });
       const cg = chat.gen;
       setWaitGen(cg);
       const sentKey = key;
@@ -108,10 +111,10 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
         if (cg !== chat.gen) return; // ล้างประวัติไปแล้ว ไม่แสดงคำตอบค้าง
         // เซิร์ฟเวอร์คำนวณจากข้อมูลที่ส่งไป: เก่าเฉพาะเมื่อผู้ใช้แก้ข้อมูลระหว่างรอคำตอบ
         const old = sentKey !== null && sentKey !== keyNow.current;
-        const m = toMsg({ r: "a", t: a.text_th, src: a.source, cites: a.cites, old, web: a.web_sources });
+        const m = toMsg({ r: "a", t: a.text_th, te: a.text_en, src: a.source, cites: a.cites, old, web: a.web_sources });
         if (!m) throw new ApiError("server");
         chat.add(m);
-        if (Array.isArray(a.follow_ups)) setChips(a.follow_ups.filter((x) => typeof x === "string").slice(0, 3));
+        if (Array.isArray(a.follow_ups)) setChips(mkChips(a.follow_ups.filter((x) => typeof x === "string"), a.follow_ups_en));
       } catch (e) {
         if (cg !== chat.gen) return;
         chat.add({ r: "e", t: `${t("ถามไม่สำเร็จ", "Couldn't ask")}: ${errText(e)}` });
@@ -124,7 +127,7 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
 
   const clear = () => {
     chat.clear();
-    setChips(meta.chat_followups_th.slice(0, 3));
+    setChips(mkChips(meta.chat_followups_th, meta.chat_followups_en));
     setStatus(t("ล้างประวัติแชตแล้ว", "Chat history cleared"));
     input.current?.focus();
   };
@@ -149,7 +152,7 @@ export function ChatPanel({ chat, store, meta, today, open, onClose }: Props) {
       </div>
       {chips.length > 0 && (
         <div class="chat-chips" role="group" aria-label={t("คำถามแนะนำ", "Suggested questions")}>
-          {chips.map((c) => <button key={c} type="button" onClick={() => send(c)}>{c}</button>)}
+          {chips.map((c) => <button key={c.q} type="button" onClick={() => send(c.q, pick(c.q, c.en))}>{pick(c.q, c.en)}</button>)}
         </div>
       )}
       <form class="chat-form" noValidate onSubmit={(e) => { e.preventDefault(); send(text); }}>
