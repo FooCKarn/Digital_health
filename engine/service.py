@@ -66,6 +66,7 @@ def meta() -> dict:
         "disclaimer_th": CONFIG["disclaimer_th"],
         **_en_field("disclaimer_en", CONFIG["disclaimer_th"]),
         "chat_followups_th": CONFIG["chat_followups_th"]["value"],
+        **({"chat_followups_en": [en(x) for x in CONFIG["chat_followups_th"]["value"]]} if all(en(x) for x in CONFIG["chat_followups_th"]["value"]) else {}),
     }
 
 

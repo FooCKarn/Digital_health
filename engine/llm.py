@@ -355,10 +355,13 @@ def validate_explanation(out, flags: list, allowed_text: str, all_herb_names: li
 
 def _template(result: dict, reason: str | None) -> dict:
     n = len(result["flags"])
+    # *_en เป็นฟิลด์เสริม (หน้าเว็บโหมดอังกฤษใช้ ไม่มีก็แสดงไทย): ข้อความมาจาก message_en ของคำเตือนโดยตรง ไม่ผ่าน LLM
     return {"source": "template", "rejected_reason": reason,
             "summary_th": f"พบคำเตือน {n} รายการจากฐานข้อมูลนี้" if n else "ไม่พบคำเตือนในฐานข้อมูลนี้",
-            "items": [{"flag_id": f["flag_id"], "text_th": f["message_th"]} for f in result["flags"]],
-            "disclaimer_th": result["disclaimer_th"]}
+            "summary_en": f"{n} {'warning' if n == 1 else 'warnings'} found in this database" if n else "No warnings found in this database",
+            "items": [{"flag_id": f["flag_id"], "text_th": f["message_th"], **({"text_en": f["message_en"]} if f.get("message_en") else {})} for f in result["flags"]],
+            "disclaimer_th": result["disclaimer_th"],
+            **({"disclaimer_en": result["disclaimer_en"]} if result.get("disclaimer_en") else {})}
 
 
 def explain(inp: dict, result: dict, herbs_db: dict, drug_map: dict, config: dict, complete=None) -> dict:
@@ -478,6 +481,22 @@ def brief_template(f: dict) -> str:
     return " · ".join(parts)
 
 
+def brief_template_en(f: dict) -> str:
+    """brief_template ฉบับอังกฤษ (ข้อเท็จจริงชุดเดียวกัน ไม่มีข้อความใหม่)"""
+    if f["item_count"] == 0:
+        return "You have no items in use yet. Add herbs or medicines so the system can check them and summarise for you."
+    parts = [f"Marked as used today: {f['taken_count']} of {f['item_count']} items"]
+    if f["untaken"]:
+        parts.append("Not marked yet: " + ", ".join(f["untaken"]))
+    w = f.get("warnings")
+    if w is not None:
+        parts.append("No warnings found in this database so far, which does not mean it is appropriate to use" if w["total"] == 0
+                     else f"{w['total']} {'warning' if w['total'] == 1 else 'warnings'} found" + (f" ({w['avoid']} to avoid)" if w["avoid"] else ""))
+    if f.get("no_entry_today"):
+        parts.append("No health diary entry yet today")
+    return " · ".join(parts)
+
+
 def validate_brief(out, facts: dict, all_herb_names: list, all_drug_names: list, forbidden: list):
     """None = ผ่าน; ตัวเลข/คำอังกฤษ/ชื่อสมุนไพร-ยาต้องมาจากข้อเท็จจริงที่ให้ ไม่มีคำต้องห้าม และถ้าไม่มีคำเตือนห้ามพูดว่าพบคำเตือน"""
     if not isinstance(out, dict) or not isinstance(out.get("summary_th"), str):
@@ -510,7 +529,7 @@ def validate_brief(out, facts: dict, all_herb_names: list, all_drug_names: list,
 
 def brief(facts: dict, herbs_db: dict, drug_map: dict, config: dict, complete=None) -> dict:
     complete = complete or default_complete
-    tmpl = {"source": "template", "rejected_reason": None, "summary_th": brief_template(facts)}
+    tmpl = {"source": "template", "rejected_reason": None, "summary_th": brief_template(facts), "summary_en": brief_template_en(facts)}
     if facts["item_count"] == 0:
         return tmpl
     try:

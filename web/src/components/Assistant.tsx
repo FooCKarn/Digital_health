@@ -16,13 +16,15 @@ import { NOT_CHECKED, entryName, noFlag, noFlagNote } from "../texts";
 import type { BriefOut, Meta, ParseProposal } from "../types";
 import { ScopeChip } from "./ScopeChip";
 import { SeverityBadge } from "./SeverityBadge";
-import { pick, t } from "../i18n";
+import { getLang, pick, t } from "../i18n";
 
 export type GoTo = "now" | "diary" | "mine";
 const pageName = (to: GoTo) => ({ now: t("ช่วงนี้", "This period"), diary: t("บันทึก", "Diary"), mine: t("ข้อมูลของฉัน", "My data") })[to];
 const aiDown = () => t("ตอนนี้ใช้ AI ไม่ได้ ลองใหม่อีกครั้ง หรือใช้ปุ่มในหน้าอื่นแทนได้", "The AI isn't available right now. Try again, or use the buttons on the other tabs.");
-const chipsWithItems = () => [t("สรุปวันนี้", "Summarize today"), t("ตรวจให้หน่อย", "Check my items"), t("กินครบแล้ว", "I took everything"), t("ทำไมถึงขึ้นคำเตือน", "Why is there a warning")];
-const chipsEmpty = () => [t("เพิ่มขิงกับยา warfarin", "Add ginger and warfarin"), t("ขิงมีข้อควรระวังอะไร", "What should I watch out for with ginger")];
+// ชิปแสดงตามภาษาที่เลือก แต่ส่งคำสั่งไทยตามเดิม (ตัวจับคำสั่งและตัวจำแนกคำถามของเซิร์ฟเวอร์เข้าใจภาษาไทย)
+const chip = (th: string, en: string) => ({ th, label: t(th, en) });
+const chipsWithItems = () => [chip("สรุปวันนี้", "Summarize today"), chip("ตรวจให้หน่อย", "Check my items"), chip("กินครบแล้ว", "I took everything"), chip("ทำไมถึงขึ้นคำเตือน", "Why is there a warning")];
+const chipsEmpty = () => [chip("เพิ่มขิงกับยา warfarin", "Add ginger and warfarin"), chip("ขิงมีข้อควรระวังอะไร", "What should I watch out for with ginger")];
 
 const errText = (e: unknown): string =>
   e instanceof ApiError && e.thaiMessage !== new ApiError("server").thaiMessage ? e.thaiMessage : t("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง", "Couldn't connect. Try again.");
@@ -56,8 +58,8 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
   });
   const say = (msg: string, extra: Partial<Extract<AMsg, { k: "text" }>> = {}) => log.add({ k: "text", t: msg, ...extra });
 
-  const run = async (q: string) => {
-    log.add({ k: "u", t: q });
+  const run = async (q: string, shown?: string) => {
+    log.add({ k: "u", t: shown ?? q });
     let route: Awaited<ReturnType<typeof routeAi>> = { tool: "ask", item_ids: [], time: "", page: "", mood: 0 };
     try { route = await routeAi(q, items.map((i) => ({ id: i.id, label: i.label }))); } catch { /* เลือกเครื่องมือไม่ได้ = ถือเป็นคำถามธรรมดา */ }
     try {
@@ -83,7 +85,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
   const answer = async (q: string) => {
     const payload = buildPayload(items, store.state.profile, today, Object.keys(meta.conditions));
     const ans = await ask({ ...(payload ?? {}), question: q, context_herbs: [] });
-    const m = toMsg({ r: "a", t: ans.text_th, src: ans.source, cites: ans.cites, web: ans.web_sources });
+    const m = toMsg({ r: "a", t: ans.text_th, te: ans.text_en, src: ans.source, cites: ans.cites, web: ans.web_sources });
     if (!m) throw new ApiError("server");
     log.add({ k: "answer", m });
   };
@@ -95,7 +97,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
     const g = groupFlags(r);
     log.add({
       k: "check", none, headline: none ? noFlag() : (a.summary ? pick(a.summary.headline_th, a.summary.headline_en) : undefined) ?? t(`พบคำเตือน ${r.flags.length} รายการ`, `${r.flags.length} ${r.flags.length === 1 ? "warning" : "warnings"} found`),
-      items: [...r.aggregates.map((x) => ({ severity: x.severity, text: pick(x.message_th, x.message_en) })), ...[...g.avoid, ...g.caution, ...g.info, ...g.other].map((f) => ({ severity: f.severity, text: f.message_th }))],
+      items: [...r.aggregates.map((x) => ({ severity: x.severity, text: pick(x.message_th, x.message_en) })), ...[...g.avoid, ...g.caution, ...g.info, ...g.other].map((f) => ({ severity: f.severity, text: pick(f.message_th, f.message_en) }))],
       scope: t(`สมุนไพร ${r.coverage.herbs_in_db} จาก ${meta.coverage.herbs_in_book} ชนิด · ${r.coverage.drug_classes_in_db} กลุ่มยา`, `${r.coverage.herbs_in_db} of ${meta.coverage.herbs_in_book} herbs · ${r.coverage.drug_classes_in_db} drug classes`),
     });
   };
@@ -166,10 +168,10 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
     });
   };
 
-  const send = (raw: string) => {
+  const send = (raw: string, shown?: string) => {
     const q = raw.trim();
     if (!q) return;
-    void b.run(async () => { setText(""); await run(q); input.current?.focus(); });
+    void b.run(async () => { setText(""); await run(q, shown); input.current?.focus(); });
   };
 
   const chips = items.length ? chipsWithItems() : chipsEmpty();
@@ -195,7 +197,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
       </div>
 
       <div class="asst-chips" role="group" aria-label={t("ตัวอย่างคำสั่ง", "Example commands")}>
-        {chips.map((c) => <button key={c} type="button" aria-disabled={b.busy} onClick={() => send(c)}>{c}</button>)}
+        {chips.map((c) => <button key={c.th} type="button" aria-disabled={b.busy} onClick={() => send(c.th, c.label)}>{c.label}</button>)}
       </div>
       <form class="asst-form" noValidate onSubmit={(e) => { e.preventDefault(); send(text); }}>
         <label for="asst-in" class="sr-only">{t("พิมพ์ข้อความถึงผู้ช่วย", "Type a message to the assistant")}</label>
@@ -267,7 +269,7 @@ function BriefCard({ b, today, go }: { b: Brief; today: string; go: (to: GoTo) =
       <p class="meta">{t("คำนวณจากข้อมูลในเครื่องคุณ ไม่ใช่การวินิจฉัย", "Calculated from the data on your device. Not a diagnosis.")}</p>
       {b.itemCount > 0 && <button type="button" aria-disabled={busy.busy} onClick={ai}>{t("ให้ AI เรียบเรียงสรุปนี้ (ไม่บังคับ)", "Have the AI reword this summary (optional)")}</button>}
       {err && <p class="err" role="alert">{err}</p>}
-      {out && <div class="explanation"><p class="chip">{out.source === "llm" ? t("AI เรียบเรียงจากข้อมูลด้านบน (ผ่านตัวตรวจข้อความแล้ว)", "Reworded by the AI from the data above (passed the text checker)") : t("ข้อความสำรองจากข้อมูลด้านบน", "Fallback text from the data above")}</p><p>{out.summary_th}</p></div>}
+      {out && <div class="explanation"><p class="chip">{out.source === "llm" ? t("AI เรียบเรียงจากข้อมูลด้านบน (ผ่านตัวตรวจข้อความแล้ว)", "Reworded by the AI from the data above (passed the text checker)") : t("ข้อความสำรองจากข้อมูลด้านบน", "Fallback text from the data above")}</p>{getLang() === "en" && !out.summary_en && <p class="meta">This summary is only available in Thai.</p>}<p>{pick(out.summary_th, out.summary_en)}</p></div>}
       <button type="button" onClick={() => go("diary")}>{t("ไปหน้าบันทึก", "Go to Diary")}</button>
     </div>
   );

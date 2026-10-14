@@ -160,5 +160,18 @@
  "ขนาดและความถี่ที่ใช้": "Dose and how often you take it",
  "ระยะเวลาที่ใช้": "How long you have taken it",
  "อาการผิดปกติที่เกิดขึ้นหลังใช้": "Any unusual symptoms since you started",
- "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่": "Whether follow-up checks are being done as your doctor or pharmacist advised"
+ "มีการตรวจติดตามผลตามที่แพทย์/เภสัชกรกำหนดหรือไม่": "Whether follow-up checks are being done as your doctor or pharmacist advised",
+ "อาการที่คุณพิมพ์อาจเป็นเหตุฉุกเฉิน โปรดไปพบแพทย์หรือไปห้องฉุกเฉินทันที หรือโทร 1669 อย่ารอข้อมูลจากเครื่องมือนี้": "What you typed may be an emergency. Please see a doctor or go to the emergency room right away, or call 1669 (Thailand). Don't wait for information from this tool.",
+ "ไม่พบข้อมูลที่ตอบคำถามนี้ได้ในฐานข้อมูลนี้ โปรดปรึกษาเภสัชกร": "This database has no information that answers this question. Please consult a pharmacist.",
+ "เครื่องมือนี้ไม่แนะนำขนาดหรือปริมาณการใช้ยาหรือสมุนไพร โปรดสอบถามเภสัชกรหรือแพทย์": "This tool does not recommend doses or amounts of medicines or herbs. Please ask a pharmacist or doctor.",
+ "เครื่องมือนี้ไม่ใช่การวินิจฉัยโรค โปรดปรึกษาแพทย์หรือเภสัชกร": "This tool does not diagnose illness. Please consult a doctor or pharmacist.",
+ "ระบบตอบไม่ได้ว่าใช้ได้หรือไม่ แต่นี่คือสิ่งที่พบในฐานข้อมูลสำหรับข้อมูลที่คุณกรอก:": "The system cannot say whether this is appropriate to use, but here is what the database holds for the information you entered:",
+ "ไม่พบคำเตือนในฐานข้อมูลนี้สำหรับข้อมูลที่คุณกรอก นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร": "No warnings were found in this database for the information you entered. This does not mean it is appropriate to use. Please consult a pharmacist.",
+ "สิ่งที่คุณถามอาจยังไม่อยู่ในข้อมูลที่ตรวจ ระบบตอบไม่ได้ว่าใช้ได้หรือไม่ ข้อมูลในฐานข้อมูลที่เกี่ยวกับคำถาม (เพิ่มลงในรายการที่กำลังใช้แล้วรอผลตรวจอัปเดต เพื่อตรวจร่วมกัน):": "What you asked about may not be in the data that was checked, so the system cannot say whether it is appropriate to use. Database entries related to your question (add it to your current items and wait for the result to update, so they are checked together):",
+ "ไม่พบรายการในฐานข้อมูลนี้ที่ตรงกับสิ่งที่คุณถาม ถ้าสิ่งนั้นยังไม่อยู่ในรายการที่กำลังใช้ ให้เพิ่มแล้วรอผลตรวจอัปเดต นี่ไม่ได้แปลว่าใช้ได้อย่างเหมาะสม โปรดปรึกษาเภสัชกร": "No entry in this database matches what you asked about. If it is not in your current items yet, add it and wait for the result to update. This does not mean it is appropriate to use. Please consult a pharmacist.",
+ "ยังไม่มีผลตรวจ กรุณาเพิ่มสมุนไพรที่กำลังใช้แล้วรอผลตรวจอัปเดต แล้วถามต่อได้": "There is no check result yet. Add the herbs you are using, wait for the result to update, and then ask again.",
+ "ทำไมถึงขึ้นคำเตือน": "Why is there a warning?",
+ "ควรถามเภสัชกรว่าอะไร": "What should I ask a pharmacist?",
+ "จากฐานข้อมูลนี้:": "From this database:",
+ "คำถามที่ควรถามเภสัชกร (ร่าง ผู้เชี่ยวชาญต้องตรวจ):": "Questions to ask a pharmacist (draft; needs expert review):"
 }

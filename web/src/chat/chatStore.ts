@@ -10,7 +10,7 @@ const MAX_TEXT = 4000;
 /** u = ผู้ใช้, a = ผู้ช่วย, n = หมายเหตุระบบ, e = ข้อผิดพลาด (อยู่ในหน่วยความจำเท่านั้น ไม่ลงประวัติ) */
 export type ChatMsg =
   | { r: "u" | "n" | "e"; t: string }
-  | { r: "a"; t: string; src: string; cites: Cite[]; old?: true; web?: WebSource[] };
+  | { r: "a"; t: string; /** ข้อความอังกฤษ (ถ้าเซิร์ฟเวอร์ให้มา) */ te?: string; src: string; cites: Cite[]; old?: true; web?: WebSource[] };
 
 /** แหล่งอ้างอิงภายนอก: เก็บเฉพาะลิงก์ https */
 export type WebSource = { title: string; url: string };
@@ -35,6 +35,8 @@ function toCite(c: unknown): Cite | null {
     evidence_quote: txt(o.evidence_quote, 1000) ? o.evidence_quote : null,
     verified: o.verified === true,
     ...(txt(o.source_doc_th, 300) && o.source_doc_th ? { source_doc_th: o.source_doc_th } : {}),
+    ...(txt(o.herb_name_en, 500) && o.herb_name_en ? { herb_name_en: o.herb_name_en } : {}),
+    ...(txt(o.source_doc_en, 300) && o.source_doc_en ? { source_doc_en: o.source_doc_en } : {}),
   };
 }
 
@@ -54,7 +56,7 @@ export function toMsg(m: unknown, allowError = false): ChatMsg | null {
   if (o.r !== "a" || !txt(o.src, 50) || !(o.cites === undefined || Array.isArray(o.cites))) return null;
   const cites = ((o.cites as unknown[] | undefined) ?? []).map(toCite).filter((c): c is Cite => c !== null);
   const web = toWeb(o.web);
-  return { r: "a", t: o.t, src: o.src, cites, ...(o.old === true ? { old: true as const } : {}), ...(web.length ? { web } : {}) };
+  return { r: "a", t: o.t, ...(txt(o.te) && o.te ? { te: o.te } : {}), src: o.src, cites, ...(o.old === true ? { old: true as const } : {}), ...(web.length ? { web } : {}) };
 }
 
 export class ChatStore {

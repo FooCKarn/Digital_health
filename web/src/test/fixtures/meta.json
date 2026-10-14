@@ -269,5 +269,9 @@
  "chat_followups_th": [
   "ทำไมถึงขึ้นคำเตือน",
   "ควรถามเภสัชกรว่าอะไร"
+ ],
+ "chat_followups_en": [
+  "Why is there a warning?",
+  "What should I ask a pharmacist?"
  ]
 }

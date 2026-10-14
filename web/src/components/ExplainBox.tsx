@@ -5,7 +5,7 @@ import { useBusy } from "../hooks/useBusy";
 import { buildPayload } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Explanation } from "../types";
-import { t, tMap } from "../i18n";
+import { getLang, pick, t, tMap } from "../i18n";
 
 const fixed = () => t("ตอนนี้ใช้ AI ไม่ได้ ข้อความคำเตือนด้านบนยังอ่านได้เหมือนเดิม", "The AI isn't available right now. The warnings above still work as before.");
 const LABEL = tMap<string>(
@@ -41,9 +41,10 @@ export function ExplainBox({ store, today, known, analysis }: { store: TrackerSt
       {ex && (
         <div class="explanation">
           <p class="chip">{LABEL[ex.source] ?? LABEL.template}</p>
-          <p>{ex.summary_th}</p>
-          <ul>{ex.items.map((i) => <li key={i.flag_id}>{i.text_th}</li>)}</ul>
-          <p class="meta">{ex.disclaimer_th}</p>
+          {getLang() === "en" && !ex.summary_en && <p class="meta">This explanation is only available in Thai.</p>}
+          <p>{pick(ex.summary_th, ex.summary_en)}</p>
+          <ul>{ex.items.map((i) => <li key={i.flag_id}>{pick(i.text_th, i.text_en)}</li>)}</ul>
+          <p class="meta">{pick(ex.disclaimer_th, ex.disclaimer_en)}</p>
         </div>
       )}
     </section>
