@@ -487,13 +487,13 @@ def brief_template(f: dict) -> str:
 def brief_template_en(f: dict) -> str:
     """brief_template ฉบับอังกฤษ (ข้อเท็จจริงชุดเดียวกัน ไม่มีข้อความใหม่)"""
     if f["item_count"] == 0:
-        return "You have no items in use yet. Add herbs or medicines so the system can check them and summarise for you."
+        return "No items in use yet. Add herbs or medicines and we'll check them and sum up for you."
     parts = [f"Marked as used today: {f['taken_count']} of {f['item_count']} items"]
     if f["untaken"]:
         parts.append("Not marked yet: " + ", ".join(f["untaken"]))
     w = f.get("warnings")
     if w is not None:
-        parts.append("No warnings found in this database so far, which does not mean it is appropriate to use" if w["total"] == 0
+        parts.append("No warnings in this database so far (that doesn't mean it's suitable to use)" if w["total"] == 0
                      else f"{w['total']} {'warning' if w['total'] == 1 else 'warnings'} found" + (f" ({w['avoid']} to avoid)" if w["avoid"] else ""))
     if f.get("no_entry_today"):
         parts.append("No health diary entry yet today")
