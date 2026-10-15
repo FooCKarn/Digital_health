@@ -259,7 +259,7 @@ def _covered(c: dict, flags: list) -> bool:
     return any(hit(f) for f in flags)
 
 
-def answer(question: str, result, context_herbs: list, checked_herbs: list, index: dict, config: dict, complete=None, use_llm: bool = True) -> dict:
+def answer(question: str, result, context_herbs: list, checked_herbs: list, index: dict, config: dict, complete=None, use_llm: bool = True, lang: str = "th") -> dict:
     """ตอบคำถาม: ข้อความตายตัว/แบบสกัดข้อความเสมอ ถ้า use_llm จะให้ LLM เรียบเรียงจากรายการที่ค้นได้ (ไม่ผ่านตัวตรวจ = กลับแบบสกัดข้อความ)
     result=None หมายถึงยังไม่มีผลตรวจ"""
     msgs = config["chat_messages_th"]["value"]
@@ -326,7 +326,12 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
     if not chunks:
         return {**out("refusal", msgs["no_info"], text_en=en(msgs["no_info"])), "intent": "no_info"}  # service.ask ค้นภายนอกต่อได้
     base_text, why = _extractive(chunks), None
-    if use_llm:
+    if use_llm and lang == "en":
+        # โหมด EN: ให้ LLM เรียบเรียงเป็นอังกฤษด้วยตัวตรวจฉบับอังกฤษ; ภาษาไทยยังเป็นข้อความสกัดตายตัว ไม่ผ่าน = ข้อความอังกฤษตายตัวด้านล่าง
+        text_en, ids, why = llm.answer_with_llm_en(question, chunks, index["drug_names"], (config.get("llm_forbidden_phrases_en") or {}).get("value", []), complete)
+        if text_en is not None:
+            return out("llm", base_text, [_cite(c) for c in chunks if c["item_id"] in ids], text_en=text_en)
+    elif use_llm:
         allowed = " ".join(f"{c['herb_name_th']} {c['text_th']} {c['evidence_quote'] or ''} {c['drug_class'] or ''}" for c in chunks)
         allowed += " " + " ".join(a for cls in {c["drug_class"] for c in chunks if c["drug_class"]} for a in index["classes"].get(cls, []))
         text, ids, why = llm.answer_with_llm(question, chunks, allowed, list(index["herb_names"].values()), index["drug_names"],
