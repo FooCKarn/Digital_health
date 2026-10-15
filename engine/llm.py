@@ -584,6 +584,34 @@ def parse_duration_days(text: str) -> int:
     return days if 1 <= days <= MAX_BACKFILL_DAYS else 0
 
 
+# กฎคำสั่งภาษาอังกฤษ (โหมด EN): เหมือนกฎไทยคือเฉพาะคำสั่งที่ชัดเจน; ทั้งบันทึกว่าใช้แล้ว/ไม่ได้ใช้ต้องเป็นประโยคบุรุษที่ 1 และไม่ใช่คำถาม
+# (กัน "Is ginger used for nausea?" ถูกตีเป็นการบันทึก) ไม่ชัด = None ให้ LLM เลือกหรือส่งต่อเป็นคำถาม
+_EN_BRIEF = re.compile(r"\bsummar(?:y|ize|ise)\b.*\btoday\b|\btoday(?:'s)?\b.*\bsummar(?:y|ize|ise)\b|\bdaily summary\b")
+_EN_CHECK = re.compile(r"\bcheck (?:my |the |these |all )?(?:items|herbs|medicines|medications|results?)\b|\bcheck (?:it|them|everything|for me)\b|\b(?:show|see) (?:me )?(?:the |my )?(?:check )?results?\b")
+_EN_NEG = re.compile(r"\b(?:i|we) (?:did not|didn't|haven't|have not|never|forgot to) (?:yet )?(?:take|taken|use|used|eat|eaten|drink|drank)?\b|\b(?:i|we) (?:skipped|skip|am skipping|will skip)\b")
+_EN_POS = re.compile(r"\b(?:i|we|i've|we've) (?:just |already |also |have )*(?:took|ate|drank|taken|used|had|finished)\b")
+_EN_EVERY = re.compile(r"\beverything\b|\ball (?:of )?(?:it|them|my|the|items)\b|\bevery item\b|\beach item\b|\ball\b")
+
+
+def _route_rules_en(text: str, items: list, base: dict) -> dict | None:
+    te = re.sub(r"\s+", " ", text.lower().replace("’", "'")).strip()
+    if not re.search(r"[a-z]", te):
+        return None
+    if _EN_BRIEF.search(te):
+        return {**base, "tool": "show_brief"}
+    if _EN_CHECK.search(te) and not re.search(r"\bwhy\b|\bexplain\b|\bbecause\b", te):
+        return {**base, "tool": "show_check"}
+    if te.endswith("?"):
+        return None
+    neg, pos = _EN_NEG.search(te), _EN_POS.search(te)
+    if neg or pos:
+        label_of = {i["id"]: i["label"].strip().lower() for i in items}
+        ids = list(label_of) if _EN_EVERY.search(te) else [i for i, lab in label_of.items() if lab and lab in te]
+        if ids:
+            return {**base, "tool": "mark_not_taken" if neg else "mark_taken", "item_ids": ids, "days": 0}
+    return None
+
+
 def route_rules(text: str, items: list) -> dict | None:
     """กฎตายตัวสำหรับคำสั่งที่ชัดเจน (ไม่ต้องเรียก LLM จึงใช้ได้แม้ LLM ล่ม): สรุปวันนี้ / ตรวจให้ / บันทึกว่าใช้แล้ว-ไม่ได้ใช้
     ไม่เข้ากฎ = None (ให้ LLM เลือก) ผลมีรูปเดียวกับ route() และเป็นข้อมูลที่ตรวจแล้ว"""
@@ -603,7 +631,7 @@ def route_rules(text: str, items: list) -> dict | None:
             return {**base, "tool": "mark_not_taken" if neg else "mark_taken", "item_ids": ids, "days": days}
         if not neg and parse_duration_days(text):
             return {**base, "tool": "add_items"}  # บอกว่าใช้มานานแต่ยังไม่มีในรายการ = เสนอเพิ่มรายการ (ผู้ใช้ยืนยัน; ระบบแยกระยะเวลาให้เป็นวันเริ่ม)
-    return None
+    return _route_rules_en(text, items, base)
 
 
 def route(text: str, items: list, complete=None) -> dict:
