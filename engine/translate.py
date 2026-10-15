@@ -1,27 +1,17 @@
-"""คำแปลอังกฤษแบบเสริม: ตารางข้อความไทย -> อังกฤษ จาก data/en_translations.json
+"""คำแปลอังกฤษแบบเสริม: ตารางข้อความไทย -> อังกฤษ จาก engine/en_table.py
 
 ไม่แตะข้อมูลเดิมและไม่เปลี่ยนผลตัดสิน: ผลตรวจยังมีฟิลด์ *_th ครบเหมือนเดิม ส่วนฟิลด์ *_en ใส่เพิ่มเมื่อมีคำแปลครบเท่านั้น
-ถ้าไม่มีไฟล์ (เช่น Cloudflare Worker ที่ไม่มีโฟลเดอร์ data/) ทุกฟิลด์ *_en จะไม่ถูกใส่ และหน้าเว็บแสดงภาษาไทยแทน
+ตารางอยู่ในโมดูล Python ใต้ engine/ จึงถูกแพ็กไปกับโค้ดทุกที่ (รวม Cloudflare Worker ที่ไม่มีโฟลเดอร์ data/)
+ถ้าข้อความไหนไม่มีคำแปล ฟิลด์ *_en ของข้อความนั้นจะไม่ถูกใส่ และหน้าเว็บแสดงภาษาไทยแทน
 คำแปลเป็นร่างที่ผู้เชี่ยวชาญยังไม่ได้ตรวจ เหมือนข้อมูลคำเตือนเอง
 """
-import json
-from pathlib import Path
+from en_table import EN as _TABLE
 
-_PATH = Path(__file__).resolve().parent.parent / "data" / "en_translations.json"
-
-
-def _load() -> dict:
-    try:
-        return json.loads(_PATH.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        return {}
-
-
-EN: dict = _load()
+EN: dict = dict(_TABLE)
 
 
 def configure(table: dict) -> None:
-    """ตั้งตารางคำแปลเอง (สำหรับที่ที่ไม่มีไฟล์ใน data/)"""
+    """ตั้งตารางคำแปลเอง (เช่นทดสอบ หรือที่ที่อยากใช้ตารางอื่น)"""
     global EN
     EN = dict(table)
 

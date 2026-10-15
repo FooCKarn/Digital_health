@@ -47,3 +47,12 @@ def test_meta_has_english_names_and_conditions():
     assert all(h.get("name_en") for h in m["herbs"]) and all(f.get("name_en") for f in m["formulas"])
     assert set(m["conditions_en"]) == set(m["conditions"]) and m["disclaimer_en"]
     assert "safe" not in json.dumps(m, ensure_ascii=False).lower().replace("safety", "")  # ห้ามสื่อว่าปลอดภัย
+
+
+def test_table_module_matches_json_copy_and_loads_without_data_dir():
+    """ตารางอยู่ใน engine/en_table.py (แพ็กไปกับโค้ด) สำเนา JSON ต้องตรงกัน และ translate ต้องไม่พึ่งโฟลเดอร์ data/"""
+    import en_table
+    import translate
+    assert en_table.EN == _j("en_translations.json")
+    assert not hasattr(translate, "Path")  # ไม่อ่านไฟล์เอง
+    assert translate.en("กระเทียม")
