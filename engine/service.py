@@ -194,15 +194,17 @@ def ask(payload) -> dict:
         raise ValueError("context_herbs ไม่ถูกต้อง")
     inp = validate({k: payload[k] for k in ("herbs", "drugs", "profile") if k in payload}, min_herbs=0)
     result = check(inp, ALL, DRUGS, CONFIG, TAGS) if inp["herbs"] else None
+    lang = "en" if payload.get("lang") == "en" else "th"
     answer = rag.answer(q.strip(), result, ctx, [h["id"] for h in inp["herbs"]], RAG, CONFIG,
-                        use_llm=os.environ.get("HERBGUARD_CHAT_LLM") != "0")
+                        use_llm=os.environ.get("HERBGUARD_CHAT_LLM") != "0", lang=lang)
     # ฐานข้อมูลตอบไม่ได้/ปฏิเสธเรื่องขนาดยา-วินิจฉัย -> ค้นข้อมูลทั่วไปจากภายนอกพร้อมแหล่งอ้างอิง (ส่งเฉพาะคำถาม) ไม่ผ่าน = คงข้อความเดิม
     if answer["source"] == "refusal" and answer["intent"] in WEB_INTENTS and web_search_enabled():
-        web = llm.web_answer(q.strip(), CONFIG, answer["intent"])
+        web = llm.web_answer(q.strip(), CONFIG, answer["intent"], lang=lang)
         if web.get("source") == "web":
             answer = {**answer, **web}
         else:
-            answer = {**answer, "rejected_reason": web["rejected_reason"], **({"text_th": web["note_th"]} if "note_th" in web else {})}
+            answer = {**answer, "rejected_reason": web["rejected_reason"], **({"text_th": web["note_th"]} if "note_th" in web else {}),
+                      **({"text_en": web["note_en"]} if "note_en" in web else {})}
     return {"answer": answer}
 
 

@@ -112,3 +112,104 @@ def test_brief_cannot_invent_warnings_when_facts_have_none():
 def test_english_forbidden_list_is_team_labelled():
     cfg = service.CONFIG["llm_forbidden_phrases_en"]
     assert "ทีมตั้งเอง" in cfg["note"] and "safe" in cfg["value"]
+
+
+# ---------- แชต: LLM เรียบเรียงเป็นอังกฤษ ----------
+import rag  # noqa: E402
+from translate import en  # noqa: E402
+
+BYID = {c["item_id"]: c for c in service.RAG["chunks"]}
+
+
+def chat(reply, q="ginger contraindications", use_llm=True):
+    return rag.answer(q, None, [], [], service.RAG, service.CONFIG, use_llm=use_llm, lang="en",
+                      complete=lambda s, u, max_tokens=800: json.dumps(reply) if isinstance(reply, dict) else reply)
+
+
+def faithful_chat():
+    base = chat({}, use_llm=False)
+    ids = [c["item_id"] for c in base["cites"]]
+    return {"answer_en": " ".join(en(BYID[i]["text_th"]) for i in ids)[:450], "cites": ids}, ids
+
+
+def test_chat_english_llm_passes_when_faithful_and_keeps_thai_extract():
+    reply, ids = faithful_chat()
+    a = chat(reply)
+    assert a["source"] == "llm" and a["text_en"] == reply["answer_en"]
+    assert a["text_th"] == rag._extractive([BYID[i] for i in ids])  # ภาษาไทยยังเป็นข้อความสกัดตายตัวจากฐานข้อมูล
+    assert {c["item_id"] for c in a["cites"]} == set(ids)
+
+
+@pytest.mark.parametrize("answer", [
+    "Ginger is safe for everyone",                       # สื่อว่าปลอดภัย
+    "Ginger and turmeric are both fine",                 # ชื่อ/เนื้อหานอกข้อมูล
+    "Ginger is recommended for children",                # กลับความหมาย
+    "Take 500 mg of ginger daily",                       # ตัวเลข/ขนาดยาที่แต่ง
+])
+def test_chat_english_llm_unfaithful_falls_back_to_database_text(answer):
+    reply, ids = faithful_chat()
+    a = chat({**reply, "answer_en": answer})
+    assert a["source"] == "database" and a["rejected_reason"]
+    assert a["text_en"].startswith("From this database:")  # ข้อความอังกฤษตายตัว ไม่ใช่ไทย
+
+
+def test_chat_english_llm_must_cite_every_item():
+    reply, ids = faithful_chat()
+    a = chat({**reply, "cites": []})
+    assert a["source"] == "database" and "cites" in (a["rejected_reason"] or "")
+
+
+def test_chat_thai_mode_still_uses_thai_llm_path():
+    called = []
+    rag.answer("ขิงห้ามใช้กับใคร", None, [], [], service.RAG, service.CONFIG, use_llm=True, lang="th",
+               complete=lambda s, u, max_tokens=800: called.append(s) or "{}")
+    assert called and called[0] == llm.ASK_SYSTEM
+
+
+# ---------- แชต: ค้นเว็บภาษาอังกฤษ ----------
+SRC = [{"title": "Example", "url": "https://example.org/a"}]
+
+
+def web(text, sources=SRC, q="how much ginger per day", intent="dose", lang="en"):
+    calls = []
+
+    def search(question, system=None):
+        calls.append(system)
+        return {"text": text, "sources": sources}
+    r = llm.web_answer(q, service.CONFIG, intent, search=search, lang=lang)
+    return r, calls
+
+
+def test_web_english_answer_has_english_prefix_and_disclaimer_and_uses_english_prompt():
+    r, calls = web("Turmeric may interact with blood thinners. Ask your doctor before combining them.")
+    assert r["source"] == "web" and calls == [llm.SEARCH_SYSTEM_EN]
+    assert r["text_en"].startswith(en(service.CONFIG["chat_web_messages_th"]["value"]["dose_prefix"]))
+    assert r["text_en"].endswith(en(service.CONFIG["chat_web_messages_th"]["value"]["disclaimer"]))
+    assert "EN" in r["text_th"] and r["web_sources"] == SRC
+
+
+@pytest.mark.parametrize("text", ["It is perfectly safe for everyone.", "There is no risk at all.", "This herb cures diabetes.", "Don't worry, it is harmless."])
+def test_web_english_overclaims_are_rejected(text):
+    r, _ = web(text)
+    assert r["rejected_reason"] == "overclaim" and "source" not in r
+
+
+def test_web_english_negated_safety_is_allowed():
+    assert web("It is not safe to use during pregnancy.")[0]["source"] == "web"
+
+
+def test_web_english_needs_sources_and_english_text():
+    r, _ = web("Some english text here.", sources=[])
+    assert r["rejected_reason"] == "no_sources" and r["note_en"]
+    r, _ = web("ข้อความภาษาไทยล้วน ไม่มีอังกฤษเลย")
+    assert r["rejected_reason"] == "no_sources"
+
+
+def test_web_personal_details_are_not_sent_and_note_is_bilingual():
+    r, calls = web("x", q="my email is a.b@example.com what dose")
+    assert r["rejected_reason"] == "personal" and r["note_th"] and r["note_en"] and calls == []
+
+
+def test_web_thai_mode_unchanged():
+    r, calls = web("ข้อมูลทั่วไปเกี่ยวกับขมิ้น ปรึกษาแพทย์ก่อนใช้", lang="th")
+    assert r["source"] == "web" and calls == [None] and "text_en" not in r

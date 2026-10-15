@@ -52,7 +52,7 @@ export const analyze = (payload: AnalyzePayload, signal?: AbortSignal) =>
 export const getMeta = () => call<Meta>("/api/meta", { method: "GET" }, (d) => Array.isArray(d.herbs) && typeof d.disclaimer_th === "string");
 
 export const ask = async (payload: AskPayload): Promise<AskAnswer> =>
-  (await post<{ answer: AskAnswer }>("/api/ask", payload, (d) => typeof d.answer?.text_th === "string")).answer;
+  (await post<{ answer: AskAnswer }>("/api/ask", getLang() === "en" ? { ...payload, lang: "en" } : payload, (d) => typeof d.answer?.text_th === "string")).answer;
 
 export const parseText = (text: string) =>
   post<ParseProposal>("/api/parse", { text }, (d) => Array.isArray(d.herbs) && Array.isArray(d.drugs));

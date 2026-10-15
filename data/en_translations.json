@@ -173,5 +173,10 @@
  "ทำไมถึงขึ้นคำเตือน": "Why is there a warning?",
  "ควรถามเภสัชกรว่าอะไร": "What should I ask a pharmacist?",
  "จากฐานข้อมูลนี้:": "From this database:",
- "คำถามที่ควรถามเภสัชกร (ร่าง ผู้เชี่ยวชาญต้องตรวจ):": "Questions to ask a pharmacist (draft; needs expert review):"
+ "คำถามที่ควรถามเภสัชกร (ร่าง ผู้เชี่ยวชาญต้องตรวจ):": "Questions to ask a pharmacist (draft; needs expert review):",
+ "ข้อมูลทั่วไปจากแหล่งภายนอก ทีมยังไม่ได้ตรวจ ไม่ใช่การวินิจฉัยหรือคำสั่งใช้ ปรึกษาเภสัชกรหรือแพทย์ก่อนใช้": "General information from outside sources. The team hasn't reviewed it. It's not a diagnosis or instructions to use. Ask a pharmacist or doctor before use.",
+ "เครื่องมือนี้ไม่กำหนดขนาดการใช้ให้เฉพาะบุคคล ข้อมูลทั่วไปที่ค้นได้:": "This tool doesn't set doses for individuals. General information found:",
+ "เครื่องมือนี้ไม่ใช่การวินิจฉัยโรค ข้อมูลทั่วไปที่ค้นได้:": "This tool doesn't diagnose illness. General information found:",
+ "ค้นข้อมูลจากภายนอกไม่พบแหล่งที่อ้างอิงได้ โปรดปรึกษาเภสัชกร": "No outside source we could cite was found. Ask a pharmacist.",
+ "คำถามมีข้อมูลส่วนตัว (เบอร์โทร/อีเมล/เลขบัตร) จึงไม่ส่งไปค้นภายนอก ลองถามโดยไม่ใส่ข้อมูลส่วนตัว": "Your question contains personal details (phone number, email or ID number), so it wasn't sent for an outside search. Try asking without personal details."
 }

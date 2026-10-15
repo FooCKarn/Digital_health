@@ -32,6 +32,7 @@ const VIEWS = [
 
 export function App() {
   const lang = useLang();
+  useEffect(() => { document.title = t("ใบพลู: ตรวจคำเตือนสมุนไพรไทยร่วมกับยา (ต้นแบบ)", "Baiplu: check warnings for Thai herbs used with medicines (prototype)"); }, [lang]);
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title = t("ใบพลู: ตรวจคำเตือนสมุนไพรไทยร่วมกับยา (ต้นแบบ)", "Baiplu: check warnings for Thai herbs used with medicines (prototype)");
