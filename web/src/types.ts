@@ -13,6 +13,7 @@ export interface Flag {
   source_page: number | string;
   pdf_page: number | null;
   evidence_quote: string | null;
+  evidence_quote_en?: string;
   verified: boolean;
   drug_class?: string | null;
   condition?: string;
@@ -102,6 +103,7 @@ export interface Cite {
   source_page: number | string;
   pdf_page: number | null;
   evidence_quote: string | null;
+  evidence_quote_en?: string;
   verified: boolean;
   source_doc_th?: string;
   herb_name_en?: string;

@@ -1,7 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { useContext } from "preact/hooks";
 import { AskFlag } from "../chat/chatStore";
-import { NEXT_STEP, RULE_PLAIN, TIER_PLAIN } from "../texts";
+import { NEXT_STEP, RULE_PLAIN, TIER_PLAIN, quoteText } from "../texts";
 import { isKnownSeverity } from "../model/panel";
 import type { Aggregate, Flag } from "../types";
 import { SeverityBadge } from "./SeverityBadge";
@@ -30,7 +30,7 @@ export function FlagCard({ flag: f }: { flag: Flag }) {
           <span class="chip">{RULE_PLAIN[f.rule_id] ? `${RULE_PLAIN[f.rule_id]} (${t("กฎ", "rule")} ${f.rule_id})` : `${t("กฎ", "Rule")} ${f.rule_id}`}</span>
         </p>
       </details>
-      {f.evidence_quote && <Evidence quote={f.evidence_quote} page={f.source_page} pdfPage={f.pdf_page} doc={pick(f.source_doc_th, f.source_doc_en)} />}
+      {f.evidence_quote && <Evidence quote={quoteText(f.evidence_quote, f.evidence_quote_en)} page={f.source_page} pdfPage={f.pdf_page} doc={pick(f.source_doc_th, f.source_doc_en)} />}
       {ask && (
         <button type="button" class="askflag noprint" aria-label={`${t("ถามเรื่องคำเตือนนี้", "Ask about this warning")}: ${ask.herbName(f.herb_id)}`} onClick={() => ask.ask(f)}>{t("ถามเรื่องคำเตือนนี้", "Ask about this warning")}</button>
       )}

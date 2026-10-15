@@ -28,6 +28,7 @@
      "evidence_quote": "ไม่แนะนำให้ใช้ขิงในการบรรเทาอาการคลื่นไส้อาเจียนในสตรีมีครรภ์",
      "verified": false,
      "message_en": "Ginger (ขิง): Ginger is not recommended for relieving nausea and vomiting in pregnant women (this applies only to use for nausea and vomiting).",
+     "evidence_quote_en": "Ginger is not recommended for relieving nausea and vomiting in pregnant women",
      "condition": "pregnancy",
      "flag_id": "f1"
     }
@@ -68,6 +69,7 @@
      "evidence_quote": "ไม่แนะนำให้ใช้ขิงในการบรรเทาอาการคลื่นไส้อาเจียนในสตรีมีครรภ์",
      "verified": false,
      "message_en": "Ginger (ขิง): Ginger is not recommended for relieving nausea and vomiting in pregnant women (this applies only to use for nausea and vomiting).",
+     "evidence_quote_en": "Ginger is not recommended for relieving nausea and vomiting in pregnant women",
      "condition": "pregnancy",
      "flag_id": "f1"
     }

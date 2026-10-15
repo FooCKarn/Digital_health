@@ -12,7 +12,7 @@ import { MOODS } from "../model/diary";
 import { buildPayload, groupFlags, isKnownSeverity, notCheckedLabels } from "../model/panel";
 import { hhmm, type ReminderStore } from "../model/reminder";
 import type { TrackerStore } from "../model/tracker";
-import { NOT_CHECKED, entryName, noFlag, noFlagNote } from "../texts";
+import { NOT_CHECKED, entryName, itemLabel, noFlag, noFlagNote } from "../texts";
 import type { BriefOut, Meta, ParseProposal } from "../types";
 import { ScopeChip } from "./ScopeChip";
 import { SeverityBadge } from "./SeverityBadge";
@@ -61,7 +61,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
   const run = async (q: string, shown?: string) => {
     log.add({ k: "u", t: shown ?? q });
     let route: Awaited<ReturnType<typeof routeAi>> = { tool: "ask", item_ids: [], time: "", page: "", mood: 0 };
-    try { route = await routeAi(q, items.map((i) => ({ id: i.id, label: i.label }))); } catch { /* เลือกเครื่องมือไม่ได้ = ถือเป็นคำถามธรรมดา */ }
+    try { route = await routeAi(q, items.map((i) => ({ id: i.id, label: itemLabel(i) }))); } catch { /* เลือกเครื่องมือไม่ได้ = ถือเป็นคำถามธรรมดา */ }
     try {
       switch (route.tool) {
         case "show_brief": log.add({ k: "brief", b: brief() }); return;
@@ -106,7 +106,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
     if (items.length === 0) return say(emptyHint());
     const hit = ids.map((id) => items.find((i) => i.id === id)).filter((x): x is NonNullable<typeof x> => !!x);
     if (hit.length === 0) return say(t("ยังไม่เข้าใจว่าจะบันทึกรายการไหน ลองพิมพ์ชื่อรายการ เช่น “กินขิงแล้ว” หรือ “กินครบแล้ว”", "I'm not sure which item to log. Try typing its name, like “I took ginger” or “I took everything”."));
-    const names = hit.map((i) => i.label).join(", ");
+    const names = hit.map((i) => itemLabel(i)).join(", ");
     if (want && days >= 2) return markRange(hit, names, days);
     const changed = hit.filter((i) => diary.isTaken(i.id, today) !== want);
     for (const i of changed) diary.toggleTaken(i.id, today);

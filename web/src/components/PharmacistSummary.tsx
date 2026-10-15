@@ -2,7 +2,7 @@ import { downloadJSON } from "../download";
 import type { Analysis } from "../hooks/useAnalysis";
 import { isKnownSeverity, unknownConditions } from "../model/panel";
 import type { Profile } from "../model/tracker";
-import { NOT_CHECKED, conditionLabels, noFlag, noFlagNote, pharmacist } from "../texts";
+import { NOT_CHECKED, conditionLabels, noFlag, noFlagNote, pharmacist, quoteText } from "../texts";
 import type { Flag, Meta } from "../types";
 import { Disclaimer } from "./Disclaimer";
 import { ScopeChip } from "./ScopeChip";
@@ -37,7 +37,7 @@ function FlagTable({ flags }: { flags: Flag[] }) {
               <td data-label={head[3]}>{`${f.source_page}${f.pdf_page ? ` (PDF ${f.pdf_page})` : ""}`}</td>
               <td data-label={head[4]}>{f.verified ? t("ตรวจแล้ว", "Checked") : t("ร่าง: ยังไม่ผ่านการตรวจ", "Draft: not yet checked")}</td>
               <td data-label={head[5]}>{f.rule_id}</td>
-              <td data-label={head[6]}>{f.evidence_quote ? `“${f.evidence_quote}”` : "-"}</td>
+              <td data-label={head[6]}>{f.evidence_quote ? `“${quoteText(f.evidence_quote, f.evidence_quote_en)}”` : "-"}</td>
             </tr>
           ))}
         </tbody>

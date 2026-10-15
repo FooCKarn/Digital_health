@@ -2,6 +2,7 @@ import { useRef } from "preact/hooks";
 import { useStore } from "../hooks/useStore";
 import { kindLabel, type TrackerStore } from "../model/tracker";
 import { getLang, t } from "../i18n";
+import { itemLabel } from "../texts";
 
 // วันที่แบบไทย คำนวณจากสตริง YYYY-MM-DD ด้วย UTC (ไม่ผูกเขตเวลา)
 const fmt = (iso: string) =>
@@ -22,7 +23,7 @@ export function History({ store }: { store: TrackerStore }) {
           {items.map((i) => (
             <li key={i.id} class="active-row">
               <div>
-                <strong>{i.label}</strong>
+                <strong>{itemLabel(i)}</strong>
                 <div class="meta">
                   {`${kindLabel(i.kind)} · ${t("ใช้", "used")} `}
                   <time dateTime={i.start_date}>{fmt(i.start_date)}</time>
@@ -31,7 +32,7 @@ export function History({ store }: { store: TrackerStore }) {
                 </div>
               </div>
               <div class="row-actions">
-                <button type="button" aria-label={`${t("ลบ", "Delete")} ${i.label}`} onClick={() => confirm(t(`ลบ ${i.label} ออกถาวร?`, `Permanently delete ${i.label}?`)) && (store.removeItem(i.id), head.current?.focus())}>{t("ลบ", "Delete")}</button>
+                <button type="button" aria-label={`${t("ลบ", "Delete")} ${itemLabel(i)}`} onClick={() => confirm(t(`ลบ ${itemLabel(i)} ออกถาวร?`, `Permanently delete ${itemLabel(i)}?`)) && (store.removeItem(i.id), head.current?.focus())}>{t("ลบ", "Delete")}</button>
               </div>
             </li>
           ))}

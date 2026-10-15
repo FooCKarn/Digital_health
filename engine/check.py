@@ -46,6 +46,7 @@ def _flag(rule_id, item, herb, evidence_tier="A", **extra):
         **({"source_doc_th": herb["source_doc_th"]} if herb.get("source_doc_th") else {}),
         **({"source_doc_en": en(herb["source_doc_th"])} if herb.get("source_doc_th") and en(herb["source_doc_th"]) else {}),
         **({"message_en": msg_en} if msg_en else {}),
+        **({"evidence_quote_en": en(item["evidence_quote"])} if en(item.get("evidence_quote")) else {}),
         **extra,
     }
 

@@ -195,6 +195,8 @@ def _cite(c: dict) -> dict:
     out = {k: c[k] for k in ("item_id", "herb_id", "herb_name_th", "source_page", "pdf_page", "evidence_quote", "verified")}
     if en(c["herb_name_th"]):
         out["herb_name_en"] = en(c["herb_name_th"])
+    if en(c.get("evidence_quote")):
+        out["evidence_quote_en"] = en(c["evidence_quote"])
     if c.get("source_doc_th"):  # เฉพาะตำรับ (สมุนไพรเดิมอ้างเล่ม TTM first เป็นค่าเริ่มต้นของหน้าเว็บ)
         out["source_doc_th"] = c["source_doc_th"]
         if en(c["source_doc_th"]):
@@ -207,6 +209,8 @@ def _flag_cite(f: dict, index: dict) -> dict:
            "source_page": f["source_page"], "pdf_page": f.get("pdf_page"), "evidence_quote": f.get("evidence_quote"), "verified": f["verified"]}
     if en(out["herb_name_th"]):
         out["herb_name_en"] = en(out["herb_name_th"])
+    if en(f.get("evidence_quote")):
+        out["evidence_quote_en"] = en(f["evidence_quote"])
     if f.get("source_doc_th"):
         out["source_doc_th"] = f["source_doc_th"]
         if en(f["source_doc_th"]):

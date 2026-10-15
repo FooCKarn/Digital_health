@@ -2,6 +2,7 @@ import { dayNumber } from "./dates";
 import { groupFlags } from "./panel";
 import type { TrackerItem } from "./tracker";
 import type { AnalyzeResult, BriefFacts } from "../types";
+import { itemLabel } from "../texts";
 
 /**
  * สรุปประจำวัน: คำนวณจากข้อมูลในเครื่องและผลตรวจปัจจุบันเท่านั้น (ฟังก์ชันล้วน ไม่เรียก AI ไม่แปลผลสุขภาพ)
@@ -36,14 +37,14 @@ export function buildBrief(input: {
   notCheckedLabels: string[];
 }): Brief {
   const { items, isTaken, today } = input;
-  const untaken = items.filter((i) => !isTaken(i.id)).map((i) => ({ id: i.id, label: i.label }));
+  const untaken = items.filter((i) => !isTaken(i.id)).map((i) => ({ id: i.id, label: itemLabel(i) }));
   const warnings = input.result && input.resultCurrent
     ? { total: input.result.flags.length, avoid: groupFlags(input.result).avoid.length }
     : null;
   let longest: Brief["longestUse"] = null;
   for (const i of items) {
     const d = dayNumber(i.start_date, today);
-    if (d >= 2 && (!longest || d > longest.days)) longest = { label: i.label, days: d };
+    if (d >= 2 && (!longest || d > longest.days)) longest = { label: itemLabel(i), days: d };
   }
   return {
     itemCount: items.length, untaken, takenCount: items.length - untaken.length, warnings,

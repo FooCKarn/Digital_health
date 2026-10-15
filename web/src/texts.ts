@@ -1,6 +1,14 @@
 import { t, tMap, getLang } from "./i18n";
 import type { Meta } from "./types";
 
+/** วลีหลักฐานจากหนังสือ: โหมดอังกฤษแสดงคำแปลพร้อมต้นฉบับไทยกำกับ (ไว้ตรวจเทียบกับเล่ม) */
+export const quoteText = (th: string, en?: string | null): string => (getLang() === "en" && en ? `${en} (Thai original: ${th})` : th);
+
+/** ชื่อรายการที่ใช้อยู่ตามภาษาที่เลือก: สมุนไพร/ตำรับอ่านชื่อจากรหัส (ชื่อที่เก็บไว้ตอนเพิ่มเป็นภาษาตอนนั้น) ยาใช้ชื่อที่ผู้ใช้เลือก/พิมพ์ */
+let labelMeta: Meta | null = null;
+export const setLabelMeta = (m: Meta | null) => { labelMeta = m; };
+export const itemLabel = (i: { kind: string; ref: string; label: string }): string => (i.kind !== "drug" && labelMeta ? entryName(labelMeta, i.ref) : i.label);
+
 /** ชื่อโรค/สภาวะตามภาษาที่เลือก (ไม่มีคำแปลก็ใช้ภาษาไทย) */
 export const conditionLabels = (m: Meta): Record<string, string> => (getLang() === "en" && m.conditions_en ? m.conditions_en : m.conditions);
 /** ชื่อสมุนไพรหรือตำรับตามรหัส ตามภาษาที่เลือก */

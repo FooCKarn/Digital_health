@@ -8,6 +8,7 @@ import type { DiaryStore } from "../model/diary";
 import { useDiary } from "../hooks/useDiary";
 import { takenInWindow } from "../model/diary";
 import { t } from "../i18n";
+import { itemLabel } from "../texts";
 
 export function ActiveList({ store, today, analysis: a, diary }: { store: TrackerStore; today: string; analysis: Analysis; diary?: DiaryStore }) {
   useDiary(diary);
@@ -27,7 +28,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
             return (
               <li key={i.id} class="active-row" data-sev={v === "avoid" || v === "caution" || v === "info" ? v : undefined}>
                 <div>
-                  <strong>{i.label}</strong>
+                  <strong>{itemLabel(i)}</strong>
                   <div class="meta">{t(`${kindLabel(i.kind)} · เริ่มใช้ ${thaiDate(i.start_date)} (ใช้มา ${dayNumber(i.start_date, today)} วัน)`, `${kindLabel(i.kind)} · started ${thaiDate(i.start_date)} (day ${dayNumber(i.start_date, today)})`)}</div>
                 </div>
                 {v === "pending" ? <span class="pending">{t("กำลังตรวจ…", "Checking…")}</span>
@@ -36,20 +37,20 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
                   : <SeverityBadge kind={v} />}
                 {diary && (
                   <div class="checkin">
-                    <button type="button" class="check-btn" aria-pressed={diary.isTaken(i.id, today)} aria-label={`${t("ใช้แล้ววันนี้", "Taken today")} ${i.label}`}
+                    <button type="button" class="check-btn" aria-pressed={diary.isTaken(i.id, today)} aria-label={`${t("ใช้แล้ววันนี้", "Taken today")} ${itemLabel(i)}`}
                       onClick={() => diary.toggleTaken(i.id, today)}>
                       {t("ใช้แล้ววันนี้", "Taken today")}
                     </button>
-                    <WeekDots diary={diary} id={i.id} start={i.start_date} today={today} label={i.label} />
+                    <WeekDots diary={diary} id={i.id} start={i.start_date} today={today} label={itemLabel(i)} />
                   </div>
                 )}
                 <details class="manage">
-                  <summary>{`${t("จัดการ", "Manage")} ${i.label}`}</summary>
-                {diary && <DoseNote diary={diary} id={i.id} label={i.label} />}
-                <StartEditor store={store} diary={diary} item={i} today={today} />
+                  <summary>{`${t("จัดการ", "Manage")} ${itemLabel(i)}`}</summary>
+                {diary && <DoseNote diary={diary} id={i.id} label={itemLabel(i)} />}
+                <StartEditor store={store} diary={diary} item={{ ...i, label: itemLabel(i) }} today={today} />
                 <div class="row-actions">
-                  <button type="button" aria-label={`${t("หยุดใช้", "Stop using")} ${i.label}`} onClick={() => done(() => store.stopItem(i.id))}>{t("หยุดใช้", "Stop using")}</button>
-                  <button type="button" aria-label={`${t("ลบ", "Delete")} ${i.label}`} onClick={() => confirm(t(`ลบ ${i.label} ออกถาวร (รวมประวัติ)?`, `Permanently delete ${i.label} (including its history)?`)) && done(() => { store.removeItem(i.id); diary?.dropTaken(i.id); })}>{t("ลบ", "Delete")}</button>
+                  <button type="button" aria-label={`${t("หยุดใช้", "Stop using")} ${itemLabel(i)}`} onClick={() => done(() => store.stopItem(i.id))}>{t("หยุดใช้", "Stop using")}</button>
+                  <button type="button" aria-label={`${t("ลบ", "Delete")} ${itemLabel(i)}`} onClick={() => confirm(t(`ลบ ${itemLabel(i)} ออกถาวร (รวมประวัติ)?`, `Permanently delete ${itemLabel(i)} (including its history)?`)) && done(() => { store.removeItem(i.id); diary?.dropTaken(i.id); })}>{t("ลบ", "Delete")}</button>
                 </div>
                 </details>
               </li>
