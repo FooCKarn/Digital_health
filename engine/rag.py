@@ -71,12 +71,36 @@ def build_index(herbs_db: dict, drug_map: dict, conds: dict, synonyms: dict, kin
         "idf": {g: math.log((n_chunks + 1) / (d + 0.5)) for g, d in df.items()},
         "unseen": math.log((n_chunks + 1) / 0.5),  # gram ที่ไม่เคยปรากฏในคลัง = หนักสุด (ดึงคะแนนลงเมื่อคำถามมีคำที่ฐานไม่รู้จัก)
         "herb_by_name": sorted(((norm(h["name_th"]), h["id"]) for h in herbs_db["herbs"]), key=lambda x: -len(x[0])),
+        "herb_alias_en": _herb_aliases_en(herbs_db),
         "herb_names": {h["id"]: h["name_th"] for h in herbs_db["herbs"]},
         "classes": {c: [a for a in (norm(w) for w in ws) if len(a) >= 3] for c, ws in class_alias.items()},
-        "cond_alts": {code: _alts(conds.get(code, "")) + [a for a in (norm(w) for w in synonyms.get(code, [])) if len(a) >= 3] for code in sorted(cond_codes)},
+        "cond_alts": {code: _alts(conds.get(code, "")) + [a for a in (norm(w) for w in synonyms.get(code, []) + [en(conds.get(code, "")) or ""]) if len(a) >= 3] for code in sorted(cond_codes)},
         "kinds": {k: [a for a in (norm(w) for w in ws) if len(a) >= 2] for k, ws in kind_keywords.items()},
         "drug_names": [n for e in drug_map["entries"] for n in e["names"]],
     }
+
+
+def _herb_aliases_en(herbs_db: dict) -> list:
+    """[(ชื่ออังกฤษ ตัวพิมพ์เล็ก, ชื่อไทย)] จากตารางแปลของทีม (en_translations.json) เช่น 'Andrographis / fa thalai chon (ฟ้าทะลายโจร)'
+    -> andrographis, fa thalai chon; ชื่อยาวก่อน (ให้ 'indian gooseberry' ชนะคำสั้นกว่า); ไม่มีคำแปล = ไม่มีชื่ออังกฤษ"""
+    out = []
+    for h in herbs_db["herbs"]:
+        label = en(h["name_th"])
+        for a in (label.split(" (")[0].split(" / ") if label else []):
+            a = a.strip().lower()
+            if len(a) >= 4:
+                out.append((a, h["name_th"]))
+    return sorted(set(out), key=lambda x: (-len(x[0]), x[0]))
+
+
+def en_to_th(question: str, index: dict) -> str:
+    """ชื่อสมุนไพรภาษาอังกฤษในคำถาม -> ชื่อไทย ก่อนค้น (ที่เดียว: กลไกค้นเดิมทั้งหมดทำงานกับชื่อไทย)
+    จับเฉพาะเป็นคำเต็ม (ไม่ให้ 'plai' ไปชนกับ 'explain'); ช่องว่าง/ขีดคั่นกลางชื่อยืดหยุ่นได้"""
+    out = question
+    for alias, th in index.get("herb_alias_en", []):
+        pat = r"(?<![a-z0-9])" + r"[\s\-]+".join(re.escape(w) for w in alias.split()) + r"(?![a-z0-9])"
+        out = re.sub(pat, f" {th} ", out, flags=re.I)
+    return out
 
 
 def named_herbs(q_norm: str, index: dict) -> list:
@@ -243,6 +267,7 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
     follow_en = [en(x) for x in follow]
 
     intent = classify(question, config)
+    q_th = en_to_th(question, index)  # ใช้กับขั้นค้น/ขอบเขต/หลักของคำถามเท่านั้น
 
     def out(source, text, cites=(), why=None, text_en=None):
         # text_en / follow_ups_en: ใส่เมื่อมีคำแปลครบทุกส่วนเท่านั้น (ข้อความที่ LLM เรียบเรียงยังเป็นไทยอย่างเดียว)
@@ -264,12 +289,12 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
         if result is None:
             return out("refusal", msgs["no_check"], text_en=en(msgs["no_check"]))
         flags = result["flags"]
-        named = named_herbs(norm(question), index)
-        classes, codes, kinds = anchors(question, index)
+        named = named_herbs(norm(q_th), index)
+        classes, codes, kinds = anchors(q_th, index)
         # กฎข้อ 5: คำถามเอ่ยถึงสมุนไพรที่ไม่ได้ตรวจ หรือยา/โรคที่ไม่มีคำเตือนใดครอบคลุม -> ห้ามตอบ 'ไม่พบคำเตือน' ผลตรวจไม่ได้ตอบเรื่องนั้น
         unchecked = [h for h in named if h not in checked_herbs]
         phrases = config["chat_safety_yesno_phrases"]["value"] + config["chat_explain_phrases"]["value"]
-        chunks = _lookup(question, set(named) or set(checked_herbs), index, config, phrases)
+        chunks = _lookup(q_th, set(named) or set(checked_herbs), index, config, phrases)
         # ไม่มีคำเตือนแต่ฐานมีรายการตรงหลักของคำถาม (เช่น 'เด็ก' 'คนท้อง' ที่ผู้ใช้ไม่ได้กรอก) = ผลตรวจไม่ได้ตอบเรื่องนั้นเช่นกัน
         # มีคำเตือนอื่นอยู่แล้วแต่หัวข้อที่ถาม (เช่น 'เด็ก') ไม่มีคำเตือนใดครอบคลุม = ไม่ครอบคลุมเช่นกัน
         uncovered = (unchecked or classes - {f.get("drug_class") for f in flags} or codes - {f.get("condition") for f in flags}
@@ -297,7 +322,7 @@ def answer(question: str, result, context_herbs: list, checked_herbs: list, inde
             return out("database", msgs["safety_no_flag"], text_en=en(msgs["safety_no_flag"]))
         return out("database", flag_text, flag_cites, text_en=flag_text_en)
 
-    chunks = _lookup(question, resolve_scope(question, index, checked_herbs, context_herbs), index, config)
+    chunks = _lookup(q_th, resolve_scope(q_th, index, checked_herbs, context_herbs), index, config)
     if not chunks:
         return {**out("refusal", msgs["no_info"], text_en=en(msgs["no_info"])), "intent": "no_info"}  # service.ask ค้นภายนอกต่อได้
     base_text, why = _extractive(chunks), None
