@@ -5,7 +5,7 @@ import { MOODS, type DiaryState } from "../model/diary";
 import type { TrackerItem } from "../model/tracker";
 import { t } from "../i18n";
 
-const shortDays = () => t(["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"].join(","), "Su,Mo,Tu,We,Th,Fr,Sa").split(",");
+const shortDays = () => t(["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"].join(","), "Sun,Mon,Tue,Wed,Thu,Fri,Sat").split(",");
 const MAX_PIPS = 4;
 
 type Props = { items: TrackerItem[]; diary: DiaryState; today: string; selected: string; onSelect: (iso: string) => void };

@@ -12,6 +12,10 @@ button { border-radius: 10px; }
 .appbar { display: flex; align-items: center; gap: var(--sp-3); padding-top: var(--sp-4); padding-bottom: var(--sp-2); }
 .appbar h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: 0; line-height: 1.25; }
 .appbar .meta { margin: 0; }
+.hero-prompt { margin: 0; line-height: 1.5; }
+.added-status:not(:empty) { margin: var(--sp-2) 0; padding: var(--sp-2) var(--sp-3); border-radius: 12px; background: var(--c-noflag-bg); color: var(--c-noflag-fg); font-weight: 600; }
+.tab-hint { margin: 0 0 var(--sp-3); color: var(--c-muted); font-size: .92rem; }
+.list-hint { margin: 0 0 var(--sp-2); }
 .lang-toggle { margin-left: auto; min-width: 52px; padding: 0 var(--sp-3); font-weight: 700; border-radius: 999px; }
 .logo { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: 10px; background: var(--c-primary); color: var(--c-on-primary); }
 .proto-banner { margin: 0 0 var(--sp-3); padding: 6px var(--sp-4); font-size: .88rem; color: var(--c-caution-fg); background: var(--c-caution-bg); border-radius: 10px; }
