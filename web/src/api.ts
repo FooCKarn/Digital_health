@@ -58,14 +58,14 @@ export const parseText = (text: string) =>
   post<ParseProposal>("/api/parse", { text }, (d) => Array.isArray(d.herbs) && Array.isArray(d.drugs));
 
 export const explain = (payload: AnalyzePayload) =>
-  post<{ explanation: Explanation }>("/api/explain", payload, (d) => {
+  post<{ explanation: Explanation }>("/api/explain", getLang() === "en" ? { ...payload, lang: "en" } : payload, (d) => {
     const e = d.explanation;
     return (e?.source === "llm" || e?.source === "template") && typeof e.summary_th === "string" && Array.isArray(e.items)
       && e.items.every((i: any) => typeof i?.flag_id === "string" && typeof i?.text_th === "string");
   });
 
 export const briefAi = async (facts: BriefFacts): Promise<BriefOut> =>
-  (await post<{ brief: BriefOut }>("/api/brief", facts, (d) => (d.brief?.source === "llm" || d.brief?.source === "template") && typeof d.brief.summary_th === "string")).brief;
+  (await post<{ brief: BriefOut }>("/api/brief", getLang() === "en" ? { ...facts, lang: "en" } : facts, (d) => (d.brief?.source === "llm" || d.brief?.source === "template") && typeof d.brief.summary_th === "string")).brief;
 
 const TOOLS = ["ask", "show_brief", "show_check", "mark_taken", "mark_not_taken", "add_items", "set_reminder", "go_to", "log_mood"];
 export const routeAi = async (text: string, items: { id: string; label: string }[]): Promise<RouteOut> =>
