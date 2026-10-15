@@ -168,7 +168,8 @@ def explain(payload) -> dict:
     """LLM จุดที่ 2: คำนวณผลตรวจใหม่ฝั่งเซิร์ฟเวอร์ (ไม่เชื่อผลจากไคลเอนต์) แล้วเรียบเรียง; ไม่ผ่านตัวตรวจ = template"""
     inp = validate(payload)
     result = check(inp, ALL, DRUGS, CONFIG, TAGS)
-    return {"explanation": llm.explain(inp, result, ALL, DRUGS, CONFIG)}
+    lang = "en" if payload.get("lang") == "en" else "th"  # validate() ใช้เฉพาะคีย์ที่รู้จัก; lang มีผลแค่ภาษาที่ให้ LLM เรียบเรียง ไม่กระทบผลตรวจ
+    return {"explanation": llm.explain(inp, result, ALL, DRUGS, CONFIG, lang=lang)}
 
 
 WEB_INTENTS = ("no_info", "dose", "diagnosis")
@@ -205,7 +206,7 @@ def ask(payload) -> dict:
     return {"answer": answer}
 
 
-_BRIEF_KEYS = {"item_count", "taken_count", "untaken", "warnings", "no_entry_today", "not_checked_count", "longest_days"}
+_BRIEF_KEYS = {"item_count", "taken_count", "untaken", "warnings", "no_entry_today", "not_checked_count", "longest_days", "lang"}
 
 
 def brief(payload) -> dict:
@@ -229,7 +230,7 @@ def brief(payload) -> dict:
         facts["not_checked_count"] = _int(payload["not_checked_count"], 0, 20, "not_checked_count")
     if payload.get("longest_days") is not None:
         facts["longest_days"] = _int(payload["longest_days"], 0, 400, "longest_days")
-    return {"brief": llm.brief(facts, ALL, DRUGS, CONFIG)}
+    return {"brief": llm.brief(facts, ALL, DRUGS, CONFIG, lang="en" if payload.get("lang") == "en" else "th")}
 
 
 def assistant(payload) -> dict:
