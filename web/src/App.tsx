@@ -21,7 +21,7 @@ import { DiaryStore } from "./model/diary";
 import { CloudSync } from "./model/cloud";
 import { ReminderStore, hhmm } from "./model/reminder";
 import type { Meta } from "./types";
-import { entryName } from "./texts";
+import { entryName, setLabelMeta } from "./texts";
 
 const VIEWS = [
   { id: "now", th: "ช่วงนี้", en: "This period" },
@@ -53,6 +53,7 @@ export function App() {
         store.setKnownConditions(Object.keys(m.conditions));
         store.setProfile(store.state.profile);
         setMeta(m);
+      setLabelMeta(m);
       })
       .catch((e) => live && setError(e instanceof ApiError ? e.thaiMessage : new ApiError("network").thaiMessage));
     return () => { live = false; };

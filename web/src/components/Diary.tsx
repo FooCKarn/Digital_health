@@ -10,6 +10,7 @@ import { Calendar } from "./Calendar";
 import { openPolicy } from "./Policy";
 import { useDiary } from "../hooks/useDiary";
 import { t } from "../i18n";
+import { itemLabel } from "../texts";
 
 const num = (s: string): number | null => (s.trim() === "" ? null : Number(s));
 
@@ -67,7 +68,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
           <ul class="plain-list">
             {items.map((i) => {
               const w = takenInWindow(diary.state.taken[i.id] ?? [], i.start_date, today);
-              return <li key={i.id}><strong>{i.label}</strong> <span class="meta">{t(`กดบันทึกว่าใช้ ${w.took} จาก ${w.days} วัน`, `marked as taken on ${w.took} of ${w.days} days`)}</span></li>;
+              return <li key={i.id}><strong>{itemLabel(i)}</strong> <span class="meta">{t(`กดบันทึกว่าใช้ ${w.took} จาก ${w.days} วัน`, `marked as taken on ${w.took} of ${w.days} days`)}</span></li>;
             })}
           </ul>
         )}
@@ -76,7 +77,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
       <section class="card print-me" aria-labelledby="pharm-h">
         <h3 id="pharm-h">{t("สรุปไว้คุยกับเภสัชกร", "Summary to discuss with a pharmacist")}</h3>
         <ul class="plain-list">
-          <li>{items.length ? `${t("กำลังใช้", "In use")}: ${items.map((i) => `${i.label} (${t("วันที่", "day")} ${dayNumber(i.start_date, today)})`).join(", ")}` : `${t("กำลังใช้", "In use")}: ${t("ไม่มีรายการ", "none")}`}</li>
+          <li>{items.length ? `${t("กำลังใช้", "In use")}: ${items.map((i) => `${itemLabel(i)} (${t("วันที่", "day")} ${dayNumber(i.start_date, today)})`).join(", ")}` : `${t("กำลังใช้", "In use")}: ${t("ไม่มีรายการ", "none")}`}</li>
           <li>
             {flagCount ? t(`คำเตือนจากฐานข้อมูลนี้: ควรหลีกเลี่ยง ${flagCount.avoid.length} · ควรระวัง ${flagCount.caution.length} · ข้อมูลเพิ่มเติม ${flagCount.info.length}`, `Warnings from this database: avoid ${flagCount.avoid.length} · use caution ${flagCount.caution.length} · more information ${flagCount.info.length}`) : t("คำเตือน: ยังไม่มีผลตรวจล่าสุด ดูที่หน้า ช่วงนี้", "Warnings: no latest result yet. See the This period tab.")}
           </li>
@@ -166,7 +167,7 @@ function DayPanel({ diary, store, date, today, msg, onMsg }: {
           {usedThen.map((i) => (
             <label key={i.id} class="check-line took-row">
               <input type="checkbox" checked={diary.isTaken(i.id, date)} onChange={() => diary.toggleTaken(i.id, date)} />
-              <span>{i.label}</span>
+              <span>{itemLabel(i)}</span>
             </label>
           ))}
         </fieldset>

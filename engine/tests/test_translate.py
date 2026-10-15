@@ -56,3 +56,18 @@ def test_table_module_matches_json_copy_and_loads_without_data_dir():
     assert en_table.EN == _j("en_translations.json")
     assert not hasattr(translate, "Path")  # ไม่อ่านไฟล์เอง
     assert translate.en("กระเทียม")
+
+
+def test_every_evidence_quote_has_english_and_flags_carry_it():
+    quotes = set()
+    for h in _j("herbs.json")["herbs"]:
+        for sec in ("contraindications", "age_limits", "drug_cautions", "condition_cautions", "duration_limits"):
+            quotes |= {i["evidence_quote"] for i in h[sec] if i.get("evidence_quote")}
+    for f in _j("formula_guidelines.json")["formulas"]:
+        for sec in ("contraindications", "condition_cautions"):
+            quotes |= {i["evidence_quote"] for i in f[sec] if i.get("evidence_quote")}
+    assert quotes and not [q for q in quotes if not en(q)]
+    ids = [h["id"] for h in service.HERBS["herbs"]] + [f["id"] for f in service.FORMULAS]
+    r = service.run({"herbs": [{"id": i, "days_in_use": 30} for i in ids], "drugs": ["warfarin"],
+                     "profile": {"age": 3, "pregnant": True, "breastfeeding": True, "conditions": ["fever"]}})
+    assert all(f["evidence_quote_en"] for f in r["result"]["flags"] if f.get("evidence_quote"))

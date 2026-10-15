@@ -28,6 +28,7 @@
      "evidence_quote": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือด ไม่ควรรับประทาน",
      "verified": false,
      "message_en": "Ginger (ขิง): People who are taking anticoagulant medicines should not take it.",
+     "evidence_quote_en": "Patients taking anticoagulant medicines should not take it",
      "drug_class": "anticoagulant",
      "flag_id": "f1"
     }
@@ -90,6 +91,7 @@
      "evidence_quote": "ผู้ป่วยที่ได้รับยาต้านการแข็งตัวของเลือด ไม่ควรรับประทาน",
      "verified": false,
      "message_en": "Ginger (ขิง): People who are taking anticoagulant medicines should not take it.",
+     "evidence_quote_en": "Patients taking anticoagulant medicines should not take it",
      "drug_class": "anticoagulant",
      "flag_id": "f1"
     }

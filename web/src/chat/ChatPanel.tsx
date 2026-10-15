@@ -8,6 +8,7 @@ import type { TrackerStore } from "../model/tracker";
 import type { Meta } from "../types";
 import { toMsg, type ChatMsg, type ChatStore } from "./chatStore";
 import { getLang, pick, t, tMap } from "../i18n";
+import { quoteText } from "../texts";
 
 // ข้อความตายตัว
 const notice = () => t("ไม่ใช่การวินิจฉัย · ข้อมูลยังเป็นร่าง · ตอบจากฐานข้อมูลของเครื่องมือนี้ก่อน ถ้าไม่มีจะค้นเว็บภายนอกพร้อมแหล่งอ้างอิง · ห้ามพิมพ์ข้อมูลส่วนตัว", "Not a diagnosis · data is a draft · answers come from this tool's database first, and if it has none, from an outside web search with sources · do not type personal information");
@@ -42,7 +43,7 @@ export function Msg({ m }: { m: ChatMsg }) {
         </span>
       )}
       {m.cites.filter((c) => c.evidence_quote).slice(0, 6).map((c, i) => (
-        <Evidence key={i} summary={`${t("ดูหลักฐาน", "See the evidence")}: ${pick(c.herb_name_th, c.herb_name_en)}`} quote={c.evidence_quote!} page={c.source_page} pdfPage={c.pdf_page} doc={pick(c.source_doc_th, c.source_doc_en)}>
+        <Evidence key={i} summary={`${t("ดูหลักฐาน", "See the evidence")}: ${pick(c.herb_name_th, c.herb_name_en)}`} quote={quoteText(c.evidence_quote!, c.evidence_quote_en)} page={c.source_page} pdfPage={c.pdf_page} doc={pick(c.source_doc_th, c.source_doc_en)}>
           <p class="meta">{`${t("รหัสรายการ", "Item code")} ${c.item_id} · ${c.verified ? t("ตรวจแล้ว", "Checked") : t("ร่าง: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ", "Draft: not yet reviewed by experts")}`}</p>
         </Evidence>
       ))}

@@ -35,6 +35,7 @@
      "evidence_quote": "ผลมะแว้งเครือมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด จึงควรระวังในการใช้ในผู้ป่วยโรคเบาหวาน",
      "verified": false,
      "message_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ): The fruit lowers blood sugar. Use with caution in people with diabetes.",
+     "evidence_quote_en": "Ma waeng khruea fruit lowers blood sugar, so use with caution in patients with diabetes",
      "condition": "diabetes",
      "flag_id": "f1"
     },
@@ -50,6 +51,7 @@
      "evidence_quote": "ควรระวังการใช้มะแว้งเครือร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
      "verified": false,
      "message_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ): Use with caution together with blood-sugar-lowering medicines in people with diabetes.",
+     "evidence_quote_en": "Use ma waeng khruea with caution together with blood-sugar-lowering medicines in patients with diabetes",
      "drug_class": "antidiabetic",
      "flag_id": "f2"
     },
@@ -65,6 +67,7 @@
      "evidence_quote": "ใบรางจืดมีฤทธิ์ลดระดับน้ำตาลในเลือด จึงควรระวังการใช้ในผู้ป่วยโรคเบาหวาน",
      "verified": false,
      "message_en": "Rang chuet / laurel clock vine (รางจืด): The leaves lower blood sugar. Use with caution in people with diabetes.",
+     "evidence_quote_en": "Rang chuet leaves lower blood sugar, so use with caution in patients with diabetes",
      "condition": "diabetes",
      "flag_id": "f3"
     },
@@ -80,6 +83,7 @@
      "evidence_quote": "ควรระวังการใช้ใบรางจืดร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
      "verified": false,
      "message_en": "Rang chuet / laurel clock vine (รางจืด): Use with caution together with blood-sugar-lowering medicines in people with diabetes.",
+     "evidence_quote_en": "Use rang chuet leaves with caution together with blood-sugar-lowering medicines in patients with diabetes",
      "drug_class": "antidiabetic",
      "flag_id": "f4"
     }
@@ -150,6 +154,7 @@
      "evidence_quote": "ผลมะแว้งเครือมีฤทธิ์ลดผลต่อระดับน้ำตาลในเลือด จึงควรระวังในการใช้ในผู้ป่วยโรคเบาหวาน",
      "verified": false,
      "message_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ): The fruit lowers blood sugar. Use with caution in people with diabetes.",
+     "evidence_quote_en": "Ma waeng khruea fruit lowers blood sugar, so use with caution in patients with diabetes",
      "condition": "diabetes",
      "flag_id": "f1"
     },
@@ -165,6 +170,7 @@
      "evidence_quote": "ควรระวังการใช้มะแว้งเครือร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
      "verified": false,
      "message_en": "Ma waeng khruea / Solanum trilobatum (มะแว้งเครือ): Use with caution together with blood-sugar-lowering medicines in people with diabetes.",
+     "evidence_quote_en": "Use ma waeng khruea with caution together with blood-sugar-lowering medicines in patients with diabetes",
      "drug_class": "antidiabetic",
      "flag_id": "f2"
     },
@@ -180,6 +186,7 @@
      "evidence_quote": "ใบรางจืดมีฤทธิ์ลดระดับน้ำตาลในเลือด จึงควรระวังการใช้ในผู้ป่วยโรคเบาหวาน",
      "verified": false,
      "message_en": "Rang chuet / laurel clock vine (รางจืด): The leaves lower blood sugar. Use with caution in people with diabetes.",
+     "evidence_quote_en": "Rang chuet leaves lower blood sugar, so use with caution in patients with diabetes",
      "condition": "diabetes",
      "flag_id": "f3"
     },
@@ -195,6 +202,7 @@
      "evidence_quote": "ควรระวังการใช้ใบรางจืดร่วมกับยาลดระดับน้ำตาลในเลือดในผู้ป่วยโรคเบาหวาน",
      "verified": false,
      "message_en": "Rang chuet / laurel clock vine (รางจืด): Use with caution together with blood-sugar-lowering medicines in people with diabetes.",
+     "evidence_quote_en": "Use rang chuet leaves with caution together with blood-sugar-lowering medicines in patients with diabetes",
      "drug_class": "antidiabetic",
      "flag_id": "f4"
     }
