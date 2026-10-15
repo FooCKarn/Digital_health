@@ -24,10 +24,10 @@ import type { Meta } from "./types";
 import { entryName, setLabelMeta } from "./texts";
 
 const VIEWS = [
-  { id: "now", th: "ช่วงนี้", en: "This period" },
-  { id: "assistant", th: "ผู้ช่วย", en: "Assistant" },
-  { id: "diary", th: "บันทึก", en: "Diary" },
-  { id: "mine", th: "ข้อมูลของฉัน", en: "My data" },
+  { id: "now", th: "ช่วงนี้", en: "This period", hintTh: "ใส่สมุนไพรหรือยาที่ใช้ แล้วอ่านคำเตือนที่ระบบตรวจให้", hintEn: "Add what you use, then read the warnings we find." },
+  { id: "assistant", th: "ผู้ช่วย", en: "Assistant", hintTh: "พิมพ์สั่งหรือถามได้เลย เช่น “กินขิงแล้ว” ไม่ต้องกดหลายหน้า", hintEn: "Type a request or question, like “I took ginger”, without opening other tabs." },
+  { id: "diary", th: "บันทึก", en: "Diary", hintTh: "จดความรู้สึกรายวัน แล้วดูย้อนหลังในปฏิทิน", hintEn: "Note how you feel each day and look back on the calendar." },
+  { id: "mine", th: "ข้อมูลของฉัน", en: "My data", hintTh: "โปรไฟล์สุขภาพ การสำรองข้อมูล และบัญชี", hintEn: "Your health profile, backups and account." },
 ] as const;
 
 export function App() {
@@ -175,8 +175,9 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
         ))}
       </div>
       <AskFlag.Provider value={askFlag}>
+        <p class="tab-hint noprint">{t(v.hintTh, v.hintEn)}</p>
         <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
-          {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} diary={diary} />
+          {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} diary={diary} onProfile={() => setTab(VIEWS.findIndex((x) => x.id === "mine"))} />
             : v.id === "assistant" ? (
               <Assistant store={store} diary={diary} meta={meta} today={today} analysis={a} reminder={reminder} log={assistantLog}
                 go={(to: GoTo) => setTab(VIEWS.findIndex((x) => x.id === to))} />

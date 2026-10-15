@@ -21,7 +21,7 @@ const stale = () => t("ผลก่อนแก้ไข (ยังไม่ไ�
 
 const aggBucket = (a: Aggregate): keyof PanelGroups => (isKnownSeverity(a.severity) ? a.severity : "other");
 
-type Props = { store: TrackerStore; meta: Meta; today: string; diary?: DiaryStore };
+type Props = { store: TrackerStore; meta: Meta; today: string; diary?: DiaryStore; onProfile?: () => void };
 
 /** ใช้เดี่ยว ๆ (ตรวจเอง) */
 export function ThisPeriod(p: Props) {
@@ -30,7 +30,7 @@ export function ThisPeriod(p: Props) {
 }
 
 /** ใช้ใน App: ผลตรวจชุดเดียวแบ่งกับใบสรุปเภสัชกร (ไม่เรียก API ซ้ำ) */
-export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props & { analysis: Analysis }) {
+export function ThisPeriodView({ store, meta, today, analysis: a, diary, onProfile }: Props & { analysis: Analysis }) {
   useDiary(diary);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(""); // ประกาศการเพิ่ม แยกจากพื้นที่ประกาศผลตรวจ
@@ -51,11 +51,12 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
       <div class="tp-side">
       <section class="hero" aria-label={t("สรุปวันนี้", "Today's summary")}>
         <p class="hero-date">{thaiDate(today)}</p>
-        <div class="hero-stats">
+        {items.length === 0 && <p class="hero-prompt"><strong>{t("เริ่มตรงนี้", "Start here")}</strong> {t("เพิ่มสมุนไพรหรือยาที่คุณใช้อยู่ แล้วระบบจะตรวจคำเตือนให้", "Add the herbs or medicines you use, and we'll check them for warnings.")}</p>}
+        {items.length > 0 && <div class="hero-stats">
           <div><span class="hero-n">{items.length}</span><span class="hero-l">{t("รายการที่ใช้", "Items in use")}</span></div>
           <div><span class="hero-n">{r && a.current ? r.flags.length : "–"}</span><span class="hero-l">{r && a.current ? t("คำเตือนที่พบ", "Warnings found") : t("ยังไม่ตรวจ", "Not checked yet")}</span></div>
           {diary && <div><span class="hero-n">{`${takenToday}/${items.length}`}</span><span class="hero-l">{t("ใช้แล้ววันนี้", "Taken today")}</span></div>}
-        </div>
+        </div>}
         {diary && items.length > 0 && <div class="hero-bar" role="presentation"><i style={{ width: `${Math.round((takenToday / items.length) * 100)}%` }} /></div>}
         <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>{t("+ เพิ่ม", "+ Add")}</button>
       </section>
@@ -69,7 +70,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
       {/* ขอบเขต + ไม่ใช่การวินิจฉัย อยู่เหนือคำเตือนแรกเสมอ */}
       </div>
       <div class="tp-main">
-      <p class="sr-only added-status" role="status" aria-live="polite">{added}</p>
+      <p class="added-status" role="status" aria-live="polite">{added}</p>
       {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(t(`เพิ่ม ${l.join(", ")} แล้ว`, `Added ${l.join(", ")}`))} />}
       <div class="scope">
         <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
@@ -114,7 +115,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary }: Props
             <p class="warn">{t(`ยังไม่ได้ตรวจ เพราะไม่มีในฐานข้อมูล: ${r.coverage.unknown_inputs.join(", ")} · ไม่ได้เดาให้ ลองถามเภสัชกร`, `Not checked, because it isn't in the database: ${r.coverage.unknown_inputs.join(", ")} · We didn't guess. Ask a pharmacist.`)}</p>
           )}
           {r.coverage.not_checked.length > 0 && (
-            <p class="warn">{`${t("ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก)", "Conditions not checked (left blank)")}: ${notCheckedLabels(r, NOT_CHECKED).join(", ")}`}</p>
+            <p class="warn">{`${t("ไม่ได้ตรวจเงื่อนไข (ไม่ได้กรอก)", "Conditions not checked (left blank)")}: ${notCheckedLabels(r, NOT_CHECKED).join(", ")}`}{onProfile && <>{" "}<button type="button" class="link-btn" onClick={onProfile}>{t("ไปกรอกโปรไฟล์", "Fill in your profile")}</button></>}</p>
           )}
           {badConds.length > 0 && <p class="warn">{`${t("ไม่ได้ตรวจเงื่อนไข (ระบบไม่รู้จัก)", "Conditions not checked (not recognised by the system)")}: ${badConds.join(", ")}`}</p>}
         </section>

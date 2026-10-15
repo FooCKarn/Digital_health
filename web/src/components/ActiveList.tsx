@@ -22,6 +22,8 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
     <section class="active-list" aria-labelledby="active-h">
       <h2 id="active-h" ref={head} tabIndex={-1}>{t("กำลังใช้อยู่", "In use now")}</h2>
       {items.length === 0 ? <div class="empty-note"><p>{t("ยังไม่มีรายการ", "No items yet")}</p><p class="meta">{t("กด “+ เพิ่ม” เพื่อเริ่มติดตามสมุนไพรหรือยาที่คุณใช้", "Press “+ Add” to start tracking the herbs or medicines you use")}</p></div> : (
+        <>
+        <p class="meta list-hint">{t("กด “ใช้แล้ววันนี้” ทุกวันที่ใช้ เพื่อให้บันทึกต่อเนื่อง", "Press “Taken today” each day you use an item to keep your log going.")}</p>
         <ul>
           {items.map((i) => {
             const v = rowView(i, view, unsent);
@@ -57,6 +59,7 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
             );
           })}
         </ul>
+        </>
       )}
       {diary && items.length > 0 && <p class="meta legend">{t("จุดเรียงจากเก่า (ซ้าย) ถึงวันนี้ (ขวา) ทึบ = ใช้แล้ว", "Dots run from oldest (left) to today (right). Filled = taken.")}</p>}
     </section>
