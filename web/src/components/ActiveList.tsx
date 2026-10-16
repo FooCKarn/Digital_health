@@ -1,3 +1,4 @@
+import type { ComponentChildren } from "preact";
 import { useRef, useState } from "preact/hooks";
 import type { Analysis } from "../hooks/useAnalysis";
 import { dayNumber, thaiDate } from "../model/dates";
@@ -7,7 +8,7 @@ import { SeverityBadge } from "./SeverityBadge";
 import type { DiaryStore } from "../model/diary";
 import { useDiary } from "../hooks/useDiary";
 import { takenInWindow } from "../model/diary";
-import { t } from "../i18n";
+import { t, useOnLangChange } from "../i18n";
 import { itemLabel } from "../texts";
 
 export function ActiveList({ store, today, analysis: a, diary }: { store: TrackerStore; today: string; analysis: Analysis; diary?: DiaryStore }) {
@@ -34,8 +35,8 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
                   <div class="meta">{t(`${kindLabel(i.kind)} · เริ่มใช้ ${thaiDate(i.start_date)} (ใช้มา ${dayNumber(i.start_date, today)} วัน)`, `${kindLabel(i.kind)} · started ${thaiDate(i.start_date)} (day ${dayNumber(i.start_date, today)})`)}</div>
                 </div>
                 {v === "pending" ? <span class="pending">{t("กำลังตรวจ…", "Checking…")}</span>
-                  : v === "see_panel" ? <span class="see-panel">{t("ดูคำเตือนในแผงด้านบน", "See the warnings in the panel above")}</span>
-                  : v === "drug_unsplit" ? <span class="see-panel">{t("ผลตรวจไม่ได้แยกรายตัวยา", "The result is not split by medicine")}</span>
+                  : v === "see_panel" ? <SeePanel>{t("ดูคำเตือนในแผงด้านบน", "See the warnings in the panel above")}</SeePanel>
+                  : v === "drug_unsplit" ? <SeePanel>{t("ผลตรวจไม่ได้แยกรายตัวยา", "The result is not split by medicine")}</SeePanel>
                   : <SeverityBadge kind={v} />}
                 {diary && (
                   <div class="checkin">
@@ -67,11 +68,24 @@ export function ActiveList({ store, today, analysis: a, diary }: { store: Tracke
 }
 
 /** แก้วันเริ่มใช้ที่กรอกผิด; เลือกติ๊กว่าใช้ทุกวันย้อนหลังได้ */
+/** เลื่อนขึ้นไปที่แผงผลตรวจ (เลื่อนนุ่มถ้าผู้ใช้ไม่ได้ตั้งลดการเคลื่อนไหว) แล้วย้ายโฟกัสไปหัวข้อผล เพื่อให้โปรแกรมอ่านหน้าจออ่านต่อจากตรงนั้น */
+function SeePanel({ children }: { children: ComponentChildren }) {
+  const go = () => {
+    const el = document.getElementById("result-panel");
+    if (!el) return;
+    const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView?.({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    el.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
+  };
+  return <button type="button" class="link-btn see-panel" onClick={go}>{children}</button>;
+}
+
 function StartEditor({ store, diary, item, today }: { store: TrackerStore; diary?: DiaryStore; item: { id: string; label: string; start_date: string }; today: string }) {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(item.start_date);
   const [fill, setFill] = useState(true);
   const [err, setErr] = useState("");
+  useOnLangChange(() => { setErr(""); });
   if (!open) return <button type="button" class="link-btn" aria-label={`${t("แก้วันเริ่มใช้", "Edit start date")} ${item.label}`} onClick={() => setOpen(true)}>{t("แก้วันเริ่มใช้", "Edit start date")}</button>;
   const save = () => {
     const r = store.setStartDate(item.id, date);
@@ -114,6 +128,7 @@ function WeekDots({ diary, id, start, today, label }: { diary: DiaryStore; id: s
 /** ขนาดที่ใช้: จดไว้เอง ระบบไม่ตรวจและไม่นำไปคิดความเสี่ยง */
 function DoseNote({ diary, id, label }: { diary: DiaryStore; id: string; label: string }) {
   const [err, setErr] = useState("");
+  useOnLangChange(() => { setErr(""); });
   return (
     <div class="dose-note">
       <label for={`dose-${id}`}>{t(`ขนาดที่ใช้ ${label} (จดไว้ดูเอง)`, `Dose of ${label} (your own note)`)}</label>

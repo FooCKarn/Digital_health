@@ -9,7 +9,7 @@ import { Trend } from "./Trend";
 import { Calendar } from "./Calendar";
 import { openPolicy } from "./Policy";
 import { useDiary } from "../hooks/useDiary";
-import { t } from "../i18n";
+import { t, useOnLangChange } from "../i18n";
 import { itemLabel } from "../texts";
 
 const num = (s: string): number | null => (s.trim() === "" ? null : Number(s));
@@ -19,6 +19,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
   useDiary(diary);
   const [selected, setSelected] = useState(today);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  useOnLangChange(() => { setMsg(null); });
   const entries0 = diary.state.entries.length;
   const file = useRef<HTMLInputElement>(null);
 
@@ -64,7 +65,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
 
       <section class="card" aria-labelledby="intake-h">
         <h3 id="intake-h">{t("การใช้ใน 7 วันที่ผ่านมา", "Doses in the past 7 days")}</h3>
-        {items.length === 0 ? <p class="empty-note">{t("ยังไม่มีสมุนไพรหรือยาที่ใช้อยู่ เพิ่มได้ที่หน้า ช่วงนี้", "No herbs or medicines in use yet. Add them in the This period tab.")}</p> : (
+        {items.length === 0 ? <p class="empty-note">{t("ยังไม่มีสมุนไพรหรือยาที่ใช้อยู่ เพิ่มได้ที่หน้า ตรวจคำเตือน", "No herbs or medicines in use yet. Add them in the Check tab.")}</p> : (
           <ul class="plain-list">
             {items.map((i) => {
               const w = takenInWindow(diary.state.taken[i.id] ?? [], i.start_date, today);
@@ -79,7 +80,7 @@ export function Diary({ diary, store, today, analysis }: { diary: DiaryStore; st
         <ul class="plain-list">
           <li>{items.length ? `${t("กำลังใช้", "In use")}: ${items.map((i) => `${itemLabel(i)} (${t("วันที่", "day")} ${dayNumber(i.start_date, today)})`).join(", ")}` : `${t("กำลังใช้", "In use")}: ${t("ไม่มีรายการ", "none")}`}</li>
           <li>
-            {flagCount ? t(`คำเตือนจากฐานข้อมูลนี้: ควรหลีกเลี่ยง ${flagCount.avoid.length} · ควรระวัง ${flagCount.caution.length} · ข้อมูลเพิ่มเติม ${flagCount.info.length}`, `Warnings from this database: avoid ${flagCount.avoid.length} · use caution ${flagCount.caution.length} · more information ${flagCount.info.length}`) : t("คำเตือน: ยังไม่มีผลตรวจล่าสุด ดูที่หน้า ช่วงนี้", "Warnings: no latest result yet. See the This period tab.")}
+            {flagCount ? t(`คำเตือนจากฐานข้อมูลนี้: ควรหลีกเลี่ยง ${flagCount.avoid.length} · ควรระวัง ${flagCount.caution.length} · ข้อมูลเพิ่มเติม ${flagCount.info.length}`, `Warnings from this database: avoid ${flagCount.avoid.length} · use caution ${flagCount.caution.length} · more information ${flagCount.info.length}`) : t("คำเตือน: ยังไม่มีผลตรวจล่าสุด ดูที่หน้า ตรวจคำเตือน", "Warnings: no latest result yet. See the Check tab.")}
           </li>
           {recent.length === 0 ? <li>{t("ยังไม่มีบันทึกสุขภาพ", "No health entries yet")}</li> : recent.map((e) => (
             <li key={e.id}>
@@ -134,7 +135,7 @@ function MoodDots({ diary, today }: { diary: DiaryStore; today: string }) {
   );
 }
 
-/** แผงของวันที่เลือก: ฟอร์มบันทึกสุขภาพ (การกดว่าใช้แล้วอยู่ที่ปุ่ม ใช้แล้ววันนี้ ในหน้า ช่วงนี้/ผู้ช่วย) (key = วันที่ ฟอร์มจึงเริ่มใหม่เมื่อเปลี่ยนวัน) */
+/** แผงของวันที่เลือก: ฟอร์มบันทึกสุขภาพ (การกดว่าใช้แล้วอยู่ที่ปุ่ม ใช้แล้ววันนี้ ในหน้า ตรวจคำเตือน/ผู้ช่วย) (key = วันที่ ฟอร์มจึงเริ่มใหม่เมื่อเปลี่ยนวัน) */
 function DayPanel({ diary, store, date, today, msg, onMsg }: {
   diary: DiaryStore; store: TrackerStore; date: string; today: string;
   msg: { ok: boolean; text: string } | null; onMsg: (m: { ok: boolean; text: string } | null) => void;

@@ -8,7 +8,7 @@ export const WELCOME_KEY = "hg_welcome_v1";
 
 /** ขั้นแนะนำการใช้งาน (สั้น ข้ามได้) ข้อความตรงกับชื่อแท็บจริง */
 export const GUIDE_STEPS = [
-  { title: "ช่วงนี้", text: "กด “เพิ่ม” เพื่อใส่สมุนไพรหรือยาที่ใช้ แล้วดูคำเตือนที่พบ", en: { title: "This period", text: "Press “Add” to enter the herbs or medicines you use, then read the warnings found." } },
+  { title: "ตรวจคำเตือน", text: "กด “เพิ่ม” เพื่อใส่สมุนไพรหรือยาที่ใช้ แล้วดูคำเตือนที่พบ", en: { title: "Check", text: "Press “Add” to enter the herbs or medicines you use, then read the warnings found." } },
   { title: "ผู้ช่วย", text: "พิมพ์บอกได้เลย เช่น “กินขมิ้นแล้ว” หรือถามเรื่องคำเตือน", en: { title: "Assistant", text: "Just type, for example “I took turmeric”, or ask about a warning." } },
   { title: "บันทึก", text: "จดความรู้สึกและค่าสุขภาพรายวัน ดูย้อนหลังได้", en: { title: "Diary", text: "Log how you feel and your health readings each day, and look back over time." } },
   { title: "ข้อมูลของฉัน", text: "โปรไฟล์ ส่งออกหรือลบข้อมูล และบัญชีสำหรับใช้หลายเครื่อง", en: { title: "My data", text: "Your profile, exporting or deleting data, and an account for using several devices." } },
@@ -18,20 +18,22 @@ export const GUIDE_STEPS = [
  * เปิดครั้งแรก: (1) เลือกเข้าสู่ระบบหรือใช้แบบ guest (guest = ข้อมูลอยู่ในเครื่องนี้เท่านั้น เหมือนเดิม)
  * (2) แนะนำสั้น ๆ แล้วจำไว้ว่าเห็นแล้ว ไม่แสดงซ้ำ
  */
-export function Welcome({ cloud, storage }: { cloud: CloudSync; storage: KeyValueStorage | null }) {
+export function Welcome({ cloud, storage, reopen = 0 }: { cloud: CloudSync; storage: KeyValueStorage | null; reopen?: number }) {
   const seen = () => { try { return storage?.getItem(WELCOME_KEY) === "1"; } catch { return false; } };
   const [done, setDone] = useState(seen);
   const [guest, setGuest] = useState(false);
   const [login, setLogin] = useState(false);
   const [step, setStep] = useState(0);
+  const [forced, setForced] = useState(false); // เปิดซ้ำจากปุ่มวิธีใช้: แสดงเฉพาะขั้นแนะนำ ไม่ถามเข้าสู่ระบบอีก
+  useEffect(() => { if (reopen > 0) { setForced(true); setStep(0); } }, [reopen]);
   const [, setV] = useState(0);
   useEffect(() => cloud.subscribe(() => setV((v) => v + 1)), [cloud]);
   const box = useRef<HTMLDivElement>(null);
-  const phase = done || cloud.status === "unknown" ? null : cloud.status !== "unavailable" && cloud.handle === null && !guest ? "gate" : "guide";
+  const phase = forced ? "guide" : done || cloud.status === "unknown" ? null : cloud.status !== "unavailable" && cloud.handle === null && !guest ? "gate" : "guide";
   useEffect(() => { box.current?.querySelector<HTMLElement>("button")?.focus(); }, [phase, step]);
   if (!phase) return null;
 
-  const finish = () => { try { storage?.setItem(WELCOME_KEY, "1"); } catch { /* จำไม่ได้ก็แสดงใหม่คราวหน้า */ } setDone(true); };
+  const finish = () => { try { storage?.setItem(WELCOME_KEY, "1"); } catch { /* จำไม่ได้ก็แสดงใหม่คราวหน้า */ } setDone(true); setForced(false); setStep(0); };
   const last = step === GUIDE_STEPS.length - 1;
   const g = GUIDE_STEPS[step];
   return (

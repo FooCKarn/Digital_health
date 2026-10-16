@@ -10,14 +10,14 @@ test("แสดงหัวข้อ ใบพลู", () => {
   expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("ใบพลู");
 });
 
-test("โหลด meta แล้วแสดงหน้า ช่วงนี้ พร้อมขอบเขต", async () => {
+test("โหลด meta แล้วแสดงหน้า ตรวจคำเตือน พร้อมขอบเขต", async () => {
   vi.stubGlobal("fetch", vi.fn(async () => respond(META)));
   render(<App />);
   expect(await screen.findByText("ยังไม่มีสมุนไพรให้ตรวจ", { selector: ".status-line" })).toBeInTheDocument();
   expect(screen.getByText("สมุนไพร 12 จาก 50 ชนิด · 7 กลุ่มยา", { selector: ".scope .scope-chip" })).toBeInTheDocument();
 });
 
-describe("แท็บ ช่วงนี้ · ผู้ช่วย · บันทึก (รวมที่เคยใช้) · ข้อมูลของฉัน", () => {
+describe("แท็บ ตรวจคำเตือน · ผู้ช่วย · บันทึก (รวมที่เคยใช้) · ข้อมูลของฉัน", () => {
   beforeEach(() => localStorage.clear());
 
   const mount = async () => {
@@ -30,7 +30,7 @@ describe("แท็บ ช่วงนี้ · ผู้ช่วย · บั�
 
   test("roving tabindex + ลูกศร/Home/End (เทียบสถานการณ์เดิม 4)", async () => {
     const tabs = await mount();
-    expect(tabs.map((t) => t.textContent)).toEqual(["ช่วงนี้", "ผู้ช่วย", "บันทึก", "ข้อมูลของฉัน"]);
+    expect(tabs.map((t) => t.textContent)).toEqual(["ตรวจคำเตือน", "ผู้ช่วย", "บันทึก", "ข้อมูลของฉัน"]);
     const sel = () => tabs.map((t) => t.getAttribute("aria-selected"));
     expect(sel()).toEqual(["true", "false", "false", "false"]);
     expect(tabs.map((t) => t.tabIndex)).toEqual([0, -1, -1, -1]);
@@ -87,7 +87,7 @@ describe("แท็บ ช่วงนี้ · ผู้ช่วย · บั�
     } finally { vi.restoreAllMocks(); }
   });
 
-  test("ข้อมูลที่บันทึกไว้เสีย: แจ้งในหน้า ช่วงนี้ ปิดได้; ที่เก็บปกติไม่มีแบนเนอร์หาย", async () => {
+  test("ข้อมูลที่บันทึกไว้เสีย: แจ้งในหน้า ตรวจคำเตือน ปิดได้; ที่เก็บปกติไม่มีแบนเนอร์หาย", async () => {
     localStorage.setItem("hg_tracker_v1", "{broken");
     await mount();
     expect(screen.getByText("ข้อมูลที่เก็บไว้เสียหาย จึงเริ่มต้นใหม่ให้")).toBeInTheDocument();

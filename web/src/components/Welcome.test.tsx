@@ -52,3 +52,17 @@ test("เข้าสู่ระบบอยู่แล้ว หรือเ�
     r.unmount();
   }
 });
+
+test("ปุ่มวิธีใช้: เปิดคู่มือซ้ำได้แม้เคยดูแล้ว โดยไม่ถามเข้าสู่ระบบอีก และปิดแล้วไม่ทับค่าที่จำไว้", async () => {
+  const { cloud, st } = await mk({ user: null });
+  st.setItem(WELCOME_KEY, "1");
+  const { container, rerender } = render(<Welcome cloud={cloud} storage={st} reopen={0} />);
+  expect(container).toBeEmptyDOMElement();
+  rerender(<Welcome cloud={cloud} storage={st} reopen={1} />);
+  expect(screen.getByRole("heading", { name: `วิธีใช้ (1/${GUIDE_STEPS.length})` })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "ใช้แบบ guest" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "ข้าม" }));
+  expect(container).toBeEmptyDOMElement();
+  rerender(<Welcome cloud={cloud} storage={st} reopen={2} />);
+  expect(screen.getByRole("heading", { name: `วิธีใช้ (1/${GUIDE_STEPS.length})` })).toBeInTheDocument();
+});

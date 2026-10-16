@@ -2,7 +2,7 @@ import { useRef, useState } from "preact/hooks";
 import { AddSheet } from "./AddSheet";
 import { ExplainBox } from "./ExplainBox";
 import { useAnalysis, type Analysis } from "../hooks/useAnalysis";
-import { noFlag, noFlagNote, NOT_CHECKED, pharmacist } from "../texts";
+import { itemLabel, noFlag, noFlagNote, NOT_CHECKED, pharmacist } from "../texts";
 import { groupFlags, isKnownSeverity, notCheckedLabels, unknownConditions, type PanelGroups } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Aggregate, Meta } from "../types";
@@ -33,7 +33,7 @@ export function ThisPeriod(p: Props) {
 export function ThisPeriodView({ store, meta, today, analysis: a, diary, onProfile }: Props & { analysis: Analysis }) {
   useDiary(diary);
   const [adding, setAdding] = useState(false);
-  const [added, setAdded] = useState(""); // ประกาศการเพิ่ม แยกจากพื้นที่ประกาศผลตรวจ
+  const [addedLabels, setAddedLabels] = useState<string[]>([]); // ประกาศการเพิ่ม แยกจากพื้นที่ประกาศผลตรวจ
   const opener = useRef<HTMLButtonElement>(null);
   const close = () => { setAdding(false); opener.current?.focus(); };
   const known = Object.keys(meta.conditions);
@@ -42,6 +42,8 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary, onProfi
   const groups = r ? groupFlags(r) : null;
   const badConds = unknownConditions(store.state.profile, known);
   const items = store.active();
+  // ชื่อในข้อความ “เพิ่ม … แล้ว” อ่านใหม่ตามภาษาที่เลือก (สมุนไพรเก็บชื่อตามภาษาตอนกดเพิ่ม)
+  const addedNames = addedLabels.map((l) => { const it = items.find((i) => i.label === l); return it ? itemLabel(it) : l; });
   const takenToday = diary ? items.filter((i) => diary.isTaken(i.id, today)).length : 0;
   const announce = a.status === "idle" ? noHerbs() : a.current && s ? (none ? noFlag() : pick(s.headline_th, s.headline_en)) : "";
 
@@ -58,7 +60,7 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary, onProfi
           {diary && <div><span class="hero-n">{`${takenToday}/${items.length}`}</span><span class="hero-l">{t("ใช้แล้ววันนี้", "Taken today")}</span></div>}
         </div>}
         {diary && items.length > 0 && <div class="hero-bar" role="presentation"><i style={{ width: `${Math.round((takenToday / items.length) * 100)}%` }} /></div>}
-        <button ref={opener} type="button" class="primary" onClick={() => { setAdded(""); setAdding(true); }}>{t("+ เพิ่ม", "+ Add")}</button>
+        <button ref={opener} type="button" class="primary" onClick={() => { setAddedLabels([]); setAdding(true); }}>{t("+ เพิ่ม", "+ Add")}</button>
       </section>
       {a.status === "idle" && (
         <ol class="steps card" aria-label={t("วิธีใช้ 3 ขั้น", "How to use, in 3 steps")}>
@@ -70,8 +72,8 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary, onProfi
       {/* ขอบเขต + ไม่ใช่การวินิจฉัย อยู่เหนือคำเตือนแรกเสมอ */}
       </div>
       <div class="tp-main">
-      <p class="added-status" role="status" aria-live="polite">{added}</p>
-      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={(l) => setAdded(t(`เพิ่ม ${l.join(", ")} แล้ว`, `Added ${l.join(", ")}`))} />}
+      <p class="added-status" role="status" aria-live="polite">{addedLabels.length ? t(`เพิ่ม ${addedNames.join(", ")} แล้ว`, `Added ${addedNames.join(", ")}`) : ""}</p>
+      {adding && <AddSheet meta={meta} store={store} today={today} diary={diary} onClose={close} onAdded={setAddedLabels} />}
       <div class="scope">
         <ScopeChip coverage={r?.coverage ?? meta.coverage} herbsInBook={meta.coverage.herbs_in_book} />
         <Disclaimer text={pick(meta.disclaimer_th, meta.disclaimer_en)} />
@@ -87,9 +89,9 @@ export function ThisPeriodView({ store, meta, today, analysis: a, diary, onProfi
       )}
 
       {r && s && groups && (
-        <section class="result" aria-busy={a.status === "loading"}>
+        <section class="result" id="result-panel" aria-busy={a.status === "loading"}>
           {/* ผลที่ไม่ตรงกับข้อมูลปัจจุบันห้ามใช้หัวข้อ "ไม่พบคำเตือน" หรือหัวข้อผล */}
-          {a.current ? <h2>{none ? noFlag() : pick(s.headline_th, s.headline_en)}</h2> : <h2 class="stale-line">{stale()}</h2>}
+          {a.current ? <h2 tabIndex={-1}>{none ? noFlag() : pick(s.headline_th, s.headline_en)}</h2> : <h2 class="stale-line" tabIndex={-1}>{stale()}</h2>}
           {!a.current && a.status === "loading" && <p class="status-line">{t("กำลังตรวจ…", "Checking…")}</p>}
           {a.current && none && <p class="nonote">{noFlagNote()}</p>}
           {groups.avoid.length > 0 && (

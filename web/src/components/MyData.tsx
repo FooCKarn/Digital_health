@@ -10,7 +10,7 @@ import { AccountCard } from "./AccountCard";
 import { Glossary } from "./Glossary";
 import { PharmacistSummary } from "./PharmacistSummary";
 import { ProfileForm } from "./ProfileForm";
-import { t } from "../i18n";
+import { t, useOnLangChange } from "../i18n";
 import { conditionLabels, entryName } from "../texts";
 
 type Msg = { ok: boolean; text: string } | null;
@@ -21,6 +21,7 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
   useStore(store);
   const [formKey, setFormKey] = useState(0); // ล้าง state ของฟอร์มหลังนำเข้า/ลบ
   const [msg, setMsg] = useState<Msg>(null);
+  useOnLangChange(() => { setMsg(null); });
   const [confirming, setConfirming] = useState(false);
   const delBtn = useRef<HTMLButtonElement>(null);
   const cancelBtn = useRef<HTMLButtonElement>(null);

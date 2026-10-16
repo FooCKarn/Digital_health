@@ -65,7 +65,7 @@ export function PharmacistSummary({ analysis: a, meta, profile }: { analysis: An
         <p class="status-line">
           {a.status === "idle" ? t("ยังไม่มีสมุนไพรให้ตรวจ ใบสรุปจะแสดงเมื่อมีผลตรวจ", "No herbs to check yet. The summary will show once there's a result.")
             : a.status === "loading" ? t("กำลังตรวจ… ใบสรุปจะแสดงเมื่อตรวจรายการล่าสุดเสร็จ", "Checking… the summary will show once the latest items are checked.")
-            : t("ยังไม่มีผลตรวจของรายการล่าสุด ใบสรุปจึงยังไม่แสดง (ลองใหม่ในหน้า ช่วงนี้)", "There's no result for the latest items yet, so the summary is hidden. Try again in the This period tab.")}
+            : t("ยังไม่มีผลตรวจของรายการล่าสุด ใบสรุปจึงยังไม่แสดง (ลองใหม่ในหน้า ตรวจคำเตือน)", "There's no result for the latest items yet, so the summary is hidden. Try again in the Check tab.")}
         </p>
       ) : (
         <>

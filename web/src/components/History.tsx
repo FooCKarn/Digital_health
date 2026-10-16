@@ -17,7 +17,7 @@ export function History({ store }: { store: TrackerStore }) {
   return (
     <section class="history" aria-labelledby="history-h">
       <h2 id="history-h" ref={head} tabIndex={-1}>{t("ที่เคยใช้", "Used before")}</h2>
-      <p class="meta">{t("รายการที่หยุดใช้แล้วไม่ถูกนำไปตรวจ ผลในหน้า ช่วงนี้ คิดจากรายการที่กำลังใช้อยู่เท่านั้น", "Items you stopped using are not checked. Results in the This period tab count only the items you are using now.")}</p>
+      <p class="meta">{t("รายการที่หยุดใช้แล้วไม่ถูกนำไปตรวจ ผลในหน้า ตรวจคำเตือน คิดจากรายการที่กำลังใช้อยู่เท่านั้น", "Items you stopped using are not checked. Results in the Check tab count only the items you are using now.")}</p>
       {items.length === 0 ? <p>{t("ยังไม่มีรายการที่หยุดใช้", "No stopped items yet")}</p> : (
         <ul class="plain-list">
           {items.map((i) => (

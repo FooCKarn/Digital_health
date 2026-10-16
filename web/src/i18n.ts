@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { getLocalStorage } from "./model/storage";
 
 export type Lang = "th" | "en";
@@ -50,4 +50,11 @@ export function useLang(): Lang {
     return () => { listeners.delete(f); };
   }, []);
   return current;
+}
+
+/** สลับภาษาแล้วเรียก fn (เช่นล้างข้อความแจ้งผลที่ค้างอยู่ เพราะเก็บเป็นข้อความภาษาเดิมไว้ในสถานะ) */
+export function useOnLangChange(fn: () => void): void {
+  const lang = useLang();
+  const first = useRef(true);
+  useEffect(() => { if (first.current) { first.current = false; return; } fn(); }, [lang]); // eslint-disable-line react-hooks/exhaustive-deps
 }

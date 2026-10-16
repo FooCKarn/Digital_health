@@ -4,7 +4,7 @@ import { downloadJSON } from "../download";
 import { useBusy } from "../hooks/useBusy";
 import { newId } from "../model/tracker";
 import type { FeedbackPayload, Flag } from "../types";
-import { t } from "../i18n";
+import { t, useOnLangChange } from "../i18n";
 
 // สุ่มใหม่ทุกครั้งที่โหลดหน้า ไม่ผูกกับตัวตน
 const SID = newId();
@@ -30,6 +30,7 @@ export function FeedbackCard({ flags: incoming, current, herbName }: { flags: Fl
   const answers = ans.sig === seen.current.sig ? ans.map : {};
   const setAnswer = (id: string, v: Answer) => setAns({ sig: seen.current.sig, map: { ...answers, [id]: v } });
   const [msg, setMsg] = useState("");
+  useOnLangChange(() => { setMsg(""); });
   const { busy, run } = useBusy();
 
   const collect = (): Required<FeedbackPayload> => ({

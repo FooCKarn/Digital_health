@@ -4,7 +4,7 @@ import type { DiaryStore } from "../model/diary";
 import { addDays, dayNumber, validateStart } from "../model/dates";
 import type { Meta } from "../types";
 import { ParseBox } from "./ParseBox";
-import { pick as srv, t } from "../i18n";
+import { pick as srv, t, useOnLangChange } from "../i18n";
 
 type Pick = { kind: "herb" | "drug" | "formula"; ref: string; label: string };
 
@@ -15,6 +15,7 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
   const [date, setDate] = useState(today);
   const [itemErr, setItemErr] = useState("");
   const [dateErr, setDateErr] = useState("");
+  useOnLangChange(() => { setItemErr(""); setDateErr(""); });
   const [backfill, setBackfill] = useState(true);
   const first = useRef<HTMLInputElement>(null);
   useEffect(() => first.current?.focus(), []);
@@ -42,11 +43,12 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
   return (
     <div class="sheet" role="dialog" aria-labelledby="sheet-h" onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); onClose(); } }}>
       <h2 id="sheet-h">{t("เพิ่มสมุนไพรหรือยา", "Add a herb or medicine")}</h2>
-      <ParseBox meta={meta} store={store} today={today} onDone={(labels) => { onAdded?.(labels); onClose(); }} />
-      <p class="meta or-line">{t("หรือเลือกจากรายการ", "Or choose from the list")}</p>
+      <p class="meta sheet-lead">{t("ทำ 2 ขั้นแล้วกด “เพิ่ม” ยังไม่มีอะไรถูกบันทึกจนกว่าจะกด", "Two quick steps, then press “Add”. Nothing is saved until you do.")}</p>
       <form onSubmit={submit} noValidate>
+        <section class="step" aria-labelledby="step1-h">
+        <h3 id="step1-h"><span class="step-n" aria-hidden="true">1</span>{t("เลือกสิ่งที่คุณใช้", "Choose what you use")}</h3>
         <label for="sheet-q">{t("ค้นหา หรือพิมพ์ชื่อยา", "Search, or type a medicine name")}</label>
-        <input id="sheet-q" ref={first} type="search" value={q} onInput={(e) => setQ(e.currentTarget.value)} />
+        <input id="sheet-q" ref={first} type="search" value={q} placeholder={t("เช่น ขิง หรือ warfarin", "e.g. ginger or warfarin")} onInput={(e) => setQ(e.currentTarget.value)} />
         <div role="group" aria-label={t("รายการที่เลือกได้", "Items you can choose")} class="pick-list">
           {herbs.length > 0 && <p class="pick-h">{t("สมุนไพร", "Herbs")}</p>}
           {herbs.map((h) => <PickBtn key={`h-${h.id}`} on={pick?.kind === "herb" && pick.ref === h.id} text={`${srv(h.name_th, h.name_en)} (${t("สมุนไพร", "herb")})`} onPick={() => setPick({ kind: "herb", ref: h.id, label: h.name_th })} />)}
@@ -56,9 +58,12 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
           {drugs.map((d) => <PickBtn key={`d-${d}`} on={pick?.kind === "drug" && pick.ref === d} text={`${d} (${t("ยา", "medicine")})`} onPick={() => setPick({ kind: "drug", ref: d, label: d })} />)}
           {canType && <PickBtn on={pick?.kind === "drug" && pick.ref === typed} text={t(`ใช้ชื่อยา “${typed}” ที่พิมพ์เอง`, `Use the medicine name “${typed}” that I typed`)} onPick={() => setPick({ kind: "drug", ref: typed, label: typed })} />}
         </div>
-        {pick && <p>{`${t("เลือกแล้ว", "Selected")}: ${pick.label}`}</p>}
+        {pick ? <p class="picked">{`${t("เลือกแล้ว", "Selected")}: ${pick.label}`}</p> : <p class="meta">{t("แตะรายการด้านบนเพื่อเลือก 1 อย่าง", "Tap one item above to choose it.")}</p>}
         {pick?.kind === "formula" && <p class="meta">{(() => { const f = meta.formulas?.find((x) => x.id === pick.ref); return f && srv(f.note_th, f.note_en); })()}</p>}
         {itemErr && <p class="err" role="alert">{itemErr}</p>}
+        </section>
+        <section class="step" aria-labelledby="step2-h">
+        <h3 id="step2-h"><span class="step-n" aria-hidden="true">2</span>{t("เริ่มใช้เมื่อไหร่", "When did you start?")}</h3>
         <label for="sheet-date">{t("เริ่มใช้ครั้งแรกเมื่อไหร่", "When did you first start using it?")}</label>
         <div class="quick-dates" role="group" aria-label={t("เลือกวันเริ่มใช้แบบเร็ว", "Quick start-date choices")}>
           {([[t("เพิ่งเริ่มวันนี้", "Just started today"), 0], [t("1 สัปดาห์ก่อน", "1 week ago"), 7], [t("1 เดือนก่อน", "1 month ago"), 30]] as const).map(([label, n]) => {
@@ -77,11 +82,16 @@ export function AddSheet({ meta, store, today, diary, onClose, onAdded }: { meta
           </label>
           </>
         )}
+        </section>
         <div class="row-actions form-actions">
           <button type="submit" class="primary">{t("เพิ่ม", "Add")}</button>
           <button type="button" onClick={onClose}>{t("ปิด", "Close")}</button>
         </div>
       </form>
+      <section class="step step-optional" aria-label={t("ทางลัด: พิมพ์เป็นประโยค", "Shortcut: type a sentence")}>
+        <p class="step-or">{t("หรือทางลัด: พิมพ์เป็นประโยคเดียว", "Or a shortcut: type it as one sentence")}</p>
+        <ParseBox meta={meta} store={store} today={today} onDone={(labels) => { onAdded?.(labels); onClose(); }} />
+      </section>
     </div>
   );
 }

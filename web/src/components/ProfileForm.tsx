@@ -1,6 +1,6 @@
 import { useRef, useState } from "preact/hooks";
 import type { Profile, TrackerStore } from "../model/tracker";
-import { t } from "../i18n";
+import { t, useOnLangChange } from "../i18n";
 
 type YN = Profile["pregnant"];
 const ageErrText = () => t("อายุต้องเป็นจำนวนเต็ม 0-120 ปี หรือเว้นว่างถ้าไม่ระบุ", "Age must be a whole number from 0 to 120, or left blank if not specified");
@@ -39,6 +39,7 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
   const [ageErr, setAgeErr] = useState("");
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState("");
+  useOnLangChange(() => { setAgeErr(""); setErr(""); setSaved(""); });
   const [q, setQ] = useState("");
   const ageRef = useRef<HTMLInputElement>(null);
 
@@ -48,7 +49,7 @@ export function ProfileForm({ store, conditions }: { store: TrackerStore; condit
     const a = parseAge(age);
     if (a === undefined) { setAgeErr(ageErrText()); ageRef.current?.focus(); return; }
     const r = store.setProfile({ age: a, pregnant, breastfeeding, conditions: conds });
-    if (r.ok) setSaved(t("บันทึกแล้ว ผลตรวจในหน้า ช่วงนี้ จะอัปเดตตามให้", "Saved. The results in the This period tab will update.")); else setErr(r.message);
+    if (r.ok) setSaved(t("บันทึกแล้ว ผลตรวจในหน้า ตรวจคำเตือน จะอัปเดตตามให้", "Saved. The results in the Check tab will update.")); else setErr(r.message);
   };
   const all = Object.entries(conditions);
   const needle = q.trim().toLowerCase();

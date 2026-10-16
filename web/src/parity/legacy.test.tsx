@@ -99,7 +99,7 @@ describe("0) โครงหน้า", () => {
     serve("khing_garlic_warfarin_60");
     await mount();
     await result("khing_garlic_warfarin_60");
-    for (const t of ["ช่วงนี้", "บันทึก", "ข้อมูลของฉัน"]) {
+    for (const t of ["ตรวจคำเตือน", "บันทึก", "ข้อมูลของฉัน"]) {
       tab(t);
       expect(sysText()).not.toContain("ปลอดภัย");
     }
@@ -390,7 +390,7 @@ test("11) โครงสร้างการเข้าถึง (ผลจ�
   expect(screen.getByRole("tabpanel")).toHaveAttribute("tabindex", "0");
   fireEvent.click(screen.getByRole("button", { name: "+ เพิ่ม" }));
   fireEvent.click(screen.getByRole("button", { name: "เปิดผู้ช่วย AI" }));
-  checkA11y("ช่วงนี้ + แผ่นเพิ่ม + แชต");
+  checkA11y("ตรวจคำเตือน + แผ่นเพิ่ม + แชต");
   const removes = [...document.querySelectorAll(".active-list button")].filter((b) => b.textContent === "ลบ");
   expect(removes.length).toBe(3);
   for (const b of removes) expect(b.getAttribute("aria-label")).toMatch(/^ลบ \S/);
@@ -433,7 +433,7 @@ test("13) ตรวจล้มเหลวหลังแก้ข้อมู�
   await result("khing_garlic_warfarin_60");
   tab("ข้อมูลของฉัน");
   expect(within(pharm()).getByRole("table")).toBeInTheDocument(); // 13.1
-  tab("ช่วงนี้");
+  tab("ตรวจคำเตือน");
   fail = true;
   fireEvent.click(screen.getByRole("button", { name: "หยุดใช้ warfarin" }));
   const alert = await screen.findByRole("alert", {}, SLOW);
@@ -442,7 +442,7 @@ test("13) ตรวจล้มเหลวหลังแก้ข้อมู�
   tab("ข้อมูลของฉัน");
   expect(within(pharm()).queryByRole("table")).toBeNull(); // ใบสรุปเก่าไม่ค้างเป็นผลปัจจุบัน
   expect(pharm()).toHaveTextContent("ยังไม่มีผลตรวจของรายการล่าสุด");
-  tab("ช่วงนี้");
+  tab("ตรวจคำเตือน");
   fail = false;
   fireEvent.click(screen.getByRole("button", { name: "ลองใหม่" }));
   await result("khing_garlic_60");
