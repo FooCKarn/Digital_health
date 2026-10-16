@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { CloudSync } from "../model/cloud";
 import { POLICY_VERSION, openPolicy } from "./Policy";
 import { getLang, t, tMap } from "../i18n";
@@ -9,7 +9,7 @@ const STATUS_TEXT: Record<string, string> = tMap(
 );
 
 /** บัญชี + ซิงก์ข้อมูลไปคลาวด์ (ไม่บังคับ): ข้อมูลอยู่ในเครื่องเป็นค่าเริ่มต้น ซิงก์เฉพาะเมื่อผู้ใช้สมัครและเข้าสู่ระบบ */
-export function AccountCard({ cloud, defaultOpen = false }: { cloud: CloudSync; defaultOpen?: boolean }) {
+export function AccountCard({ cloud, defaultOpen = false, openSignal = 0 }: { cloud: CloudSync; defaultOpen?: boolean; openSignal?: number }) {
   const [, setV] = useState(0);
   useEffect(() => cloud.subscribe(() => setV((v) => v + 1)), [cloud]);
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -19,6 +19,15 @@ export function AccountCard({ cloud, defaultOpen = false }: { cloud: CloudSync; 
   const [busy, setBusy] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
   const [delPw, setDelPw] = useState("");
+  const box = useRef<HTMLDetailsElement>(null);
+  // openSignal เพิ่มขึ้น = มีคนกดปุ่ม “เข้าสู่ระบบเพื่อซิงก์” จากที่อื่น: กางการ์ด เลื่อนมา แล้วโฟกัสช่องแรก
+  useEffect(() => {
+    const el = box.current;
+    if (!openSignal || !el) return;
+    el.open = true;
+    el.scrollIntoView?.({ block: "center" });
+    el.querySelector<HTMLElement>("button, input")?.focus({ preventScroll: true });
+  }, [openSignal]);
 
   if (cloud.status === "unavailable" || cloud.status === "unknown") return null; // เซิร์ฟเวอร์รุ่นนี้ไม่มีระบบบัญชี
 
@@ -67,7 +76,7 @@ export function AccountCard({ cloud, defaultOpen = false }: { cloud: CloudSync; 
     return defaultOpen ? (
       <div class="noprint account-card account-embed">{body}</div>
     ) : (
-      <details class="noprint card account-card account-opt">
+      <details ref={box} class="noprint card account-card account-opt">
         <summary>{t("ใช้หลายเครื่อง? สมัครบัญชีเพื่อซิงก์ (ไม่บังคับ)", "Using several devices? Sign up to sync (optional)")}</summary>
         {body}
       </details>
