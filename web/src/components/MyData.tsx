@@ -15,8 +15,8 @@ import { conditionLabels, entryName } from "../texts";
 
 type Msg = { ok: boolean; text: string } | null;
 
-export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
-  store: TrackerStore; meta: Meta; today: string; analysis: Analysis; onClearAll?: () => void; cloud?: CloudSync;
+export function MyData({ store, meta, today, analysis: a, onClearAll, cloud, openAccount }: {
+  store: TrackerStore; meta: Meta; today: string; analysis: Analysis; onClearAll?: () => void; cloud?: CloudSync; openAccount?: number;
 }) {
   useStore(store);
   const [formKey, setFormKey] = useState(0); // ล้าง state ของฟอร์มหลังนำเข้า/ลบ
@@ -106,7 +106,7 @@ export function MyData({ store, meta, today, analysis: a, onClearAll, cloud }: {
         {msg && (msg.ok ? <p role="status">{msg.text}</p> : <p class="err" role="alert">{msg.text}</p>)}
       </section>
 
-      {cloud && <AccountCard cloud={cloud} />}
+      {cloud && <AccountCard cloud={cloud} openSignal={openAccount} />}
 
       <details class="opt-box noprint card">
         <summary>{t("อธิบายชั้นหลักฐาน (A/B/C)", "What evidence tiers (A/B/C) mean")}</summary>

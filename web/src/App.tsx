@@ -112,6 +112,7 @@ function Home({ store, diary, meta, helpN }: { store: TrackerStore; diary: Diary
   useEffect(() => { const off = cloud.subscribe(() => setCloudV((v) => v + 1)); void cloud.init(); return off; }, [cloud]);
   const assistantLog = useMemo(() => new AssistantLog(), []); // บทสนทนาหน้าผู้ช่วย: อยู่ในหน่วยความจำ ไม่ลงที่เก็บ
   const [reminderBanner, setReminderBanner] = useState(false);
+  const [acctN, setAcctN] = useState(0); // กดปุ่มเข้าสู่ระบบเพื่อซิงก์: ไปแท็บข้อมูลของฉันแล้วกางการ์ดบัญชี
   // เตือนให้บันทึกการใช้: ทำงานตอนเปิดหน้านี้ค้างไว้ (ไม่มีเซิร์ฟเวอร์) ข้อความไม่ใส่ชื่อยา
   useEffect(() => {
     const tick = () => {
@@ -178,6 +179,11 @@ function Home({ store, diary, meta, helpN }: { store: TrackerStore; diary: Diary
       </div>
       <AskFlag.Provider value={askFlag}>
         <p class="tab-hint noprint">{t(v.hintTh, v.hintEn)}</p>
+        {cloud.handle === null && cloud.status !== "unavailable" && cloud.status !== "unknown" && (
+          <p class="tab-hint account-line noprint">{t("ข้อมูลอยู่ในเครื่องนี้เท่านั้น", "Your data is only on this device.")}{" "}
+            <button type="button" class="link-btn" onClick={() => { setTab(VIEWS.findIndex((x) => x.id === "mine")); setAcctN((n) => n + 1); }}>{t("เข้าสู่ระบบเพื่อซิงก์", "Log in to sync")}</button>
+          </p>
+        )}
         <div role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} tabIndex={0}>
           {v.id === "now" ? <ThisPeriodView store={store} meta={meta} today={today} analysis={a} diary={diary} onProfile={() => setTab(VIEWS.findIndex((x) => x.id === "mine"))} />
             : v.id === "assistant" ? (
@@ -185,7 +191,7 @@ function Home({ store, diary, meta, helpN }: { store: TrackerStore; diary: Diary
                 go={(to: GoTo) => setTab(VIEWS.findIndex((x) => x.id === to))} />
             )
             : v.id === "diary" ? <><Diary diary={diary} store={store} today={today} analysis={a} /><History store={store} /></>
-            : <MyData store={store} meta={meta} today={today} analysis={a} cloud={cloud} onClearAll={() => { chat.clear(); assistantLog.clear(); diary.clearAll(); }} />}
+            : <MyData store={store} meta={meta} today={today} analysis={a} cloud={cloud} openAccount={acctN} onClearAll={() => { chat.clear(); assistantLog.clear(); diary.clearAll(); }} />}
         </div>
       </AskFlag.Provider>
       {/* แชตอยู่ระดับ App นอกแผงแท็บ ใช้ได้ทุกแท็บ ใช้ store/meta/analysis ชุดเดียวกัน */}

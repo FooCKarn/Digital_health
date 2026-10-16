@@ -89,3 +89,18 @@ test("ข้อมูลสองฝั่งต่างกัน: ขึ้น
   fireEvent.click(screen.getByRole("button", { name: "ใช้ข้อมูลในคลาวด์" }));
   await waitFor(() => expect(tracker.state.items.map((i) => i.label)).toEqual(["กระเทียม"]));
 });
+
+test("openSignal: กางการ์ดบัญชีที่พับอยู่ และโฟกัสเข้าไปในการ์ด", async () => {
+  const caller: Caller = async (_m, url) => (url === "/api/auth/me" ? { status: 200, data: { user: null } } : { status: 200, data: {} });
+  const mem = new Map<string, string>();
+  const st = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v), removeItem: (k: string) => void mem.delete(k) };
+  const cloud = new CloudSync(new TrackerStore(st, () => "2026-10-13"), new DiaryStore(st, () => "2026-10-13"), new ReminderStore(st), caller);
+  await cloud.init();
+  Element.prototype.scrollIntoView = vi.fn();
+  const { container, rerender } = render(<AccountCard cloud={cloud} openSignal={0} />);
+  const d = container.querySelector("details")!;
+  expect(d.open).toBe(false);
+  rerender(<AccountCard cloud={cloud} openSignal={1} />);
+  expect(d.open).toBe(true);
+  expect(d.contains(document.activeElement)).toBe(true);
+});
