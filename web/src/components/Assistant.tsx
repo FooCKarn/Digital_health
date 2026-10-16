@@ -16,10 +16,10 @@ import { NOT_CHECKED, entryName, itemLabel, noFlag, noFlagNote } from "../texts"
 import type { BriefOut, Meta, ParseProposal } from "../types";
 import { ScopeChip } from "./ScopeChip";
 import { SeverityBadge } from "./SeverityBadge";
-import { getLang, pick, t } from "../i18n";
+import { getLang, pick, t, useOnLangChange } from "../i18n";
 
 export type GoTo = "now" | "diary" | "mine";
-const pageName = (to: GoTo) => ({ now: t("ช่วงนี้", "This period"), diary: t("บันทึก", "Diary"), mine: t("ข้อมูลของฉัน", "My data") })[to];
+const pageName = (to: GoTo) => ({ now: t("ตรวจคำเตือน", "Check"), diary: t("บันทึก", "Diary"), mine: t("ข้อมูลของฉัน", "My data") })[to];
 const aiDown = () => t("ตอนนี้ใช้ AI ไม่ได้ ลองใหม่อีกครั้ง หรือใช้ปุ่มในหน้าอื่นแทนได้", "The AI isn't available right now. Try again, or use the buttons on the other tabs.");
 // ชิปแสดงตามภาษาที่เลือก แต่ส่งคำสั่งไทยตามเดิม (ตัวจับคำสั่งและตัวจำแนกคำถามของเซิร์ฟเวอร์เข้าใจภาษาไทย)
 const chip = (th: string, en: string) => ({ th, label: t(th, en) });
@@ -137,7 +137,7 @@ export function Assistant({ store, diary, meta, today, analysis: a, go, reminder
     try {
       log.add({ k: "proposal", p: await parseText(q), state: "open" });
     } catch (e) {
-      say(`${errText(e)} ${t("เพิ่มเองได้ที่หน้า ช่วงนี้", "You can add items yourself in the This period tab.")}`, { tone: "err", go: { label: t("ไปหน้า ช่วงนี้", "Go to This period"), to: "now" } });
+      say(`${errText(e)} ${t("เพิ่มเองได้ที่หน้า ตรวจคำเตือน", "You can add items yourself in the Check tab.")}`, { tone: "err", go: { label: t("ไปหน้า ตรวจคำเตือน", "Go to Check"), to: "now" } });
     }
   };
 
@@ -250,6 +250,7 @@ function Bubble({ m, i, log, store, meta, today, go }: {
 function BriefCard({ b, today, go }: { b: Brief; today: string; go: (to: GoTo) => void }) {
   const [out, setOut] = useState<BriefOut | null>(null);
   const [err, setErr] = useState("");
+  useOnLangChange(() => { setErr(""); });
   const busy = useBusy();
   const facts = toFacts(b);
   const none = b.warnings !== null && b.warnings.total === 0;
@@ -296,7 +297,7 @@ function ProposalCard({ p, state, meta, store, today, onDone }: { p: ParsePropos
       if (res.ok) added.push(r.label); else bad.push(`${r.label}: ${res.message}`);
     }
     setErrs(bad);
-    if (added.length) onDone(t(`เพิ่ม ${added.join(", ")} แล้ว${bad.length ? ` (เพิ่มไม่ได้: ${bad.join("; ")})` : ""} ผลตรวจจะอัปเดตเอง ถ้าใช้มาก่อนวันนี้ แก้วันเริ่มได้ที่หน้า ช่วงนี้`, `Added ${added.join(", ")}${bad.length ? ` (could not add: ${bad.join("; ")})` : ""}. The check updates by itself. If you started before today, change the start date in the This period tab.`));
+    if (added.length) onDone(t(`เพิ่ม ${added.join(", ")} แล้ว${bad.length ? ` (เพิ่มไม่ได้: ${bad.join("; ")})` : ""} ผลตรวจจะอัปเดตเอง ถ้าใช้มาก่อนวันนี้ แก้วันเริ่มได้ที่หน้า ตรวจคำเตือน`, `Added ${added.join(", ")}${bad.length ? ` (could not add: ${bad.join("; ")})` : ""}. The check updates by itself. If you started before today, change the start date in the Check tab.`));
   };
   return (
     <div class="cmsg a card-msg">

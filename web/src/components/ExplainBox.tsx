@@ -5,7 +5,7 @@ import { useBusy } from "../hooks/useBusy";
 import { buildPayload } from "../model/panel";
 import type { TrackerStore } from "../model/tracker";
 import type { Explanation } from "../types";
-import { getLang, pick, t, tMap } from "../i18n";
+import { getLang, pick, t, tMap, useOnLangChange } from "../i18n";
 
 const fixed = () => t("ตอนนี้ใช้ AI ไม่ได้ ข้อความคำเตือนด้านบนยังอ่านได้เหมือนเดิม", "The AI isn't available right now. The warnings above still work as before.");
 const LABEL = tMap<string>(
@@ -17,6 +17,7 @@ const LABEL = tMap<string>(
 export function ExplainBox({ store, today, known, analysis }: { store: TrackerStore; today: string; known: string[]; analysis: Analysis }) {
   const [got, setGot] = useState<{ key: string; ex: Explanation } | null>(null);
   const [err, setErr] = useState<{ key: string; msg: string } | null>(null);
+  useOnLangChange(() => { setErr(null); });
   const b = useBusy();
   const payload = buildPayload(store.active(), store.state.profile, today, known);
   if (!analysis.current || !payload) return null;

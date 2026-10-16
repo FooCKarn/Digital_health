@@ -4,7 +4,7 @@ import { useBusy } from "../hooks/useBusy";
 import { startForDay } from "../model/dates";
 import type { TrackerStore } from "../model/tracker";
 import type { Meta, ParseProposal } from "../types";
-import { t } from "../i18n";
+import { t, useOnLangChange } from "../i18n";
 import { entryName } from "../texts";
 
 const fixed = () => t("ตอนนี้ใช้ AI ไม่ได้ กรอกเองได้เหมือนเดิม", "The AI isn't available right now. You can still enter items yourself.");
@@ -15,6 +15,7 @@ type Row = { key: string; kind: "herb" | "drug"; ref: string; label: string; day
 export function ParseBox({ meta, store, today, onDone }: { meta: Meta; store: TrackerStore; today: string; onDone: (labels: string[]) => void }) {
   const [text, setText] = useState("");
   const [msg, setMsg] = useState("");
+  useOnLangChange(() => { setMsg(""); });
   const [prop, setProp] = useState<ParseProposal | null>(null);
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [errs, setErrs] = useState<string[]>([]);

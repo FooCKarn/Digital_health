@@ -24,7 +24,7 @@ import type { Meta } from "./types";
 import { entryName, setLabelMeta } from "./texts";
 
 const VIEWS = [
-  { id: "now", th: "ช่วงนี้", en: "This period", hintTh: "ใส่สมุนไพรหรือยาที่ใช้ แล้วอ่านคำเตือนที่ระบบตรวจให้", hintEn: "Add what you use, then read the warnings we find." },
+  { id: "now", th: "ตรวจคำเตือน", en: "Check", hintTh: "ใส่สมุนไพรหรือยาที่ใช้ แล้วอ่านคำเตือนที่ระบบตรวจให้", hintEn: "Add what you use, then read the warnings we find." },
   { id: "assistant", th: "ผู้ช่วย", en: "Assistant", hintTh: "พิมพ์สั่งหรือถามได้เลย เช่น “กินขิงแล้ว” ไม่ต้องกดหลายหน้า", hintEn: "Type a request or question, like “I took ginger”, without opening other tabs." },
   { id: "diary", th: "บันทึก", en: "Diary", hintTh: "จดความรู้สึกรายวัน แล้วดูย้อนหลังในปฏิทิน", hintEn: "Note how you feel each day and look back on the calendar." },
   { id: "mine", th: "ข้อมูลของฉัน", en: "My data", hintTh: "โปรไฟล์สุขภาพ การสำรองข้อมูล และบัญชี", hintEn: "Your health profile, backups and account." },
@@ -32,6 +32,7 @@ const VIEWS = [
 
 export function App() {
   const lang = useLang();
+  const [helpN, setHelpN] = useState(0); // นับครั้งที่กดปุ่มวิธีใช้ ให้ Welcome เปิดซ้ำ
   useEffect(() => { document.title = t("ใบพลู: ตรวจคำเตือนสมุนไพรไทยร่วมกับยา (ต้นแบบ)", "Baiplu: check warnings for Thai herbs used with medicines (prototype)"); }, [lang]);
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -68,12 +69,13 @@ export function App() {
           <h1>{t("ใบพลู", "Baiplu")}</h1>
           <p class="meta">{t("ติดตามสมุนไพรและยา ตรวจคำเตือนให้", "Track your herbs and medicines, and check for warnings")}</p>
         </div>
+        <button type="button" class="help-btn noprint" onClick={() => setHelpN((n) => n + 1)}>{t("วิธีใช้", "Help")}</button>
         <LangToggle />
         </div>
         <p class="proto-banner"><strong>{t("ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง", "Prototype. Use made-up data only. Do not enter real patient information.")}</strong></p>
       </header>
       <main>
-        {meta ? <Home store={store} diary={diary} meta={meta} /> : error ? (
+        {meta ? <Home store={store} diary={diary} meta={meta} helpN={helpN} /> : error ? (
           <div class="err" role="alert">
             <span>{`${t("โหลดข้อมูลไม่สำเร็จ", "Couldn't load data")}: ${error}`}</span>{" "}
             <button type="button" onClick={() => setAttempt((n) => n + 1)}>{t("ลองใหม่", "Try again")}</button>
@@ -98,7 +100,7 @@ export function App() {
 }
 
 /** สามมุมมองใช้ผลตรวจชุดเดียว (เรียก /api/analyze ที่เดียว) */
-function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; meta: Meta }) {
+function Home({ store, diary, meta, helpN }: { store: TrackerStore; diary: DiaryStore; meta: Meta; helpN: number }) {
   // คำนวณทุกครั้งที่ render (Home render ใหม่เมื่อข้อมูล/แท็บเปลี่ยน) เปิดหน้าข้ามเที่ยงคืนแล้ววันที่ใช้จึงขยับตาม
   // ไม่มีตัวจับเวลาเที่ยงคืน ถ้าเปิดหน้าค้างไว้ วันที่จะขยับเมื่อมีการโต้ตอบครั้งถัดไป
   const today = todayISO();
@@ -164,7 +166,7 @@ function Home({ store, diary, meta }: { store: TrackerStore; diary: DiaryStore; 
           <button type="button" aria-label={t("ปิดข้อความเตือน", "Close reminder")} onClick={() => setReminderBanner(false)}>{t("ปิด", "Close")}</button>
         </p>
       )}
-      <Welcome cloud={cloud} storage={getLocalStorage()} />
+      <Welcome cloud={cloud} storage={getLocalStorage()} reopen={helpN} />
       <div class="tabs noprint" role="tablist" aria-label={t("มุมมอง", "Views")} onKeyDown={onKey}>
         {VIEWS.map((x, i) => (
           <button key={x.id} ref={(el) => { tabs.current[i] = el; }} type="button" role="tab" id={`tab-${x.id}`}

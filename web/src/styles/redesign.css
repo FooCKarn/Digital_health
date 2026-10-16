@@ -16,6 +16,8 @@ button { border-radius: 10px; }
 .added-status:not(:empty) { margin: var(--sp-2) 0; padding: var(--sp-2) var(--sp-3); border-radius: 12px; background: var(--c-noflag-bg); color: var(--c-noflag-fg); font-weight: 600; }
 .tab-hint { margin: 0 0 var(--sp-3); color: var(--c-muted); font-size: .92rem; }
 .list-hint { margin: 0 0 var(--sp-2); }
+.help-btn { margin-left: auto; padding: 0 var(--sp-3); font-weight: 600; border-radius: 999px; }
+.help-btn + .lang-toggle { margin-left: var(--sp-2); }
 .lang-toggle { margin-left: auto; min-width: 52px; padding: 0 var(--sp-3); font-weight: 700; border-radius: 999px; }
 .logo { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: 10px; background: var(--c-primary); color: var(--c-on-primary); }
 .proto-banner { margin: 0 0 var(--sp-3); padding: 6px var(--sp-4); font-size: .88rem; color: var(--c-caution-fg); background: var(--c-caution-bg); border-radius: 10px; }
@@ -276,7 +278,14 @@ details.src > summary { font-size: .9rem; color: var(--c-muted); }
 details[data-group][data-group] { border-left: 1px solid var(--c-line); }
 .flags { padding: 0 8px 4px; }
 @media (min-width: 900px) { .this-period { padding: 0; } }
-.or-line { margin: var(--sp-4) 0 0; text-align: center; }
+.sheet-lead { margin: 0 0 var(--sp-3); }
+.step + .step, .sheet form + .step { margin-top: var(--sp-4); padding-top: var(--sp-4); border-top: 1px solid var(--c-line); }
+.step h3 { display: flex; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-2); font-size: 1.05rem; }
+.step-n { display: inline-grid; place-items: center; width: 1.7em; height: 1.7em; border-radius: 50%; background: var(--c-primary); color: var(--c-on-primary); font-size: .9rem; font-weight: 700; flex: none; }
+.picked { margin: var(--sp-2) 0; padding: var(--sp-2) var(--sp-3); border-radius: 12px; background: var(--c-accent-green); font-weight: 700; }
+.step-or { margin: 0 0 var(--sp-2); font-size: .92rem; color: var(--c-muted); }
+.see-panel { text-align: left; }
+.see-panel::after { content: " ↑"; }
 
 input[type="time"] { border: 1.5px solid var(--c-muted); border-radius: 12px; padding: 6px 12px; background: var(--c-surface); color: var(--c-text); color-scheme: light dark; }
 
