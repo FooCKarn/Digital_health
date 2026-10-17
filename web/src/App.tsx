@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { ApiError, getMeta } from "./api";
+import { setAccountBadge } from "./accountBadge";
 import { LangToggle } from "./components/LangToggle";
+import { UserMenu } from "./components/UserMenu";
 import { getLang, pick, t, useLang } from "./i18n";
 import { ChatFab } from "./chat/ChatFab";
 import { ChatPanel, type OpenRequest } from "./chat/ChatPanel";
@@ -69,6 +71,7 @@ export function App() {
           <h1>{t("ใบพลู", "Baiplu")}</h1>
           <p class="meta">{t("ติดตามสมุนไพรและยา ตรวจคำเตือนให้", "Track your herbs and medicines, and check for warnings")}</p>
         </div>
+        <UserMenu />
         <button type="button" class="help-btn noprint" onClick={() => setHelpN((n) => n + 1)}>{t("วิธีใช้", "Help")}</button>
         <LangToggle />
         </div>
@@ -110,6 +113,9 @@ function Home({ store, diary, meta, helpN }: { store: TrackerStore; diary: Diary
   const cloud = useMemo(() => new CloudSync(store, diary, reminder), [store, diary, reminder]);
   const [, setCloudV] = useState(0);
   useEffect(() => { const off = cloud.subscribe(() => setCloudV((v) => v + 1)); void cloud.init(); return off; }, [cloud]);
+  // ส่งชื่อผู้ใช้ขึ้นไปแสดงที่หัวเว็บ (หัวเว็บอยู่นอกหน้านี้)
+  useEffect(() => { setAccountBadge(cloud.handle ? { handle: cloud.handle, logout: () => void cloud.logout() } : null); }, [cloud, cloud.handle]);
+  useEffect(() => () => setAccountBadge(null), []);
   const assistantLog = useMemo(() => new AssistantLog(), []); // บทสนทนาหน้าผู้ช่วย: อยู่ในหน่วยความจำ ไม่ลงที่เก็บ
   const [reminderBanner, setReminderBanner] = useState(false);
   const [acctN, setAcctN] = useState(0); // กดปุ่มเข้าสู่ระบบเพื่อซิงก์: ไปแท็บข้อมูลของฉันแล้วกางการ์ดบัญชี
