@@ -16,6 +16,11 @@ button { border-radius: 10px; }
 .added-status:not(:empty) { margin: var(--sp-2) 0; padding: var(--sp-2) var(--sp-3); border-radius: 12px; background: var(--c-noflag-bg); color: var(--c-noflag-fg); font-weight: 600; }
 .tab-hint { margin: 0 0 var(--sp-3); color: var(--c-muted); font-size: .92rem; }
 .list-hint { margin: 0 0 var(--sp-2); }
+.user-menu { position: relative; margin-left: auto; }
+.user-menu + .help-btn { margin-left: var(--sp-2); }
+.user-chip { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 var(--sp-3); border-radius: 999px; font-weight: 600; }
+.user-pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 9rem; padding: var(--sp-2); background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 12px; box-shadow: var(--shadow-1); }
+.user-pop button { width: 100%; }
 .help-btn { margin-left: auto; padding: 0 var(--sp-3); font-weight: 600; border-radius: 999px; }
 .help-btn + .lang-toggle { margin-left: var(--sp-2); }
 .lang-toggle { margin-left: auto; min-width: 52px; padding: 0 var(--sp-3); font-weight: 700; border-radius: 999px; }
