@@ -1,4 +1,4 @@
-# HerbGuard TTM บน Cloudflare
+# ใบพลู (Baiploo) บน Cloudflare
 
 โครงสร้าง: **Python Worker** (ตัวตรวจ engine เดิม + บัญชีผู้ใช้ + ซิงก์) + **D1** (ข้อมูลอ้างอิง บัญชี และข้อมูลที่ผู้ใช้เลือกซิงก์) + **Static Assets** (เว็บ `web/dist`)
 การตัดสินใจของทีม (2026-10-12): เก็บข้อมูลอ้างอิงและบัญชีผู้ใช้ + ข้อมูลบันทึกสุขภาพใน D1, ตัวตรวจเขียนด้วย Python (Python Workers), AI คง Gemini/Anthropic
