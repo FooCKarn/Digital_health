@@ -1,4 +1,4 @@
-"""HerbGuard TTM prototype UI (Streamlit): กรอกข้อมูล -> ผลตรวจ -> ใบสรุปเภสัชกร
+"""ใบพลู (Baiploo) prototype UI (Streamlit): กรอกข้อมูล -> ผลตรวจ -> ใบสรุปเภสัชกร
 รัน: streamlit run app/app.py   (ข้อมูลผู้ใช้สมมติเท่านั้น ห้ามกรอกข้อมูลผู้ป่วยจริง)
 ยังไม่มี LLM: ผู้ใช้เลือกจากรายการ; ข้อความมาจาก message_th ของคำเตือนโดยตรง
 """
@@ -20,8 +20,8 @@ DRUG_NAMES = sorted(n for e in DRUGS["entries"] for n in e["names"][:1])
 SEV = {"avoid": ("ไม่ควรใช้ / ห้าม", st.error), "caution": ("ควรระวัง", st.warning), "info": ("ข้อมูล", st.info)}
 NOT_CHECKED_TH = {"pregnancy": "การตั้งครรภ์", "breastfeeding": "การให้นมบุตร", "age": "อายุ"}
 
-st.set_page_config(page_title="HerbGuard TTM", page_icon="🌿", layout="wide")
-st.title("🌿 HerbGuard TTM")
+st.set_page_config(page_title="ใบพลู", page_icon="🌿", layout="wide")
+st.title("🌿 ใบพลู (Baiploo)")
 st.caption("ตรวจคำเตือนการใช้สมุนไพรร่วมกับยา จากหนังสือแนวทางการใช้ยาสมุนไพรฯ (TTM first) · **ต้นแบบ ใช้ข้อมูลสมมติเท่านั้น**")
 
 

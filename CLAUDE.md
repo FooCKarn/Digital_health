@@ -4,7 +4,7 @@
 
 ## โปรเจกต์คืออะไร
 
-HerbGuard TTM: ระบบ rule-based ตรวจความปลอดภัยของการใช้สมุนไพร (50 ชนิดจากหนังสือ TTM first ของกรมการแพทย์แผนไทยฯ) ร่วมกับยาแผนปัจจุบัน ส่งเข้าแข่ง Thai Traditional Medicine Digital Health & AI Hackathon 2026 (track เภสัชกรรมไทย) เป้าหมาย MVP
+ใบพลู (Baiploo): ระบบ rule-based ตรวจความปลอดภัยของการใช้สมุนไพร (50 ชนิดจากหนังสือ TTM first ของกรมการแพทย์แผนไทยฯ) ร่วมกับยาแผนปัจจุบัน ส่งเข้าแข่ง Thai Traditional Medicine Digital Health & AI Hackathon 2026 (track เภสัชกรรมไทย) เป้าหมาย MVP
 
 **อ่านก่อนทำงานทุกครั้ง (ตามลำดับ):**
 1. `hackathon.md` : บริบท เกณฑ์ผู้จัด ขอบเขต การตัดสินใจที่ล็อกแล้ว สถานะ

@@ -1,4 +1,4 @@
-# Logic, Data Flow และบทบาทของ AI (HerbGuard TTM)
+# Logic, Data Flow และบทบาทของ AI (ใบพลู (Baiploo))
 
 เอกสารนี้อธิบายตามเกณฑ์ผู้จัดข้อ 2-3 ของ `hackathon.md` เขียนจากสิ่งที่ **ทำงานแล้วใน repo** (สถานะข้อมูล: ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ ทุกแถว `verified:false`)
 
